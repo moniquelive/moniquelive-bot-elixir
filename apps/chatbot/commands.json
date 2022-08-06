@@ -1,0 +1,643 @@
+{
+  "ignored_commands": [
+    "!sh",
+    "!sh-so",
+    "!sh-mso",
+    "!sh-raid",
+    "!permit"
+  ],
+  "commands": [
+    {
+      "help": "Youtube Playlist with past videos",
+      "ajuda": "Playlist do Youtube com os vídeos passados",
+      "actions": [
+        "!youtube",
+        "!yt"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me playlist com os vídeos passados: https://www.youtube.com/playlist?list=PLyR9xTdgYCd9n4V5EK86aEqMd59QZeDD9"
+      ]
+    },
+    {
+      "help": "Our projects",
+      "ajuda": "Nossos projetos",
+      "actions": [
+        "!github",
+        "!gh"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me clique neste link para ver nossos projetinhos: https://github.com/moniquelive"
+      ]
+    },
+    {
+      "help": "Meme generator",
+      "ajuda": "Gerador de memes",
+      "actions": [
+        "!meme"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me clique neste link para ver nosso gerador de memes: https://meme.monique.dev"
+      ]
+    },
+    {
+      "help": "Lists available commands",
+      "ajuda": "Lista comandos disponíveis",
+      "actions": [
+        "!comandos",
+        "!commands",
+        "!cmds"
+      ],
+      "responses": [
+        "/color HotPink",
+        "/me {{ .Commands }}"
+      ]
+    },
+    {
+      "help": "How many people are in our chat room",
+      "ajuda": "Quantas pessoas estão online",
+      "actions": [
+        "!count",
+        "!c"
+      ],
+      "responses": [
+        "/color blue",
+        "/me {{ len .Roster }} loucos no hospício... 👀"
+      ],
+      "logs": [
+        "{{ .Roster.Keys }}"
+      ]
+    },
+    {
+      "help": "\uD83C\uDF08",
+      "ajuda": "\uD83C\uDF08",
+      "actions": [
+        "!rainbow",
+        "!r"
+      ],
+      "responses": [
+        "/color Blue",        "/me Blue",
+        "/color Coral",       "/me Coral",
+        "/color DodgerBlue",  "/me DodgerBlue",
+        "/color SpringGreen", "/me SpringGreen",
+        "/color YellowGreen", "/me YellowGreen",
+        "/color Green",       "/me Green",
+        "/color OrangeRed",   "/me OrangeRed",
+        "/color Red",         "/me Red",
+        "/color GoldenRod",   "/me GoldenRod",
+        "/color HotPink",     "/me HotPink",
+        "/color CadetBlue",   "/me CadetBlue",
+        "/color SeaGreen",    "/me SeaGreen",
+        "/color Chocolate",   "/me Chocolate",
+        "/color BlueViolet",  "/me BlueViolet",
+        "/color Firebrick",   "/me Firebrick"
+      ]
+    },
+    {
+      "help": "Moniquelive's Linkedin profile",
+      "ajuda": "Linkedin da Moniquelive",
+      "actions": [
+        "!linkedin",
+        "!l"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me clique neste link para ver meu linkedin: https://www.linkedin.com/in/moniquelive/"
+      ]
+    },
+    {
+      "help": "Moniquelive's social networks",
+      "ajuda": "Redes sociais da Moniquelive",
+      "actions": [
+        "!social",
+        "!links",
+        "!s"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me 📑: https://monique.dev",
+        "/me 💻: https://github.com/moniquelive",
+        "/me 👷: https://linkedin.com/in/moniquelive",
+        "/me 🐦: https://twitter.com/moniquelive",
+        "/me 📸: https://www.instagram.com/moniquelive.dev",
+        "/me 📺: https://www.youtube.com/moniquelive",
+        "/me 🤝: https://stackoverflow.com/users/9793/cyber-oliveira",
+        "/me 📖: https://dev.to/moniquelive",
+        "/me 💌: https://t.me/joinchat/nq7dy4jqN01kNmVh"
+      ]
+    },
+    {
+      "help": "Our wiki",
+      "ajuda": "Nosso wiki",
+      "actions": [
+        "!wiki",
+        "!w"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me https://github.com/moniquelive/moniquelive/wiki"
+      ]
+    },
+    {
+      "help": "Type '!help <cmd>' for <cmd>'s description",
+      "ajuda": "Digite '!ajuda <cmd>' para ver a descrição de <cmd>",
+      "actions": [
+        "!help",
+        "!h"
+      ],
+      "responses": [
+        "/color goldenrod",
+        "/me {{ .Command.Help .CmdLine }}"
+      ]
+    },
+    {
+      "help": "Type '!help <cmd>' for <cmd>'s description",
+      "ajuda": "Digite '!ajuda <cmd>' para ver a descrição de <cmd>",
+      "actions": [
+        "!ajuda",
+        "!a",
+        "!?"
+      ],
+      "responses": [
+        "/color goldenrod",
+        "/me {{ .Command.Ajuda .CmdLine }}"
+      ]
+    },
+    {
+      "help": "Shows current playing track",
+      "ajuda": "Mostra a música que está tocando no momento",
+      "actions": [
+        "!musica",
+        "!m",
+        "!music",
+        "!song"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me {{ .Player.CurrentSong }}"
+      ]
+    },
+    {
+      "help": "Shows all bettertv emojis",
+      "ajuda": "Mostra todos os emojis da bettertv",
+      "actions": [
+        "!bttv",
+        "!b",
+        "!emoji",
+        "!emote"
+      ],
+      "responses": [
+        "catJAM Aaaaa 02Pat NOTED popCat HACKERCAT kumaPls CuteDog miyanoHype CouldYouNot HAMDANCE elmoFire chikaPls nodeBounce taPassadaFace gopherPls"
+      ]
+    },
+    {
+      "help": "Shows all FrankerFaceZ emojis",
+      "ajuda": "Mostra todos os emojis da FrankerFaceZ",
+      "actions": [
+        "!franker",
+        "!frank"
+      ],
+      "responses": [
+        "weSmart KEKW pikachuS ThisIsFine goPher"
+      ]
+    },
+    {
+      "help": "Shows the Spotify playlist link",
+      "ajuda": "Mostra o link da playlist do Spotify",
+      "actions": [
+        "!spotify",
+        "!playlist",
+        "!pl",
+        "!sl",
+        "!list"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me ouça e/ou colabore! https://open.spotify.com/playlist/6tPcPBeTEoPqaZcR03IzwN?si=yuQXN9RpSWyckstQKjRFpA"
+      ]
+    },
+    {
+      "help": "Shows Monique's Linux flavor",
+      "ajuda": "Mostra a distro Linux da Monique",
+      "actions": [
+        "!linux",
+        "!distro",
+        "!os",
+        "!so",
+        "!sistema"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me Pop OS v22.04 (https://pop.system76.com/)"
+      ]
+    },
+    {
+      "help": "Shows Monique's battlestation config",
+      "ajuda": "Mostra spec da lanhouse da Monique",
+      "actions": [
+        "!spec",
+        "!computador",
+        "!setup",
+        "!maquina",
+        "!conf",
+        "!lanhouse",
+        "!pc"
+      ],
+      "responses": [
+        "/color YellowGreen", "/me [Processador] AMD Ryzen Threadripper 3970X (64) @ 4.000GHz",
+        "/color SpringGreen", "/me [Memória RAM] 64 GB DDR4 1333MHz ECC",
+        "/color YellowGreen", "/me [Placa de Vídeo] nVidia RTX 3080",
+        "/color SpringGreen", "/me [SSD] Samsung 970 EVO Plus (2TB)",
+        "/color YellowGreen", "/me [Teclado] https://ergodox-ez.com/",
+        "/color SpringGreen", "/me [Mouse] Logitech MX Master 3",
+        "/color YellowGreen", "/me [Monitores] Dell UP3216Q && LG HDR 4K (x2)",
+        "/color SpringGreen", "/me [Câmera] GoPro Hero 9 && Logitech Brio 4K",
+        "/color YellowGreen", "/me [Microfone] Shure Inc. MV7",
+        "/color SpringGreen", "/me [iPad] as vezes para escrevinhar na tela..."
+      ]
+    },
+    {
+      "help": "Shows your message upside down / umop apisdn",
+      "ajuda": "Mostra sua frase de ponta-cabeça (cabeça pra baixo)",
+      "actions": [
+        "!upside",
+        "!inv"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me {{ .Command.Upside .CmdLine }}"
+      ]
+    },
+    {
+      "help": "Shows the Twitch schedule",
+      "ajuda": "Mostra a agenda da Twitch",
+      "actions": [
+        "!agenda",
+        "!schedule",
+        "!horario",
+        "!calendario",
+        "!lives"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me https://www.twitch.tv/moniquelive/schedule"
+      ]
+    },
+    {
+      "help": "Shows the streamer's keyboard model",
+      "ajuda": "Mostra o modelo do teclado da Mo",
+      "actions": [
+        "!teclado",
+        "!keyboard",
+        "!keyb",
+        "!kb",
+        "!kbd",
+        "!teclas"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me Ergodox EZ (https://ergodox-ez.com/)",
+        "/me Layout (https://configure.zsa.io/ergodox-ez/layouts/XqZeg/latest/0)"
+      ]
+    },
+    {
+      "help": "Shows Flip Code tutorials url",
+      "ajuda": "Mostra a url dos tutoriais Flip Code",
+      "actions": [
+        "!flipcode",
+        "!fc",
+        "!flip"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me https://www.flipcode.com/archives/articles.shtml"
+      ]
+    },
+    {
+      "help": "Shows Demoscene tutorials url",
+      "ajuda": "Mostra a url dos tutoriais de Demoscene",
+      "actions": [
+        "!demos",
+        "!demo",
+        "!demoscene",
+        "!ds"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me https://demoscenetuts.monique.dev/"
+      ]
+    },
+    {
+      "help": "Shows IT beginners tutorials url",
+      "ajuda": "Mostra a url de tutoriais para iniciantes em TI",
+      "actions": [
+        "!iniciantes",
+        "!iniciante",
+        "!init",
+        "!ini"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me https://iniciante.monique.dev/"
+      ]
+    },
+    {
+      "help": "Shows our 'discord' url",
+      "ajuda": "Exibe nossa url do 'discord'",
+      "actions": [
+        "!telegram",
+        "!discord"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me telegram: https://t.me/joinchat/nq7dy4jqN01kNmVh"
+      ]
+    },
+    {
+      "help": "'Bans' a user",
+      "ajuda": "'Expulsa' um amiguinho",
+      "actions": [
+        "!ban",
+        "!kick",
+        "!banir",
+        "!chutar"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me {{ .Command.Ban (or .CmdLine (random .Roster.Keys)) .Extras }}"
+      ],
+      "extras": [
+        "_rm -rf /home/${target}",
+        "${target} tirou 1 no d20 e foi banid@...",
+        "${target} foi banid@ por curtir javascript",
+        "${target} foi banid@ por indicar live de javascript",
+        "${target} foi banid@ por perguntar a linguagem preferida da Monique",
+        "${target} foi banid@ por dar commit na main",
+        "${target} foi banid@ por dar DELETE sem WHERE",
+        "${target} foi banid@ por esquecer o ';'",
+        "${target} foi banid@ por ser programador Senior com 2 anos de experiência em React",
+        "${target} foi banid@ por que fez chmod -R 777 /",
+        "${target} foi banid@ por testar em prod",
+        "${target} foi banid@ por abusar da boa vontade da Pérola",
+        "${target} foi banid@ por pular uma música bacana"
+      ]
+    },
+    {
+      "help": "The name of the kitty",
+      "ajuda": "Nome da gatinha",
+      "actions": [
+        "!gata",
+        "!cat",
+        "!gato"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me 🐈 Chanel"
+      ]
+    },
+    {
+      "help": "Themes I use",
+      "ajuda": "Meus temas",
+      "actions": [
+        "!theme",
+        "!tema"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me https://github.com/morhetz/gruvbox || https://github.com/jcornwall/base16-woodland-scheme"
+      ]
+    },
+    {
+      "help": "Lists shared urls for a user",
+      "ajuda": "Lista urls compartilhadas por alguém",
+      "actions": [
+        "!links",
+        "!link",
+        "!urls",
+        "!url",
+        "!u"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "{{range .Command.Urls .CmdLine }}/me {{.}}\n{{end}}"
+      ]
+    },
+    {
+      "help": "Prints the time a user joined chat",
+      "ajuda": "Mostra a hora que um usuário entrou",
+      "actions": [
+        "!uptime",
+        "!time",
+        "!up"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me {{ .Command.Uptime (or .CmdLine .Sender.Name) }}"
+      ]
+    },
+    {
+      "help": "Show my .vimrc url",
+      "ajuda": "Mostra a url do .vimrc da Mo",
+      "actions": [
+        "!vimrc",
+        "!vim",
+        "!vi"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me minha ultima configuração do VIM: https://github.com/moniquelive/dotfiles/blob/master/vimrc.symlink"
+      ]
+    },
+    {
+      "help": "Show my tipping url",
+      "ajuda": "Mostra a url de gorjetas",
+      "actions": [
+        "!tips",
+        "!tip",
+        "!pinga"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me pinga ni mim: https://streamlabs.com/moniquelive/tip"
+      ]
+    },
+    {
+      "help": "Updates the marquee",
+      "ajuda": "Atualiza a mensagem rotativa",
+      "actions": [
+        "!today",
+        "!marquee",
+        "!marq"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me {{ .Command.Marquee .Sender .CmdLine }}"
+      ]
+    },
+    {
+      "help": "OO video",
+      "ajuda": "Vídeo sobre OO",
+      "actions": [
+        "!oo",
+        "!poo"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me vídeo que vai mudar a sua vida: https://www.youtube.com/watch?v=6JBBJQS6nX4"
+      ]
+    },
+    {
+      "help": "VIM video",
+      "ajuda": "Vídeo sobre VIM",
+      "actions": [
+        "!vv"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me vídeo sobre VIM, Rails, nnn, etc: https://www.youtube.com/watch?v=uwf6Cu4mQco"
+      ]
+    },
+    {
+      "help": "ELM playlist",
+      "ajuda": "Playlist sobre ELM",
+      "actions": [
+        "!elm"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me playlist com videos sobre ELM: https://www.youtube.com/playlist?list=PLyR9xTdgYCd_HB0mgR9INq31iqpi4dMn5"
+      ]
+    },
+    {
+      "help": "Vinhator project",
+      "ajuda": "Projeto Vinhator",
+      "actions": [
+        "!vinheta",
+        "!vinhetor",
+        "!vin"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me repo do projeto: https://github.com/moniquelive/vinhator"
+      ]
+    },
+    {
+      "help": "Vote to skip current song",
+      "ajuda": "Vota para pular música atual",
+      "actions": [
+        "!skip",
+        "!pula",
+        "!apioral",
+        "!apiorquenostemos",
+        "!opiorquenostemos",
+        "!amenorquenostemos",
+        "!omenorquenostemos",
+        "!amenorquetemos",
+        "!omenorquetemos",
+        "!amenor",
+        "!omenor",
+        "!vaza",
+        "!rala",
+        "!shispa",
+        "!xispa",
+        "!temanca",
+        "!xo",
+        "!fora",
+        "!passa"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me {{ .Command.SkipMusic .Sender.Name }}"
+      ]
+    },
+    {
+      "help": "Vote to keep current song",
+      "ajuda": "Vota para música não mudar",
+      "actions": [
+        "!noskip",
+        "!naopula",
+        "!fica",
+        "!amelhorquenostemos",
+        "!omelhorquenostemos",
+        "!amaiorquenostemos",
+        "!omaiorquenostemos",
+        "!amaiorquetemos",
+        "!omaiorquetemos",
+        "!amaior",
+        "!omaior",
+        "!gostei",
+        "!gosto",
+        "!deixa",
+        "!boa",
+        "!hino"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me {{ .Command.KeepMusic .Sender.Name }}"
+      ]
+    },
+    {
+      "help": "Since when do we follow this channel",
+      "ajuda": "Desde quando sigo este canal?",
+      "actions": [
+        "!followage",
+        "!follower",
+        "!quandoseguiu",
+        "!segue",
+        "!seguindo",
+        "!seguidor",
+        "!desde",
+        "!since"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me {{ .Command.FollowAge .CmdLine .Sender }}"
+      ]
+    },
+    {
+      "help": "Send hugs <3",
+      "ajuda": "Abraça o Amiguine <3",
+      "actions": [
+        "!hug",
+        "!hugs",
+        "!abraco",
+        "!abraço",
+        "!abraca",
+        "!abraça"
+      ],
+      "responses": [
+        "/color yellowgreen",
+        "/me {{ .Command.Hug .Sender (or .CmdLine (random .Roster.Keys)) }}"
+      ]
+    },
+    {
+      "help": "Show my dotfiles url",
+      "ajuda": "Mostra a url dos dotfiles da Mo",
+      "actions": [
+        "!dotfiles",
+        "!dotfile",
+        "!dot",
+        "!cfg",
+        "!config"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me meus dotfiles: https://github.com/moniquelive/dotfiles/"
+      ]
+    },
+    {
+      "help": "Show my blog",
+      "ajuda": "Mostra a url do meu blog",
+      "actions": [
+        "!blog",
+        "!site"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me meus artigos traduzidos: https://monique.dev/"
+      ]
+    }
+  ]
+}

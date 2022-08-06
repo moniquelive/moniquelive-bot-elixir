@@ -2,23 +2,27 @@ defmodule Chatbot.Bot do
   use TMI
 
   @impl TMI.Handler
-  def handle_message("!" <> command, sender, chat) do
-    case command do
-      "dice" ->
-        say(chat, Enum.random(~w(⚀ ⚁ ⚂ ⚃ ⚄ ⚅)))
+  def handle_message(command, sender, chat) do
+    config = ConfigFileWatcher.config()
 
-      "echo " <> rest ->
-        say(chat, rest)
+    if command not in config.ignored_commands do
+      config.commands
+      |> Enum.filter(&(command in &1.actions))
+      |> List.first()
+      |> case do
+        nil ->
+          say(chat, "@#{sender}, não conheço esse: #{command}")
 
-      "dance" ->
-        me(chat, "dances for #{sender}")
-
-      _ ->
-        say(chat, "unrecognized command")
+        action ->
+          run(action, chat)
+      end
     end
   end
 
-  def handle_message(message, sender, chat) do
-    Logger.debug("Message in #{chat} from #{sender}: #{message}")
+  defp run(action, chat) do
+    # TODO: tratar os dinamicos
+    action
+    |> Map.get(:responses)
+    |> Enum.each(&say(chat, &1))
   end
 end
