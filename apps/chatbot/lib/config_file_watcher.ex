@@ -9,7 +9,8 @@ defmodule ConfigFileWatcher do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
-  def config(), do: GenServer.call(__MODULE__, :config)
+  def ignored(), do: GenServer.call(__MODULE__, :ignored)
+  def commands(), do: GenServer.call(__MODULE__, :commands)
 
   # Server
 
@@ -21,8 +22,13 @@ defmodule ConfigFileWatcher do
   end
 
   @impl true
-  def handle_call(:config, _from, state) do
-    {:reply, state.config, state}
+  def handle_call(:ignored, _from, state) do
+    {:reply, state.config.ignored_commands, state}
+  end
+
+  @impl true
+  def handle_call(:commands, _from, state) do
+    {:reply, state.config.commands, state}
   end
 
   @impl true

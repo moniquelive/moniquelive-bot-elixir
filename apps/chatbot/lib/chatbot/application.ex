@@ -12,6 +12,7 @@ defmodule Chatbot.Application do
     children = [
       # Starts a worker by calling: Chatbot.Worker.start_link(arg)
       # {Chatbot.Worker, arg}
+      Chatbot.State,
       {ConfigFileWatcher, [dirs: [Path.expand("../..", __DIR__)]]},
       {TMI.Supervisor, bot_config}
     ]

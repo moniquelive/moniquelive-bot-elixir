@@ -52,7 +52,7 @@
       ],
       "responses": [
         "/color HotPink",
-        "/me {{ .Commands }}"
+        "/me { Commands.commands }"
       ]
     },
     {
@@ -64,10 +64,10 @@
       ],
       "responses": [
         "/color blue",
-        "/me {{ len .Roster }} loucos no hospício... 👀"
+        "/me { to_string(length(Commands.roster)) } loucos no hospício... 👀"
       ],
       "logs": [
-        "{{ .Roster.Keys }}"
+        "{ Commands.roster }"
       ]
     },
     {
@@ -149,7 +149,7 @@
       ],
       "responses": [
         "/color goldenrod",
-        "/me {{ .Command.Help .CmdLine }}"
+        "/me { Commands.help(command) }"
       ]
     },
     {
@@ -162,7 +162,7 @@
       ],
       "responses": [
         "/color goldenrod",
-        "/me {{ .Command.Ajuda .CmdLine }}"
+        "/me { Commands.ajuda(command) }"
       ]
     },
     {
@@ -219,18 +219,21 @@
       ]
     },
     {
-      "help": "Shows Monique's Linux flavor",
-      "ajuda": "Mostra a distro Linux da Monique",
+      "help": "Shows Monique's OS flavor",
+      "ajuda": "Mostra o S.O. da Monique",
       "actions": [
         "!linux",
         "!distro",
+        "!mac",
+        "!macos",
+        "!osx",
         "!os",
         "!so",
         "!sistema"
       ],
       "responses": [
         "/color YellowGreen",
-        "/me Pop OS v22.04 (https://pop.system76.com/)"
+        "/me { Commands.uname }"
       ]
     },
     {
@@ -246,10 +249,10 @@
         "!pc"
       ],
       "responses": [
-        "/color YellowGreen", "/me [Processador] AMD Ryzen Threadripper 3970X (64) @ 4.000GHz",
-        "/color SpringGreen", "/me [Memória RAM] 64 GB DDR4 1333MHz ECC",
-        "/color YellowGreen", "/me [Placa de Vídeo] nVidia RTX 3080",
-        "/color SpringGreen", "/me [SSD] Samsung 970 EVO Plus (2TB)",
+        "/color YellowGreen", "/me [Processador] Apple M1 Max",
+        "/color SpringGreen", "/me [Memória RAM] 64 GB LPDDR5",
+        "/color YellowGreen", "/me [Placa de Vídeo] (GPU) Apple M1 Max (32 cores)",
+        "/color SpringGreen", "/me [SSD] APPLE SSD AP2048R (2TB)",
         "/color YellowGreen", "/me [Teclado] https://ergodox-ez.com/",
         "/color SpringGreen", "/me [Mouse] Logitech MX Master 3",
         "/color YellowGreen", "/me [Monitores] Dell UP3216Q && LG HDR 4K (x2)",
@@ -298,8 +301,8 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me Ergodox EZ (https://ergodox-ez.com/)",
-        "/me Layout (https://configure.zsa.io/ergodox-ez/layouts/XqZeg/latest/0)"
+        "/me Ergodox EZ: https://ergodox-ez.com/",
+        "/me Layout: https://configure.zsa.io/ergodox-ez/layouts/XqZeg/latest/0"
       ]
     },
     {
@@ -609,7 +612,7 @@
       ],
       "responses": [
         "/color yellowgreen",
-        "/me {{ .Command.Hug .Sender (or .CmdLine (random .Roster.Keys)) }}"
+        "/me { Commands.hug(sender, command) }"
       ]
     },
     {
