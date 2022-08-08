@@ -5,6 +5,8 @@ defmodule Chatbot.Application do
 
   use Application
 
+  alias Chatbot.{Config, State}
+
   @impl true
   def start(_type, _args) do
     [bot_config] = Application.fetch_env!(:chatbot, :bots)
@@ -12,8 +14,8 @@ defmodule Chatbot.Application do
     children = [
       # Starts a worker by calling: Chatbot.Worker.start_link(arg)
       # {Chatbot.Worker, arg}
-      Chatbot.State,
-      {ConfigFileWatcher, [dirs: [Path.expand("../..", __DIR__)]]},
+      State,
+      {Config, [dirs: [Path.expand("../..", __DIR__)]]},
       {TMI.Supervisor, bot_config}
     ]
 

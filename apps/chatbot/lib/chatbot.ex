@@ -1,18 +1,21 @@
 defmodule Chatbot.Bot do
   use TMI
 
-  alias Chatbot.{Commands, State}
+  alias Chatbot.{Commands, Config, State}
 
   @impl TMI.Handler
   def handle_message("!" <> _ = command, sender, chat) do
     [cmd | _] = String.split(command)
 
-    if cmd not in ConfigFileWatcher.ignored() do
+    if cmd not in Config.ignored() do
       action = Commands.actionForCommand(cmd)
 
-      if is_nil(action),
-        do: say(chat, "@#{sender}, não conheço esse: #{command}"),
-        else: run(action, chat, command, sender)
+      if is_nil(action) do
+        say(chat, "@#{sender}, não conheço esse: #{command}")
+      else
+        run(action, chat, command, sender)
+        State.performed_command(cmd)
+      end
     end
   end
 

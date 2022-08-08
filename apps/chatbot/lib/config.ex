@@ -1,4 +1,4 @@
-defmodule ConfigFileWatcher do
+defmodule Chatbot.Config do
   use GenServer
 
   @config_filename "commands.json"
@@ -28,7 +28,7 @@ defmodule ConfigFileWatcher do
 
   @impl true
   def handle_call(:commands, _from, state) do
-    {:reply, state.config.commands, state}
+    {:reply, state.config.commands |> Enum.sort_by(& &1.actions), state}
   end
 
   @impl true

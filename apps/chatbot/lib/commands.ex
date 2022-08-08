@@ -1,13 +1,14 @@
 defmodule Chatbot.Commands do
-  alias Chatbot.State
+  alias Chatbot.{State, Config}
 
   @doc """
   !cmds
   """
   def commands() do
-    # TODO: action (count)
-    ConfigFileWatcher.commands()
-    |> Enum.map(&(&1.actions |> List.first()))
+    c = State.command_count()
+
+    Config.commands()
+    |> Enum.map(&(&1.actions |> formatActionCounter(c)))
     |> Enum.join(" ")
   end
 
@@ -44,7 +45,7 @@ defmodule Chatbot.Commands do
   # --- HELPERS --------------------------------------------------------------
 
   def actionForCommand(cmd) do
-    ConfigFileWatcher.commands()
+    Config.commands()
     |> Enum.filter(&(cmd in &1.actions))
     |> List.first()
   end
@@ -65,5 +66,17 @@ defmodule Chatbot.Commands do
     msg = action[String.to_atom(attr)]
     aliases = Enum.join(action.actions, ",")
     "#{cmd}: #{msg} (aliases: #{aliases})"
+  end
+
+  defp formatActionCounter(actions, counters) do
+    sum =
+      actions
+      |> Enum.map(&String.to_atom/1)
+      |> Enum.map(&Map.get(counters, &1, 0))
+      |> Enum.sum()
+
+    if sum > 0,
+      do: List.first(actions) <> " (#{sum})",
+      else: List.first(actions)
   end
 end
