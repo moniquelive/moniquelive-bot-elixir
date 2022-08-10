@@ -1,4 +1,6 @@
 defmodule Chatbot.Bot do
+  @moduledoc false
+
   use TMI
 
   alias Chatbot.{Commands, Config, State}
@@ -8,7 +10,7 @@ defmodule Chatbot.Bot do
     [cmd | _] = String.split(command)
 
     if cmd not in Config.ignored() do
-      action = Commands.actionForCommand(cmd)
+      action = Commands.action_for_command(cmd)
 
       if is_nil(action) do
         say(chat, "@#{sender}, não conheço esse: #{command}")
@@ -42,11 +44,11 @@ defmodule Chatbot.Bot do
 
   @impl TMI.Handler
   def handle_unrecognized(msg, tags),
-    do: IO.inspect({:"unrecog/2", msg, tags})
+    do: IO.puts({:"unrecog/2", msg, tags})
 
   @impl TMI.Handler
   def handle_action(msg, sender, chat),
-    do: IO.inspect({:"action/3", msg, sender, chat})
+    do: IO.puts({:"action/3", msg, sender, chat})
 
   defp run(action, chat, command, sender) do
     action

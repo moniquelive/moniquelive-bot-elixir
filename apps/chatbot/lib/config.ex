@@ -1,4 +1,6 @@
 defmodule Chatbot.Config do
+  @moduledoc false
+
   use GenServer
 
   @config_filename "commands.json"
@@ -26,7 +28,6 @@ defmodule Chatbot.Config do
     {:reply, state.config.ignored_commands, state}
   end
 
-  @impl true
   def handle_call(:commands, _from, state) do
     {:reply, state.config.commands |> Enum.sort_by(& &1.actions), state}
   end
@@ -36,14 +37,11 @@ defmodule Chatbot.Config do
         {:file_event, watcher_pid, {path, [_, :modified, _]}},
         %{watcher_pid: watcher_pid} = state
       ) do
-    with true <- String.ends_with?(path, @config_filename) do
-      {:noreply, %{state | config: parse(path)}}
-    else
-      _ -> {:noreply, state}
-    end
+    if String.ends_with?(path, @config_filename),
+      do: {:noreply, %{state | config: parse(path)}},
+      else: {:noreply, state}
   end
 
-  @impl true
   def handle_info({:file_event, watcher_pid, _}, %{watcher_pid: watcher_pid} = state),
     do: {:noreply, state}
 

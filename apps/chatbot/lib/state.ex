@@ -1,4 +1,6 @@
 defmodule Chatbot.State do
+  @moduledoc false
+
   use GenServer
 
   # Client

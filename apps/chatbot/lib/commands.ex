@@ -1,4 +1,6 @@
 defmodule Chatbot.Commands do
+  @moduledoc false
+
   alias Chatbot.{State, Config}
 
   @doc """
@@ -8,8 +10,7 @@ defmodule Chatbot.Commands do
     c = State.command_count()
 
     Config.commands()
-    |> Enum.map(&(&1.actions |> formatActionCounter(c)))
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &(&1.actions |> format_action_counter(c)))
   end
 
   @doc """
@@ -23,12 +24,12 @@ defmodule Chatbot.Commands do
   @doc """
   !help
   """
-  def help(command), do: helpHelper(String.split(command), "help")
+  def help(command), do: help_helper(String.split(command), "help")
 
   @doc """
   !ajuda
   """
-  def ajuda(command), do: helpHelper(String.split(command), "ajuda")
+  def ajuda(command), do: help_helper(String.split(command), "ajuda")
 
   def roster(), do: State.roster()
 
@@ -44,22 +45,22 @@ defmodule Chatbot.Commands do
 
   # --- HELPERS --------------------------------------------------------------
 
-  def actionForCommand(cmd) do
+  def action_for_command(cmd) do
     Config.commands()
     |> Enum.filter(&(cmd in &1.actions))
     |> List.first()
   end
 
-  defp helpHelper([_ | rest], attr) do
+  defp help_helper([_ | rest], attr) do
     action =
       case rest do
         [] ->
-          actionForCommand("!" <> attr)
+          action_for_command("!" <> attr)
 
         [h | _] ->
-          actionForCommand(h) ||
-            actionForCommand("!" <> h) ||
-            actionForCommand("!" <> attr)
+          action_for_command(h) ||
+            action_for_command("!" <> h) ||
+            action_for_command("!" <> attr)
       end
 
     cmd = List.first(action.actions)
@@ -68,7 +69,7 @@ defmodule Chatbot.Commands do
     "#{cmd}: #{msg} (aliases: #{aliases})"
   end
 
-  defp formatActionCounter(actions, counters) do
+  defp format_action_counter(actions, counters) do
     sum =
       actions
       |> Enum.map(&String.to_atom/1)
