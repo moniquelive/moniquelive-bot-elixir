@@ -6,7 +6,7 @@ defmodule Chatbot.Bot do
   alias Chatbot.{Commands, Config, State}
 
   @impl TMI.Handler
-  def handle_message("!" <> _ = command, sender, chat) do
+  def handle_message("!" <> _ = command, sender, chat, _tag) do
     [cmd | _] = String.split(command)
 
     if cmd not in Config.ignored() do
@@ -21,9 +21,9 @@ defmodule Chatbot.Bot do
     end
   end
 
-  @impl TMI.Handler
-  def handle_message(_, _from, _text),
-    do: []
+  def handle_message(sentence, user, _chat, _tag) do
+    State.process_sentence(sentence, user)
+  end
 
   @impl TMI.Handler
   def handle_join("#moniquelive", user),
@@ -34,21 +34,23 @@ defmodule Chatbot.Bot do
     do: State.user_left(user)
 
   @impl TMI.Handler
-  def handle_unrecognized({:names_list, _channel, user}) do
-    State.user_joined(user)
-  end
+  def handle_unrecognized({:names_list, _channel, user}),
+    do: State.user_joined(user)
 
-  @impl TMI.Handler
   def handle_unrecognized(_),
-    do: []
+    do: {}
 
-  @impl TMI.Handler
-  def handle_unrecognized(msg, tags),
-    do: IO.puts({:"unrecog/2", msg, tags})
+  def handle_unrecognized(_msg, _tags),
+    # IO.puts("*** unrecog/2: #{inspect(msg)}")
+    do: []
 
   @impl TMI.Handler
   def handle_action(msg, sender, chat),
     do: IO.puts({:"action/3", msg, sender, chat})
+
+  @impl TMI.Handler
+  def handle_mention(msg, sender, chat),
+    do: IO.puts({:"mention/3", msg, sender, chat})
 
   defp run(action, chat, command, sender) do
     action

@@ -43,6 +43,18 @@ defmodule Chatbot.Commands do
     end
   end
 
+  def urls(command) do
+    [_ | args] = String.split(command)
+
+    case args do
+      [] -> State.urls_for("")
+      [user] -> State.urls_for(user)
+      [arg | _] -> State.urls_for(arg)
+    end
+    |> Enum.map(fn %{user: user, urls: urls} -> ~s(#{user}: #{Enum.join(urls, " ")}) end)
+    |> Enum.join(" ")
+  end
+
   # --- HELPERS --------------------------------------------------------------
 
   def action_for_command(cmd) do

@@ -424,7 +424,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "{{range .Command.Urls .CmdLine }}/me {{.}}\n{{end}}"
+        "{ Commands.urls(command) }"
       ]
     },
     {
