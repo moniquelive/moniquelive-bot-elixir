@@ -51,8 +51,7 @@ defmodule Chatbot.Commands do
       [user] -> State.urls_for(user)
       [arg | _] -> State.urls_for(arg)
     end
-    |> Enum.map(fn %{user: user, urls: urls} -> ~s(#{user}: #{Enum.join(urls, " ")}) end)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", fn %{user: user, urls: urls} -> ~s(#{user}: #{Enum.join(urls, " ")}) end)
   end
 
   # --- HELPERS --------------------------------------------------------------
