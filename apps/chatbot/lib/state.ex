@@ -36,9 +36,18 @@ defmodule Chatbot.State do
     do: GenServer.call(__MODULE__, :command_count)
 
   def process_sentence(sentence, user) do
-    case Regex.named_captures(~r{(?<url>https?://\S*)}, sentence) do
-      %{"url" => url} -> user_typed_url(user, url)
-      _ -> nil
+    flatten =
+      Regex.scan(~r{https?://\S*}, sentence)
+      |> Enum.map(fn [url] -> url end)
+
+    case flatten do
+      [] ->
+        nil
+
+      urls ->
+        for url <- urls do
+          user_typed_url(user, url)
+        end
     end
   end
 

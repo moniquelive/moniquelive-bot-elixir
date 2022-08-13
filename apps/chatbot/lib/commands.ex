@@ -1,7 +1,7 @@
 defmodule Chatbot.Commands do
   @moduledoc false
 
-  alias Chatbot.{State, Config}
+  alias Chatbot.{Config, State}
 
   @doc """
   !cmds

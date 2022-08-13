@@ -3,7 +3,7 @@ defmodule Chatbot.Bot do
 
   use TMI
 
-  alias Chatbot.{Commands, Config, State}
+  alias Chatbot.{Commands, Config, State, Utils}
 
   @impl TMI.Handler
   def handle_message("!" <> _ = command, sender, chat, _tag) do
@@ -21,21 +21,26 @@ defmodule Chatbot.Bot do
     end
   end
 
-  def handle_message(sentence, user, _chat, _tag) do
-    State.process_sentence(sentence, user)
+  def handle_message(sentence, user, _chat, _tag),
+    do: State.process_sentence(sentence, user)
+
+  @impl TMI.Handler
+  def handle_join("#moniquelive", user) do
+    Logger.debug("*** #{user} logged in")
+    State.user_joined(user)
   end
 
   @impl TMI.Handler
-  def handle_join("#moniquelive", user),
-    do: State.user_joined(user)
+  def handle_part("#moniquelive", user) do
+    Logger.debug("*** #{user} left")
+    State.user_left(user)
+  end
 
   @impl TMI.Handler
-  def handle_part("#moniquelive", user),
-    do: State.user_left(user)
-
-  @impl TMI.Handler
-  def handle_unrecognized({:names_list, _channel, user}),
-    do: State.user_joined(user)
+  def handle_unrecognized({:names_list, _channel, user}) do
+    Logger.debug("*** #{user} logged in (unrecog)")
+    State.user_joined(user)
+  end
 
   def handle_unrecognized(_),
     do: {}
@@ -55,8 +60,11 @@ defmodule Chatbot.Bot do
   defp run(action, chat, command, sender) do
     action
     |> Map.get(:responses)
-    |> Enum.map(&exec_string(&1, command, sender))
-    |> Enum.each(&say(chat, &1))
+    |> Enum.each(fn resp ->
+      exec_string(resp, command, sender)
+      |> Utils.word_wrap(500)
+      |> Enum.each(&say(chat, &1))
+    end)
   end
 
   defp exec_string(s, command, sender) do
