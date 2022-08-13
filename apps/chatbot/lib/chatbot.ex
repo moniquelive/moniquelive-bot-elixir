@@ -6,16 +6,16 @@ defmodule Chatbot.Bot do
   alias Chatbot.{Commands, Config, State, Utils}
 
   @impl TMI.Handler
-  def handle_message("!" <> _ = command, sender, chat, _tag) do
-    [cmd | _] = String.split(command)
+  def handle_message("!" <> _ = command_line, sender, chat, _tag) do
+    [cmd | _] = String.split(command_line)
 
     if cmd not in Config.ignored() do
       action = Commands.action_for_command(cmd)
 
       if is_nil(action) do
-        say(chat, "@#{sender}, não conheço esse: #{command}")
+        say(chat, "@#{sender}, não conheço esse: #{command_line}")
       else
-        run(action, chat, command, sender)
+        run(action, chat, command_line, sender)
         State.performed_command(cmd)
       end
     end
@@ -42,12 +42,11 @@ defmodule Chatbot.Bot do
     State.user_joined(user)
   end
 
-  def handle_unrecognized(_),
-    do: {}
+  def handle_unrecognized(msg),
+    do: Logger.debug("*** unrecog/1: #{inspect(msg)}")
 
-  def handle_unrecognized(_msg, _tags),
-    # IO.puts("*** unrecog/2: #{inspect(msg)}")
-    do: []
+  def handle_unrecognized(msg, _tags),
+    do: Logger.debug("*** unrecog/2: #{inspect(msg)}")
 
   @impl TMI.Handler
   def handle_action(msg, sender, chat),
@@ -57,19 +56,20 @@ defmodule Chatbot.Bot do
   def handle_mention(msg, sender, chat),
     do: IO.puts({:"mention/3", msg, sender, chat})
 
+  # --- PRIVATE ---------------------------------------------------------------
+
   defp run(action, chat, command, sender) do
-    action
-    |> Map.get(:responses)
-    |> Enum.each(fn resp ->
-      exec_string(resp, command, sender)
-      |> Utils.word_wrap(500)
-      |> Enum.each(&say(chat, &1))
-    end)
+    action[:responses]
+    |> Enum.map(&eval_string(&1, command, sender))
+    |> Enum.flat_map(&Utils.word_wrap(&1, 500))
+    |> Enum.each(&say(chat, &1))
   end
 
-  defp exec_string(s, command, sender) do
-    Regex.replace(~r/{(.*)}/, s, fn _, x ->
-      x |> Code.eval_string([command: command, sender: sender], __ENV__) |> elem(0)
+  defp eval_string(s, command, sender) do
+    Regex.replace(~r/{(.*)}/, s, fn _, capture ->
+      capture
+      |> Code.eval_string([command: command, sender: sender], __ENV__)
+      |> elem(0)
     end)
   end
 end

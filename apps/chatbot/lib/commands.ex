@@ -3,6 +3,44 @@ defmodule Chatbot.Commands do
 
   alias Chatbot.{Config, State}
 
+  def action_for_command(cmd) do
+    Config.commands()
+    |> Enum.filter(&(cmd in &1.actions))
+    |> List.first()
+  end
+
+  defp help_helper([_ | rest], attr) do
+    action =
+      case rest do
+        [] ->
+          action_for_command("!" <> attr)
+
+        [h | _] ->
+          action_for_command(h) ||
+            action_for_command("!" <> h) ||
+            action_for_command("!" <> attr)
+      end
+
+    cmd = List.first(action.actions)
+    msg = action[String.to_atom(attr)]
+    aliases = Enum.join(action.actions, ",")
+    "#{cmd}: #{msg} (aliases: #{aliases})"
+  end
+
+  defp format_action_counter(actions, counters) do
+    sum =
+      actions
+      |> Enum.map(&String.to_atom/1)
+      |> Enum.map(&Map.get(counters, &1, 0))
+      |> Enum.sum()
+
+    if sum > 0,
+      do: List.first(actions) <> " (#{sum})",
+      else: List.first(actions)
+  end
+
+  # --- COMMANDS -------------------------------------------------------------
+
   @doc """
   !cmds
   """
@@ -52,43 +90,5 @@ defmodule Chatbot.Commands do
       [arg | _] -> State.urls_for(arg)
     end
     |> Enum.map_join(" ", fn %{user: user, urls: urls} -> ~s(#{user}: #{Enum.join(urls, " ")}) end)
-  end
-
-  # --- HELPERS --------------------------------------------------------------
-
-  def action_for_command(cmd) do
-    Config.commands()
-    |> Enum.filter(&(cmd in &1.actions))
-    |> List.first()
-  end
-
-  defp help_helper([_ | rest], attr) do
-    action =
-      case rest do
-        [] ->
-          action_for_command("!" <> attr)
-
-        [h | _] ->
-          action_for_command(h) ||
-            action_for_command("!" <> h) ||
-            action_for_command("!" <> attr)
-      end
-
-    cmd = List.first(action.actions)
-    msg = action[String.to_atom(attr)]
-    aliases = Enum.join(action.actions, ",")
-    "#{cmd}: #{msg} (aliases: #{aliases})"
-  end
-
-  defp format_action_counter(actions, counters) do
-    sum =
-      actions
-      |> Enum.map(&String.to_atom/1)
-      |> Enum.map(&Map.get(counters, &1, 0))
-      |> Enum.sum()
-
-    if sum > 0,
-      do: List.first(actions) <> " (#{sum})",
-      else: List.first(actions)
   end
 end
