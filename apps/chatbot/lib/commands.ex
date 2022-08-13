@@ -5,8 +5,7 @@ defmodule Chatbot.Commands do
 
   def action_for_command(cmd) do
     Config.commands()
-    |> Enum.filter(&(cmd in &1.actions))
-    |> List.first()
+    |> Enum.find(&(cmd in &1.actions))
   end
 
   defp help_helper([_ | rest], attr) do
@@ -72,23 +71,27 @@ defmodule Chatbot.Commands do
   def roster(), do: State.roster()
 
   def hug(sender, command) do
-    [_ | args] = String.split(command)
-
-    case args do
-      [] -> "♥ #{sender} abraça #{Enum.random(State.roster())} 02Pat"
-      [^sender] -> "♥ #{sender} se auto-abraça 02Pat"
-      [friend] -> "♥ #{sender} abraça #{friend} 02Pat"
+    case String.split(command) do
+      [_hug] -> hug(sender, "!hug " <> Enum.random(State.roster()))
+      [_hug, ^sender | _] -> "♥ #{sender} se auto-abraça 02Pat"
+      [_hug, friend | _] -> "♥ #{sender} abraça #{friend} 02Pat"
     end
   end
 
   def urls(command) do
-    [_ | args] = String.split(command)
+    user_urls =
+      case String.split(command) do
+        [_url] -> State.urls_for("")
+        [_url, user | _] -> State.urls_for(user)
+      end
 
-    case args do
-      [] -> State.urls_for("")
-      [user] -> State.urls_for(user)
-      [arg | _] -> State.urls_for(arg)
+    if Enum.empty?(user_urls) do
+      "/me (sem urls no momento)"
+    else
+      user_urls
+      |> Enum.map_join("; ", fn %{user: user, urls: urls} ->
+        ~s(#{user}: #{Enum.join(urls, " ")})
+      end)
     end
-    |> Enum.map_join(" ", fn %{user: user, urls: urls} -> ~s(#{user}: #{Enum.join(urls, " ")}) end)
   end
 end
