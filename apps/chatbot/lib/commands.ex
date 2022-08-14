@@ -27,7 +27,7 @@ defmodule Chatbot.Commands do
   defp format_action_counter(aliases, counters) do
     total_calls =
       aliases
-      |> Enum.map(&Map.get(counters, String.to_atom(&1), 0))
+      |> Enum.map(&Map.get(counters, &1, 0))
       |> Enum.sum()
 
     List.first(aliases) <>

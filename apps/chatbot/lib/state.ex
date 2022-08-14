@@ -55,7 +55,7 @@ defmodule Chatbot.State do
 
   @impl true
   def init(_) do
-    :ets.new(:chatbot_state_users, [:set, :named_table])
+    :ets.new(:chatbot_state_users, [:ordered_set, :named_table])
     :ets.new(:chatbot_state_commands, [:ordered_set, :named_table])
     {:ok, %{}}
   end
@@ -88,8 +88,7 @@ defmodule Chatbot.State do
   end
 
   def handle_cast({:command, command}, state) do
-    key = String.to_atom(command)
-    :ets.update_counter(:chatbot_state_commands, key, 1, {key, 0})
+    :ets.update_counter(:chatbot_state_commands, command, 1, {command, 0})
     {:noreply, state}
   end
 
