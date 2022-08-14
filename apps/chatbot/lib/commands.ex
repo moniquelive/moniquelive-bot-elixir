@@ -4,7 +4,7 @@ defmodule Chatbot.Commands do
   alias Chatbot.{Config, State}
 
   def action_for_command(cmd) do
-    Config.commands() |> Enum.find(&(cmd in &1.actions))
+    Config.commands() |> Enum.find(&(cmd in &1["actions"]))
   end
 
   defp help_helper(command, help_action) do
@@ -17,10 +17,10 @@ defmodule Chatbot.Commands do
           nil
       end || help_action
 
-    ["!" <> help_action_label | _] = help_action.actions
-    [cmd | _] = action.actions
-    msg = action[String.to_atom(help_action_label)]
-    aliases = Enum.join(action.actions, ",")
+    ["!" <> help_action_label | _] = help_action["actions"]
+    [cmd | _] = action["actions"]
+    msg = action[help_action_label]
+    aliases = Enum.join(action["actions"], ",")
     "#{cmd}: #{msg} (aliases: #{aliases})"
   end
 
@@ -43,7 +43,7 @@ defmodule Chatbot.Commands do
     c = State.command_count()
 
     Config.commands()
-    |> Enum.map_join(" ", &(&1.actions |> format_action_counter(c)))
+    |> Enum.map_join(" ", &(&1["actions"] |> format_action_counter(c)))
   end
 
   @doc """

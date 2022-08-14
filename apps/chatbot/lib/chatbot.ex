@@ -59,7 +59,7 @@ defmodule Chatbot.Bot do
   # --- PRIVATE ---------------------------------------------------------------
 
   defp run(action, chat, command, sender) do
-    action[:responses]
+    action["responses"]
     |> Enum.map(&eval_string(&1, command, sender))
     |> Enum.flat_map(&Utils.word_wrap(&1, 500))
     |> Enum.each(&say(chat, &1))

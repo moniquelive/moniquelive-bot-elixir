@@ -7,10 +7,7 @@ defmodule Chatbot.Config do
 
   # Client
 
-  def start_link(state) do
-    GenServer.start_link(__MODULE__, state, name: __MODULE__)
-  end
-
+  def start_link(state), do: GenServer.start_link(__MODULE__, state, name: __MODULE__)
   def ignored(), do: GenServer.call(__MODULE__, :ignored)
   def commands(), do: GenServer.call(__MODULE__, :commands)
 
@@ -20,17 +17,20 @@ defmodule Chatbot.Config do
   def init([dirs: [dir]] = args) do
     {:ok, watcher_pid} = FileSystem.start_link(args)
     FileSystem.subscribe(watcher_pid)
-    {:ok, %{watcher_pid: watcher_pid, config: parse(Path.join(dir, @config_filename))}}
+
+    {:ok,
+     %{
+       watcher_pid: watcher_pid,
+       config: parse(Path.join(dir, @config_filename))
+     }}
   end
 
   @impl true
-  def handle_call(:ignored, _from, state) do
-    {:reply, state.config.ignored_commands, state}
-  end
+  def handle_call(:ignored, _from, state),
+    do: {:reply, state.config["ignored_commands"], state}
 
-  def handle_call(:commands, _from, state) do
-    {:reply, state.config.commands |> Enum.sort_by(& &1.actions), state}
-  end
+  def handle_call(:commands, _from, state),
+    do: {:reply, state.config["commands"] |> Enum.sort_by(& &1["actions"]), state}
 
   @impl true
   def handle_info(
@@ -45,5 +45,9 @@ defmodule Chatbot.Config do
   def handle_info({:file_event, watcher_pid, _}, %{watcher_pid: watcher_pid} = state),
     do: {:noreply, state}
 
-  defp parse(path), do: path |> File.read!() |> Jason.decode!(keys: :atoms)
+  defp parse(path),
+    do:
+      path
+      |> File.read!()
+      |> Jason.decode!()
 end
