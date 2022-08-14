@@ -4,38 +4,34 @@ defmodule Chatbot.Commands do
   alias Chatbot.{Config, State}
 
   def action_for_command(cmd) do
-    Config.commands()
-    |> Enum.find(&(cmd in &1.actions))
+    Config.commands() |> Enum.find(&(cmd in &1.actions))
   end
 
-  defp help_helper([_ | rest], attr) do
+  defp help_helper(command, help_action) do
     action =
-      case rest do
-        [] ->
-          action_for_command("!" <> attr)
+      case String.split(command) do
+        [_help, subject | _] ->
+          action_for_command(subject) || action_for_command("!" <> subject)
 
-        [h | _] ->
-          action_for_command(h) ||
-            action_for_command("!" <> h) ||
-            action_for_command("!" <> attr)
-      end
+        [_help] ->
+          nil
+      end || help_action
 
-    cmd = List.first(action.actions)
-    msg = action[String.to_atom(attr)]
+    ["!" <> help_action_label | _] = help_action.actions
+    [cmd | _] = action.actions
+    msg = action[String.to_atom(help_action_label)]
     aliases = Enum.join(action.actions, ",")
     "#{cmd}: #{msg} (aliases: #{aliases})"
   end
 
-  defp format_action_counter(actions, counters) do
-    sum =
-      actions
-      |> Enum.map(&String.to_atom/1)
-      |> Enum.map(&Map.get(counters, &1, 0))
+  defp format_action_counter(aliases, counters) do
+    total_calls =
+      aliases
+      |> Enum.map(&Map.get(counters, String.to_atom(&1), 0))
       |> Enum.sum()
 
-    if sum > 0,
-      do: List.first(actions) <> " (#{sum})",
-      else: List.first(actions)
+    List.first(aliases) <>
+      if total_calls > 0, do: " (#{total_calls})", else: ""
   end
 
   # --- COMMANDS -------------------------------------------------------------
@@ -61,12 +57,14 @@ defmodule Chatbot.Commands do
   @doc """
   !help
   """
-  def help(command), do: help_helper(String.split(command), "help")
+  def help(command),
+    do: help_helper(command, action_for_command("!help"))
 
   @doc """
   !ajuda
   """
-  def ajuda(command), do: help_helper(String.split(command), "ajuda")
+  def ajuda(command),
+    do: help_helper(command, action_for_command("!ajuda"))
 
   def roster(), do: State.roster()
 
