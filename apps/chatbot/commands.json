@@ -369,22 +369,22 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me {{ .Command.Ban (or .CmdLine (random .Roster.Keys)) .Extras }}"
+        "/me { Commands.ban(sender, command) }"
       ],
       "extras": [
-        "_rm -rf /home/${target}",
-        "${target} tirou 1 no d20 e foi banid@...",
-        "${target} foi banid@ por curtir javascript",
-        "${target} foi banid@ por indicar live de javascript",
-        "${target} foi banid@ por perguntar a linguagem preferida da Monique",
-        "${target} foi banid@ por dar commit na main",
-        "${target} foi banid@ por dar DELETE sem WHERE",
-        "${target} foi banid@ por esquecer o ';'",
-        "${target} foi banid@ por ser programador Senior com 2 anos de experiência em React",
-        "${target} foi banid@ por que fez chmod -R 777 /",
-        "${target} foi banid@ por testar em prod",
-        "${target} foi banid@ por abusar da boa vontade da Pérola",
-        "${target} foi banid@ por pular uma música bacana"
+        "_rm _rf /home/#{target}",
+        "#{target} tirou 1 no d20 e foi banid@...",
+        "#{target} foi banid@ por curtir javascript",
+        "#{target} foi banid@ por indicar live de javascript",
+        "#{target} foi banid@ por perguntar a linguagem preferida da Monique",
+        "#{target} foi banid@ por dar commit na main",
+        "#{target} foi banid@ por dar DELETE sem WHERE",
+        "#{target} foi banid@ por esquecer o ';'",
+        "#{target} foi banid@ por ser programador Senior com 2 anos de experiência em React",
+        "#{target} foi banid@ por que fez chmod -R 777 /",
+        "#{target} foi banid@ por testar em prod",
+        "#{target} foi banid@ por abusar da boa vontade da Pérola",
+        "#{target} foi banid@ por pular uma música bacana"
       ]
     },
     {

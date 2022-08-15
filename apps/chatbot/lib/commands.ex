@@ -66,13 +66,29 @@ defmodule Chatbot.Commands do
   def ajuda(command),
     do: help_helper(command, action_for_command("!ajuda"))
 
-  def roster(), do: State.roster()
+  def roster(),
+    do: State.roster()
 
   def hug(sender, command) do
     case String.split(command) do
       [_hug] -> hug(sender, "!hug " <> Enum.random(State.roster()))
       [_hug, ^sender | _] -> "♥ #{sender} se auto-abraça 02Pat"
       [_hug, friend | _] -> "♥ #{sender} abraça #{friend} 02Pat"
+    end
+  end
+
+  def ban(sender, command) do
+    case String.split(command) do
+      [_ban] ->
+        ban(sender, "!ban " <> Enum.random(State.roster()))
+
+      [ban, friend | _] ->
+        action = action_for_command(ban)
+
+        Enum.random(action["extras"])
+        |> (&~s("#{&1}")).()
+        |> Code.eval_string([target: friend], __ENV__)
+        |> elem(0)
     end
   end
 
