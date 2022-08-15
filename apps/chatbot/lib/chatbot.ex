@@ -65,11 +65,10 @@ defmodule Chatbot.Bot do
     |> Enum.each(&say(chat, &1))
   end
 
-  defp eval_string(s, command, sender) do
-    Regex.replace(~r/{(.*)}/, s, fn _, capture ->
-      capture
-      |> Code.eval_string([command: command, sender: sender], __ENV__)
-      |> elem(0)
-    end)
+  defp eval_string(response_line, command, sender) do
+    response_line
+    |> (&~s("#{&1}")).()
+    |> Code.eval_string([command: command, sender: sender], __ENV__)
+    |> elem(0)
   end
 end

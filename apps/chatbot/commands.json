@@ -52,7 +52,7 @@
       ],
       "responses": [
         "/color HotPink",
-        "/me { Commands.commands }"
+        "/me #{Commands.commands}"
       ]
     },
     {
@@ -64,10 +64,10 @@
       ],
       "responses": [
         "/color blue",
-        "/me { to_string(length(Commands.roster)) } loucos no hospício... 👀"
+        "/me #{to_string(length(Commands.roster))} loucos no hospício... 👀"
       ],
       "logs": [
-        "{ Commands.roster }"
+        "#{Commands.roster}"
       ]
     },
     {
@@ -149,7 +149,7 @@
       ],
       "responses": [
         "/color goldenrod",
-        "/me { Commands.help(command) }"
+        "/me #{Commands.help(command)}"
       ]
     },
     {
@@ -162,7 +162,7 @@
       ],
       "responses": [
         "/color goldenrod",
-        "/me { Commands.ajuda(command) }"
+        "/me #{Commands.ajuda(command)}"
       ]
     },
     {
@@ -233,7 +233,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me { Commands.uname }"
+        "/me #{Commands.uname()}"
       ]
     },
     {
@@ -369,7 +369,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me { Commands.ban(sender, command) }"
+        "/me #{Commands.ban(sender, command)}"
       ],
       "extras": [
         "_rm _rf /home/#{target}",
@@ -424,7 +424,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "{ Commands.urls(command) }"
+        "#{Commands.urls(command)}"
       ]
     },
     {
@@ -612,7 +612,7 @@
       ],
       "responses": [
         "/color yellowgreen",
-        "/me { Commands.hug(sender, command) }"
+        "/me #{Commands.hug(sender, command)}"
       ]
     },
     {
