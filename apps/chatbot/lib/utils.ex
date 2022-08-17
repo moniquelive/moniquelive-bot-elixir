@@ -5,7 +5,7 @@ defmodule Chatbot.Utils do
   def word_wrap("", _width),
     do: [""]
 
-  def word_wrap(string, width) when is_bitstring(string) and is_integer(width) do
+  def word_wrap(string, width) when is_binary(string) and is_integer(width) do
     [word | rest] = String.split(string, ~r/\s+/, trim: true)
     lines_assemble(rest, width, String.length(word), word, [])
   end

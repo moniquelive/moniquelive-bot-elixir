@@ -437,7 +437,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me {{ .Command.Uptime (or .CmdLine .Sender.Name) }}"
+        "/me #{Commands.uptime(sender,command)}"
       ]
     },
     {

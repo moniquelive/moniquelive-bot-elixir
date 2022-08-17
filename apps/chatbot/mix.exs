@@ -26,6 +26,7 @@ defmodule Chatbot.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:tzdata, "~> 1.1"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.2"},
       {:file_system, "~> 0.2.10"},

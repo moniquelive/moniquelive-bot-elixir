@@ -3,9 +3,58 @@ defmodule Chatbot.Commands do
 
   alias Chatbot.{Config, State}
 
-  def action_for_command(cmd) do
-    Config.commands() |> Enum.find(&(cmd in &1["actions"]))
+  def action_for_command(cmd),
+    do:
+      Config.commands()
+      |> Enum.find(&(cmd in &1["actions"]))
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !cmds
+  ----------------------------------------------------------------------------
+  """
+  def commands() do
+    c = State.command_count()
+
+    Config.commands()
+    |> Enum.map_join(" ", &(&1["actions"] |> format_action_counter(c)))
   end
+
+  defp format_action_counter(aliases, counters) do
+    total_calls =
+      aliases
+      |> Enum.map(&Map.get(counters, &1, 0))
+      |> Enum.sum()
+
+    List.first(aliases) <>
+      if total_calls > 0, do: " (#{total_calls})", else: ""
+  end
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !os
+  ----------------------------------------------------------------------------
+  """
+  def uname() do
+    {result, _} = System.cmd("guname", ["-mor"])
+    "macOS #{result}"
+  end
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !help
+  ----------------------------------------------------------------------------
+  """
+  def help(command),
+    do: help_helper(command, action_for_command("!help"))
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !ajuda
+  ----------------------------------------------------------------------------
+  """
+  def ajuda(command),
+    do: help_helper(command, action_for_command("!ajuda"))
 
   defp help_helper(command, help_action) do
     action =
@@ -24,51 +73,19 @@ defmodule Chatbot.Commands do
     "#{cmd}: #{msg} (aliases: #{aliases})"
   end
 
-  defp format_action_counter(aliases, counters) do
-    total_calls =
-      aliases
-      |> Enum.map(&Map.get(counters, &1, 0))
-      |> Enum.sum()
-
-    List.first(aliases) <>
-      if total_calls > 0, do: " (#{total_calls})", else: ""
-  end
-
-  # --- COMMANDS -------------------------------------------------------------
-
   @doc """
-  !cmds
+  ----------------------------------------------------------------------------
+  !c
+  ----------------------------------------------------------------------------
   """
-  def commands() do
-    c = State.command_count()
-
-    Config.commands()
-    |> Enum.map_join(" ", &(&1["actions"] |> format_action_counter(c)))
-  end
-
-  @doc """
-  !os
-  """
-  def uname() do
-    {result, _} = System.cmd("guname", ["-mor"])
-    "macOS #{result}"
-  end
-
-  @doc """
-  !help
-  """
-  def help(command),
-    do: help_helper(command, action_for_command("!help"))
-
-  @doc """
-  !ajuda
-  """
-  def ajuda(command),
-    do: help_helper(command, action_for_command("!ajuda"))
-
   def roster(),
     do: State.roster()
 
+  @doc """
+  ----------------------------------------------------------------------------
+  !hug
+  ----------------------------------------------------------------------------
+  """
   def hug(sender, command) do
     case String.split(command) do
       [_hug] -> hug(sender, "!hug " <> Enum.random(State.roster()))
@@ -77,6 +94,11 @@ defmodule Chatbot.Commands do
     end
   end
 
+  @doc """
+  ----------------------------------------------------------------------------
+  !ban
+  ----------------------------------------------------------------------------
+  """
   def ban(sender, command) do
     case String.split(command) do
       [_ban] ->
@@ -92,6 +114,11 @@ defmodule Chatbot.Commands do
     end
   end
 
+  @doc """
+  ----------------------------------------------------------------------------
+  !urls
+  ----------------------------------------------------------------------------
+  """
   def urls(command) do
     user_urls =
       case String.split(command) do
@@ -107,5 +134,38 @@ defmodule Chatbot.Commands do
         ~s(#{user}: #{Enum.join(urls, " ")})
       end)
     end
+  end
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !uptime
+  ----------------------------------------------------------------------------
+  """
+  def uptime(sender, command) do
+    case String.split(command) do
+      [_uptime] ->
+        uptime(sender, "!uptime " <> sender)
+
+      [_uptime, friend | _] ->
+        case State.get_user(friend) do
+          {_, dt, _} ->
+            "#{friend} entrou #{format_date(dt)} (há #{seconds_ago(dt)} segundos)"
+
+          _ ->
+            "#{friend} não tem horário de entrada... :("
+        end
+    end
+  end
+
+  defp format_date(dt) do
+    dt
+    |> DateTime.shift_zone!("America/Sao_Paulo")
+    |> Calendar.strftime("dia %x as %X", preferred_date: "%d/%m/%Y")
+  end
+
+  defp seconds_ago(dt) do
+    dt
+    |> DateTime.diff(DateTime.utc_now(), :second)
+    |> (&(-&1)).()
   end
 end
