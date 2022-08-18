@@ -36,7 +36,10 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def uname() do
-    {result, _} = System.cmd("guname", ["-mor"])
+    result =
+      System.cmd("guname", ["-mor"])
+      |> elem(0)
+
     "macOS #{result}"
   end
 
