@@ -62,7 +62,8 @@ defmodule WebApp.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"],
+      # https://hexdocs.pm/phoenix/asset_management.html#esbuild-plugins
+      setup: ["deps.get", "ecto.setup", "cmd --cd assets npm install"],
       "assets.deploy": ["esbuild default --minify", "phx.digest"]
     ]
   end

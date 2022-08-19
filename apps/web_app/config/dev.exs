@@ -16,7 +16,8 @@ config :web_app, WebAppWeb.Endpoint,
   secret_key_base: "yEeYPHYuBz8QIZEP/sX7fq6is9C9emDa5BF1IHdLbL+Y96An3GJ9kLbZLZgbyMgv",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    node: ["./build.js", "--watch", cd: Path.expand("../assets/elm", __DIR__)]
   ]
 
 # ## SSL Support
