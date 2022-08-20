@@ -37,9 +37,12 @@ defmodule Chatbot.Bot do
   end
 
   @impl TMI.Handler
-  def handle_unrecognized({:names_list, _channel, user}) do
-    Logger.debug("*** #{user} logged in (unrecog)")
-    State.user_joined(user)
+  def handle_unrecognized({:names_list, _channel, users}) do
+    Logger.debug("*** #{users} logged in (unrecog)")
+
+    users
+    |> String.split(" ", trim: true)
+    |> State.user_joined()
   end
 
   def handle_unrecognized(msg),

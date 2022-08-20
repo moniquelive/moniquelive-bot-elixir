@@ -79,7 +79,7 @@ defmodule WebAppWeb do
 
   def channel do
     quote do
-      use Phoenix.Channel
+      use Phoenix.Channel, log_join: :info, log_handle_in: false
       import WebAppWeb.Gettext
     end
   end

@@ -102,10 +102,10 @@ defmodule Chatbot.Commands do
   !ban
   ----------------------------------------------------------------------------
   """
-  def ban(sender, command) do
+  def ban(command) do
     case String.split(command) do
       [_ban] ->
-        ban(sender, "!ban " <> Enum.random(State.roster()))
+        ban("!ban " <> Enum.random(State.roster()))
 
       [ban, friend | _] ->
         action = action_for_command(ban)
@@ -133,7 +133,7 @@ defmodule Chatbot.Commands do
       "/me (sem urls no momento)"
     else
       user_urls
-      |> Enum.map_join("; ", fn %{user: user, urls: urls} ->
+      |> Enum.map_join(" ", fn %{user: user, urls: urls} ->
         ~s(#{user}: #{Enum.join(urls, " ")})
       end)
     end
@@ -169,6 +169,6 @@ defmodule Chatbot.Commands do
   defp seconds_ago(dt) do
     dt
     |> DateTime.diff(DateTime.utc_now(), :second)
-    |> (&(-&1)).()
+    |> (&Kernel.-/1).()
   end
 end

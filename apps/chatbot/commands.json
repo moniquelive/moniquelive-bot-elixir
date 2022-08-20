@@ -64,7 +64,7 @@
       ],
       "responses": [
         "/color blue",
-        "/me #{to_string(length(Commands.roster))} loucos no hospício... 👀"
+        "/me #{length(Commands.roster)} loucos no hospício... 👀"
       ],
       "logs": [
         "#{Commands.roster}"
@@ -369,7 +369,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me #{Commands.ban(sender, command)}"
+        "/me #{Commands.ban(command)}"
       ],
       "extras": [
         "_rm _rf /home/#{target}",

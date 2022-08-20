@@ -6,7 +6,7 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode as D
-import Phoenix exposing (joinConfig)
+import Phoenix exposing (PhoenixMsg, joinConfig)
 import Ports.Phoenix as Ports
 import Time
 
@@ -61,26 +61,27 @@ type alias Model =
     }
 
 
-
-{- -}
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { phoenix =
+    let
+        ( phxConfig, cmd ) =
             Phoenix.init Ports.config
                 |> Phoenix.setJoinConfig
                     { joinConfig
                         | topic = "chatbot:events"
                         , events = [ "marquee_updated", "tts_created", "spotify_music_changed" ]
                     }
-      , currentSong = SongInfo "" "" ""
-      , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
-      , marqueeMessage = ""
-      , marqueeStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 0) (percent 100) ]
-      }
-    , Cmd.none
-    )
+                |> Phoenix.join "chatbot:events"
+
+        model =
+            { phoenix = phxConfig
+            , currentSong = SongInfo "" "" ""
+            , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
+            , marqueeMessage = ""
+            , marqueeStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 0) (percent 100) ]
+            }
+    in
+    ( model, Cmd.map PhoenixMsg cmd )
 
 
 
@@ -125,13 +126,12 @@ update msg model =
                     in
                     ( newModel, cmd )
 
-                Phoenix.SocketMessage (Phoenix.StateChange state) ->
-                    let
-                        _ =
-                            Debug.log "* state" state
-                    in
-                    ( newModel, cmd )
-
+                -- Phoenix.SocketMessage (Phoenix.StateChange state) ->
+                --     let
+                --         _ =
+                --             Debug.log "* state" state
+                --     in
+                --     ( newModel, cmd )
                 _ ->
                     ( newModel, cmd )
 

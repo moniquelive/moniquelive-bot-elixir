@@ -9615,6 +9615,9 @@
             }
         };
         var $elm$browser$Browser$element = _Browser_element;
+        var $author$project$Main$PhoenixMsg = function(a) {
+          return { $: "PhoenixMsg", a };
+        };
         var $author$project$Main$SongInfo = F3(
           function(cover, title, artist) {
             return { artist, cover, title };
@@ -9781,17 +9784,298 @@
             }
           );
         };
+        var $phollyer$elm_phoenix_websocket$Phoenix$Connecting = { $: "Connecting" };
+        var $elm$json$Json$Encode$bool = _Json_wrap;
+        var $elm$json$Json$Encode$int = _Json_wrap;
+        var $phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOption = function(option) {
+          switch (option.$) {
+            case "BinaryType":
+              var binaryType = option.a;
+              return _Utils_Tuple2(
+                "binaryType",
+                $elm$json$Json$Encode$string(binaryType)
+              );
+            case "HeartbeatIntervalMillis":
+              var interval = option.a;
+              return _Utils_Tuple2(
+                "heartbeatIntervalMs",
+                $elm$json$Json$Encode$int(interval)
+              );
+            case "Logger":
+              var use = option.a;
+              return _Utils_Tuple2(
+                "logger",
+                $elm$json$Json$Encode$bool(use)
+              );
+            case "LongpollerTimeout":
+              var timeout = option.a;
+              return _Utils_Tuple2(
+                "longpollerTimeout",
+                $elm$json$Json$Encode$int(timeout)
+              );
+            case "ReconnectAfterMillis":
+              var millis = option.a;
+              return _Utils_Tuple2(
+                "reconnectAfterMs",
+                $elm$json$Json$Encode$int(millis)
+              );
+            case "ReconnectSteppedBackoff":
+              var list = option.a;
+              return _Utils_Tuple2(
+                "reconnectSteppedBackoff",
+                A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, list)
+              );
+            case "RejoinAfterMillis":
+              var millis = option.a;
+              return _Utils_Tuple2(
+                "rejoinAfterMs",
+                $elm$json$Json$Encode$int(millis)
+              );
+            case "RejoinSteppedBackoff":
+              var list = option.a;
+              return _Utils_Tuple2(
+                "rejoinSteppedBackoff",
+                A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, list)
+              );
+            case "Timeout":
+              var millis = option.a;
+              return _Utils_Tuple2(
+                "timeout",
+                $elm$json$Json$Encode$int(millis)
+              );
+            case "Transport":
+              var transport = option.a;
+              return _Utils_Tuple2(
+                "transport",
+                $elm$json$Json$Encode$string(transport)
+              );
+            default:
+              var vsn = option.a;
+              return _Utils_Tuple2(
+                "vsn",
+                $elm$json$Json$Encode$string(vsn)
+              );
+          }
+        };
         var $elm$json$Json$Encode$null = _Json_encodeNull;
-        var $phollyer$elm_phoenix_websocket$Phoenix$joinConfig = { events: _List_Nil, payload: $elm$json$Json$Encode$null, timeout: $elm$core$Maybe$Nothing, topic: "" };
-        var $mdgriffith$elm_style_animation$Animation$Length = F2(
-          function(a, b) {
-            return { $: "Length", a, b };
+        var $phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOptionsAndParams = F2(
+          function(options, maybeParams) {
+            return $elm$json$Json$Encode$object(
+              _List_fromArray(
+                [
+                  _Utils_Tuple2(
+                    "options",
+                    $elm$json$Json$Encode$object(
+                      A2($elm$core$List$map, $phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOption, options)
+                    )
+                  ),
+                  _Utils_Tuple2(
+                    "params",
+                    A2($elm$core$Maybe$withDefault, $elm$json$Json$Encode$null, maybeParams)
+                  )
+                ]
+              )
+            );
           }
         );
-        var $mdgriffith$elm_style_animation$Animation$Percent = { $: "Percent" };
-        var $mdgriffith$elm_style_animation$Animation$percent = function(perc) {
-          return A2($mdgriffith$elm_style_animation$Animation$Length, perc, $mdgriffith$elm_style_animation$Animation$Percent);
+        var $phollyer$elm_phoenix_websocket$Phoenix$Socket$connect = F3(
+          function(options, maybeParams, portOut) {
+            return portOut(
+              {
+                msg: "connect",
+                payload: A2($phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOptionsAndParams, options, maybeParams)
+              }
+            );
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Internal$Socket$connect = function(_v0) {
+          var socket = _v0.a;
+          return A3($phollyer$elm_phoenix_websocket$Phoenix$Socket$connect, socket.options, socket.params, socket.portOut);
         };
+        var $phollyer$elm_phoenix_websocket$Internal$Socket$currentState = function(_v0) {
+          var state = _v0.a.state;
+          return state;
+        };
+        var $phollyer$elm_phoenix_websocket$Internal$Socket$setReconnect = F2(
+          function(reconnect_, _v0) {
+            var socket = _v0.a;
+            return $phollyer$elm_phoenix_websocket$Internal$Socket$Socket(
+              _Utils_update(
+                socket,
+                { reconnect: reconnect_ }
+              )
+            );
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Internal$Socket$setState = F2(
+          function(state, _v0) {
+            var socket = _v0.a;
+            return $phollyer$elm_phoenix_websocket$Internal$Socket$Socket(
+              _Utils_update(
+                socket,
+                { state }
+              )
+            );
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Phoenix$updateSocketState = F2(
+          function(state, _v0) {
+            var model = _v0.a;
+            return $phollyer$elm_phoenix_websocket$Phoenix$Model(
+              _Utils_update(
+                model,
+                {
+                  socket: A2($phollyer$elm_phoenix_websocket$Internal$Socket$setState, state, model.socket)
+                }
+              )
+            );
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Phoenix$connect = function(_v0) {
+          var model = _v0.a;
+          var socket = model.socket;
+          var _v1 = $phollyer$elm_phoenix_websocket$Internal$Socket$currentState(model.socket);
+          switch (_v1.$) {
+            case "Disconnected":
+              return _Utils_Tuple2(
+                A2(
+                  $phollyer$elm_phoenix_websocket$Phoenix$updateSocketState,
+                  $phollyer$elm_phoenix_websocket$Phoenix$Connecting,
+                  $phollyer$elm_phoenix_websocket$Phoenix$Model(
+                    _Utils_update(
+                      model,
+                      {
+                        socket: A2($phollyer$elm_phoenix_websocket$Internal$Socket$setReconnect, false, socket)
+                      }
+                    )
+                  )
+                ),
+                $phollyer$elm_phoenix_websocket$Internal$Socket$connect(model.socket)
+              );
+            case "Disconnecting":
+              return _Utils_Tuple2(
+                $phollyer$elm_phoenix_websocket$Phoenix$Model(
+                  _Utils_update(
+                    model,
+                    {
+                      socket: A2($phollyer$elm_phoenix_websocket$Internal$Socket$setReconnect, true, socket)
+                    }
+                  )
+                ),
+                $elm$core$Platform$Cmd$none
+              );
+            default:
+              return _Utils_Tuple2(
+                $phollyer$elm_phoenix_websocket$Phoenix$Model(model),
+                $elm$core$Platform$Cmd$none
+              );
+          }
+        };
+        var $elm$core$Dict$member = F2(
+          function(key, dict) {
+            var _v0 = A2($elm$core$Dict$get, key, dict);
+            if (_v0.$ === "Just") {
+              return true;
+            } else {
+              return false;
+            }
+          }
+        );
+        var $elm$core$Set$member = F2(
+          function(key, _v0) {
+            var dict = _v0.a;
+            return A2($elm$core$Dict$member, key, dict);
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Internal$Unique$exists = $elm$core$Set$member;
+        var $phollyer$elm_phoenix_websocket$Internal$Channel$isJoined = F2(
+          function(topic, _v0) {
+            var joined = _v0.a.joined;
+            return A2($phollyer$elm_phoenix_websocket$Internal$Unique$exists, topic, joined);
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Phoenix$Channel$joinConfig = { events: _List_Nil, payload: $elm$json$Json$Encode$null, timeout: $elm$core$Maybe$Nothing, topic: "" };
+        var $phollyer$elm_phoenix_websocket$Internal$Channel$defaultJoinConfig = function(topic) {
+          return _Utils_update(
+            $phollyer$elm_phoenix_websocket$Phoenix$Channel$joinConfig,
+            { topic }
+          );
+        };
+        var $phollyer$elm_phoenix_websocket$Internal$Config$get = $elm$core$Dict$get;
+        var $elm$core$Maybe$map = F2(
+          function(f, maybe) {
+            if (maybe.$ === "Just") {
+              var value = maybe.a;
+              return $elm$core$Maybe$Just(
+                f(value)
+              );
+            } else {
+              return $elm$core$Maybe$Nothing;
+            }
+          }
+        );
+        var $elm_community$json_extra$Json$Encode$Extra$maybe = function(encoder) {
+          return A2(
+            $elm$core$Basics$composeR,
+            $elm$core$Maybe$map(encoder),
+            $elm$core$Maybe$withDefault($elm$json$Json$Encode$null)
+          );
+        };
+        var $phollyer$elm_phoenix_websocket$Phoenix$Channel$join = F2(
+          function(_v0, portOut) {
+            var topic = _v0.topic;
+            var events = _v0.events;
+            var payload = _v0.payload;
+            var timeout = _v0.timeout;
+            return portOut(
+              {
+                msg: "join",
+                payload: $elm$json$Json$Encode$object(
+                  _List_fromArray(
+                    [
+                      _Utils_Tuple2(
+                        "topic",
+                        $elm$json$Json$Encode$string(topic)
+                      ),
+                      _Utils_Tuple2(
+                        "events",
+                        A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, events)
+                      ),
+                      _Utils_Tuple2("payload", payload),
+                      _Utils_Tuple2(
+                        "timeout",
+                        A2($elm_community$json_extra$Json$Encode$Extra$maybe, $elm$json$Json$Encode$int, timeout)
+                      )
+                    ]
+                  )
+                )
+              }
+            );
+          }
+        );
+        var $elm$core$Set$insert = F2(
+          function(key, _v0) {
+            var dict = _v0.a;
+            return $elm$core$Set$Set_elm_builtin(
+              A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict)
+            );
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Internal$Unique$insert = $elm$core$Set$insert;
+        var $phollyer$elm_phoenix_websocket$Internal$Channel$queueJoin = F2(
+          function(topic, _v0) {
+            var channel = _v0.a;
+            var queuedJoins = channel.queuedJoins;
+            return $phollyer$elm_phoenix_websocket$Internal$Channel$Channel(
+              _Utils_update(
+                channel,
+                {
+                  queuedJoins: A2($phollyer$elm_phoenix_websocket$Internal$Unique$insert, topic, queuedJoins)
+                }
+              )
+            );
+          }
+        );
         var $phollyer$elm_phoenix_websocket$Internal$Config$insert = $elm$core$Dict$insert;
         var $phollyer$elm_phoenix_websocket$Internal$Channel$setJoinConfig = F2(
           function(config, _v0) {
@@ -9807,6 +10091,111 @@
             );
           }
         );
+        var $phollyer$elm_phoenix_websocket$Internal$Channel$join = F2(
+          function(topic, _v0) {
+            var channel = _v0.a;
+            var _v1 = A2($phollyer$elm_phoenix_websocket$Internal$Config$get, topic, channel.joinConfigs);
+            if (_v1.$ === "Just") {
+              var joinConfig = _v1.a;
+              return _Utils_Tuple2(
+                A2(
+                  $phollyer$elm_phoenix_websocket$Internal$Channel$queueJoin,
+                  topic,
+                  $phollyer$elm_phoenix_websocket$Internal$Channel$Channel(channel)
+                ),
+                A2($phollyer$elm_phoenix_websocket$Phoenix$Channel$join, joinConfig, channel.portOut)
+              );
+            } else {
+              return A2(
+                $phollyer$elm_phoenix_websocket$Internal$Channel$join,
+                topic,
+                A2(
+                  $phollyer$elm_phoenix_websocket$Internal$Channel$setJoinConfig,
+                  $phollyer$elm_phoenix_websocket$Internal$Channel$defaultJoinConfig(topic),
+                  $phollyer$elm_phoenix_websocket$Internal$Channel$Channel(channel)
+                )
+              );
+            }
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Phoenix$queueJoin = F2(
+          function(topic, _v0) {
+            var model = _v0.a;
+            return $phollyer$elm_phoenix_websocket$Phoenix$Model(
+              _Utils_update(
+                model,
+                {
+                  channel: A2($phollyer$elm_phoenix_websocket$Internal$Channel$queueJoin, topic, model.channel)
+                }
+              )
+            );
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Phoenix$join = F2(
+          function(topic, _v0) {
+            var model = _v0.a;
+            var channel = model.channel;
+            if (A2($phollyer$elm_phoenix_websocket$Internal$Channel$isJoined, topic, channel)) {
+              return _Utils_Tuple2(
+                $phollyer$elm_phoenix_websocket$Phoenix$Model(model),
+                $elm$core$Platform$Cmd$none
+              );
+            } else {
+              var _v1 = $phollyer$elm_phoenix_websocket$Internal$Socket$currentState(model.socket);
+              switch (_v1.$) {
+                case "Connected":
+                  var _v2 = A2($phollyer$elm_phoenix_websocket$Internal$Channel$join, topic, channel);
+                  var channel_ = _v2.a;
+                  var channelCmd = _v2.b;
+                  return _Utils_Tuple2(
+                    $phollyer$elm_phoenix_websocket$Phoenix$Model(
+                      _Utils_update(
+                        model,
+                        { channel: channel_ }
+                      )
+                    ),
+                    channelCmd
+                  );
+                case "Connecting":
+                  return _Utils_Tuple2(
+                    A2(
+                      $phollyer$elm_phoenix_websocket$Phoenix$queueJoin,
+                      topic,
+                      $phollyer$elm_phoenix_websocket$Phoenix$Model(model)
+                    ),
+                    $elm$core$Platform$Cmd$none
+                  );
+                case "Disconnecting":
+                  return _Utils_Tuple2(
+                    A2(
+                      $phollyer$elm_phoenix_websocket$Phoenix$queueJoin,
+                      topic,
+                      $phollyer$elm_phoenix_websocket$Phoenix$Model(model)
+                    ),
+                    $elm$core$Platform$Cmd$none
+                  );
+                default:
+                  return $phollyer$elm_phoenix_websocket$Phoenix$connect(
+                    A2(
+                      $phollyer$elm_phoenix_websocket$Phoenix$queueJoin,
+                      topic,
+                      $phollyer$elm_phoenix_websocket$Phoenix$Model(model)
+                    )
+                  );
+              }
+            }
+          }
+        );
+        var $phollyer$elm_phoenix_websocket$Phoenix$joinConfig = { events: _List_Nil, payload: $elm$json$Json$Encode$null, timeout: $elm$core$Maybe$Nothing, topic: "" };
+        var $mdgriffith$elm_style_animation$Animation$Length = F2(
+          function(a, b) {
+            return { $: "Length", a, b };
+          }
+        );
+        var $mdgriffith$elm_style_animation$Animation$Percent = { $: "Percent" };
+        var $mdgriffith$elm_style_animation$Animation$percent = function(perc) {
+          return A2($mdgriffith$elm_style_animation$Animation$Length, perc, $mdgriffith$elm_style_animation$Animation$Percent);
+        };
         var $phollyer$elm_phoenix_websocket$Phoenix$setJoinConfig = F2(
           function(config, _v0) {
             var model = _v0.a;
@@ -10602,58 +10991,63 @@
         );
         var $mdgriffith$elm_style_animation$Animation$Spring$Presets$wobbly = { damping: 12, stiffness: 180 };
         var $author$project$Main$init = function(_v0) {
-          return _Utils_Tuple2(
-            {
-              currentSong: A3($author$project$Main$SongInfo, "", "", ""),
-              currentSongStyle: A2(
-                $mdgriffith$elm_style_animation$Animation$styleWith,
-                $mdgriffith$elm_style_animation$Animation$spring($mdgriffith$elm_style_animation$Animation$Spring$Presets$wobbly),
-                _List_fromArray(
-                  [
-                    A2(
-                      $mdgriffith$elm_style_animation$Animation$translate,
-                      $mdgriffith$elm_style_animation$Animation$percent(115),
-                      $mdgriffith$elm_style_animation$Animation$percent(0)
-                    )
-                  ]
-                )
+          var _v1 = A2(
+            $phollyer$elm_phoenix_websocket$Phoenix$join,
+            "chatbot:events",
+            A2(
+              $phollyer$elm_phoenix_websocket$Phoenix$setJoinConfig,
+              _Utils_update(
+                $phollyer$elm_phoenix_websocket$Phoenix$joinConfig,
+                {
+                  events: _List_fromArray(
+                    ["marquee_updated", "tts_created", "spotify_music_changed"]
+                  ),
+                  topic: "chatbot:events"
+                }
               ),
-              marqueeMessage: "",
-              marqueeStyle: A2(
-                $mdgriffith$elm_style_animation$Animation$styleWith,
-                $mdgriffith$elm_style_animation$Animation$spring($mdgriffith$elm_style_animation$Animation$Spring$Presets$wobbly),
-                _List_fromArray(
-                  [
-                    A2(
-                      $mdgriffith$elm_style_animation$Animation$translate,
-                      $mdgriffith$elm_style_animation$Animation$percent(0),
-                      $mdgriffith$elm_style_animation$Animation$percent(100)
-                    )
-                  ]
-                )
-              ),
-              phoenix: A2(
-                $phollyer$elm_phoenix_websocket$Phoenix$setJoinConfig,
-                _Utils_update(
-                  $phollyer$elm_phoenix_websocket$Phoenix$joinConfig,
-                  {
-                    events: _List_fromArray(
-                      ["marquee_updated", "tts_created", "spotify_music_changed"]
-                    ),
-                    topic: "chatbot:events"
-                  }
-                ),
-                $phollyer$elm_phoenix_websocket$Phoenix$init($author$project$Ports$Phoenix$config)
+              $phollyer$elm_phoenix_websocket$Phoenix$init($author$project$Ports$Phoenix$config)
+            )
+          );
+          var phxConfig = _v1.a;
+          var cmd = _v1.b;
+          var model = {
+            currentSong: A3($author$project$Main$SongInfo, "", "", ""),
+            currentSongStyle: A2(
+              $mdgriffith$elm_style_animation$Animation$styleWith,
+              $mdgriffith$elm_style_animation$Animation$spring($mdgriffith$elm_style_animation$Animation$Spring$Presets$wobbly),
+              _List_fromArray(
+                [
+                  A2(
+                    $mdgriffith$elm_style_animation$Animation$translate,
+                    $mdgriffith$elm_style_animation$Animation$percent(115),
+                    $mdgriffith$elm_style_animation$Animation$percent(0)
+                  )
+                ]
               )
-            },
-            $elm$core$Platform$Cmd$none
+            ),
+            marqueeMessage: "",
+            marqueeStyle: A2(
+              $mdgriffith$elm_style_animation$Animation$styleWith,
+              $mdgriffith$elm_style_animation$Animation$spring($mdgriffith$elm_style_animation$Animation$Spring$Presets$wobbly),
+              _List_fromArray(
+                [
+                  A2(
+                    $mdgriffith$elm_style_animation$Animation$translate,
+                    $mdgriffith$elm_style_animation$Animation$percent(0),
+                    $mdgriffith$elm_style_animation$Animation$percent(100)
+                  )
+                ]
+              )
+            ),
+            phoenix: phxConfig
+          };
+          return _Utils_Tuple2(
+            model,
+            A2($elm$core$Platform$Cmd$map, $author$project$Main$PhoenixMsg, cmd)
           );
         };
         var $author$project$Main$Animate = function(a) {
           return { $: "Animate", a };
-        };
-        var $author$project$Main$PhoenixMsg = function(a) {
-          return { $: "PhoenixMsg", a };
         };
         var $author$project$Main$Recv = function(a) {
           return { $: "Recv", a };
@@ -13527,7 +13921,6 @@
           return { $: "ChannelResponse", a };
         };
         var $phollyer$elm_phoenix_websocket$Phoenix$Connected = { $: "Connected" };
-        var $phollyer$elm_phoenix_websocket$Phoenix$Connecting = { $: "Connecting" };
         var $phollyer$elm_phoenix_websocket$Phoenix$DecoderError = function(a) {
           return { $: "DecoderError", a };
         };
@@ -13650,15 +14043,6 @@
             );
           }
         );
-        var $elm$core$Set$insert = F2(
-          function(key, _v0) {
-            var dict = _v0.a;
-            return $elm$core$Set$Set_elm_builtin(
-              A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict)
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Internal$Unique$insert = $elm$core$Set$insert;
         var $elm$core$Set$remove = F2(
           function(key, _v0) {
             var dict = _v0.a;
@@ -13771,191 +14155,6 @@
             );
           }
         );
-        var $elm$json$Json$Encode$bool = _Json_wrap;
-        var $elm$json$Json$Encode$int = _Json_wrap;
-        var $phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOption = function(option) {
-          switch (option.$) {
-            case "BinaryType":
-              var binaryType = option.a;
-              return _Utils_Tuple2(
-                "binaryType",
-                $elm$json$Json$Encode$string(binaryType)
-              );
-            case "HeartbeatIntervalMillis":
-              var interval = option.a;
-              return _Utils_Tuple2(
-                "heartbeatIntervalMs",
-                $elm$json$Json$Encode$int(interval)
-              );
-            case "Logger":
-              var use = option.a;
-              return _Utils_Tuple2(
-                "logger",
-                $elm$json$Json$Encode$bool(use)
-              );
-            case "LongpollerTimeout":
-              var timeout = option.a;
-              return _Utils_Tuple2(
-                "longpollerTimeout",
-                $elm$json$Json$Encode$int(timeout)
-              );
-            case "ReconnectAfterMillis":
-              var millis = option.a;
-              return _Utils_Tuple2(
-                "reconnectAfterMs",
-                $elm$json$Json$Encode$int(millis)
-              );
-            case "ReconnectSteppedBackoff":
-              var list = option.a;
-              return _Utils_Tuple2(
-                "reconnectSteppedBackoff",
-                A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, list)
-              );
-            case "RejoinAfterMillis":
-              var millis = option.a;
-              return _Utils_Tuple2(
-                "rejoinAfterMs",
-                $elm$json$Json$Encode$int(millis)
-              );
-            case "RejoinSteppedBackoff":
-              var list = option.a;
-              return _Utils_Tuple2(
-                "rejoinSteppedBackoff",
-                A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, list)
-              );
-            case "Timeout":
-              var millis = option.a;
-              return _Utils_Tuple2(
-                "timeout",
-                $elm$json$Json$Encode$int(millis)
-              );
-            case "Transport":
-              var transport = option.a;
-              return _Utils_Tuple2(
-                "transport",
-                $elm$json$Json$Encode$string(transport)
-              );
-            default:
-              var vsn = option.a;
-              return _Utils_Tuple2(
-                "vsn",
-                $elm$json$Json$Encode$string(vsn)
-              );
-          }
-        };
-        var $phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOptionsAndParams = F2(
-          function(options, maybeParams) {
-            return $elm$json$Json$Encode$object(
-              _List_fromArray(
-                [
-                  _Utils_Tuple2(
-                    "options",
-                    $elm$json$Json$Encode$object(
-                      A2($elm$core$List$map, $phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOption, options)
-                    )
-                  ),
-                  _Utils_Tuple2(
-                    "params",
-                    A2($elm$core$Maybe$withDefault, $elm$json$Json$Encode$null, maybeParams)
-                  )
-                ]
-              )
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Phoenix$Socket$connect = F3(
-          function(options, maybeParams, portOut) {
-            return portOut(
-              {
-                msg: "connect",
-                payload: A2($phollyer$elm_phoenix_websocket$Phoenix$Socket$encodeConnectOptionsAndParams, options, maybeParams)
-              }
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Internal$Socket$connect = function(_v0) {
-          var socket = _v0.a;
-          return A3($phollyer$elm_phoenix_websocket$Phoenix$Socket$connect, socket.options, socket.params, socket.portOut);
-        };
-        var $phollyer$elm_phoenix_websocket$Internal$Socket$currentState = function(_v0) {
-          var state = _v0.a.state;
-          return state;
-        };
-        var $phollyer$elm_phoenix_websocket$Internal$Socket$setReconnect = F2(
-          function(reconnect_, _v0) {
-            var socket = _v0.a;
-            return $phollyer$elm_phoenix_websocket$Internal$Socket$Socket(
-              _Utils_update(
-                socket,
-                { reconnect: reconnect_ }
-              )
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Internal$Socket$setState = F2(
-          function(state, _v0) {
-            var socket = _v0.a;
-            return $phollyer$elm_phoenix_websocket$Internal$Socket$Socket(
-              _Utils_update(
-                socket,
-                { state }
-              )
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Phoenix$updateSocketState = F2(
-          function(state, _v0) {
-            var model = _v0.a;
-            return $phollyer$elm_phoenix_websocket$Phoenix$Model(
-              _Utils_update(
-                model,
-                {
-                  socket: A2($phollyer$elm_phoenix_websocket$Internal$Socket$setState, state, model.socket)
-                }
-              )
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Phoenix$connect = function(_v0) {
-          var model = _v0.a;
-          var socket = model.socket;
-          var _v1 = $phollyer$elm_phoenix_websocket$Internal$Socket$currentState(model.socket);
-          switch (_v1.$) {
-            case "Disconnected":
-              return _Utils_Tuple2(
-                A2(
-                  $phollyer$elm_phoenix_websocket$Phoenix$updateSocketState,
-                  $phollyer$elm_phoenix_websocket$Phoenix$Connecting,
-                  $phollyer$elm_phoenix_websocket$Phoenix$Model(
-                    _Utils_update(
-                      model,
-                      {
-                        socket: A2($phollyer$elm_phoenix_websocket$Internal$Socket$setReconnect, false, socket)
-                      }
-                    )
-                  )
-                ),
-                $phollyer$elm_phoenix_websocket$Internal$Socket$connect(model.socket)
-              );
-            case "Disconnecting":
-              return _Utils_Tuple2(
-                $phollyer$elm_phoenix_websocket$Phoenix$Model(
-                  _Utils_update(
-                    model,
-                    {
-                      socket: A2($phollyer$elm_phoenix_websocket$Internal$Socket$setReconnect, true, socket)
-                    }
-                  )
-                ),
-                $elm$core$Platform$Cmd$none
-              );
-            default:
-              return _Utils_Tuple2(
-                $phollyer$elm_phoenix_websocket$Phoenix$Model(model),
-                $elm$core$Platform$Cmd$none
-              );
-          }
-        };
         var $phollyer$elm_phoenix_websocket$Phoenix$Backoff = F2(
           function(a, b) {
             return { $: "Backoff", a, b };
@@ -14073,197 +14272,6 @@
                 }
               default:
                 return false;
-            }
-          }
-        );
-        var $elm$core$Dict$member = F2(
-          function(key, dict) {
-            var _v0 = A2($elm$core$Dict$get, key, dict);
-            if (_v0.$ === "Just") {
-              return true;
-            } else {
-              return false;
-            }
-          }
-        );
-        var $elm$core$Set$member = F2(
-          function(key, _v0) {
-            var dict = _v0.a;
-            return A2($elm$core$Dict$member, key, dict);
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Internal$Unique$exists = $elm$core$Set$member;
-        var $phollyer$elm_phoenix_websocket$Internal$Channel$isJoined = F2(
-          function(topic, _v0) {
-            var joined = _v0.a.joined;
-            return A2($phollyer$elm_phoenix_websocket$Internal$Unique$exists, topic, joined);
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Phoenix$Channel$joinConfig = { events: _List_Nil, payload: $elm$json$Json$Encode$null, timeout: $elm$core$Maybe$Nothing, topic: "" };
-        var $phollyer$elm_phoenix_websocket$Internal$Channel$defaultJoinConfig = function(topic) {
-          return _Utils_update(
-            $phollyer$elm_phoenix_websocket$Phoenix$Channel$joinConfig,
-            { topic }
-          );
-        };
-        var $phollyer$elm_phoenix_websocket$Internal$Config$get = $elm$core$Dict$get;
-        var $elm$core$Maybe$map = F2(
-          function(f, maybe) {
-            if (maybe.$ === "Just") {
-              var value = maybe.a;
-              return $elm$core$Maybe$Just(
-                f(value)
-              );
-            } else {
-              return $elm$core$Maybe$Nothing;
-            }
-          }
-        );
-        var $elm_community$json_extra$Json$Encode$Extra$maybe = function(encoder) {
-          return A2(
-            $elm$core$Basics$composeR,
-            $elm$core$Maybe$map(encoder),
-            $elm$core$Maybe$withDefault($elm$json$Json$Encode$null)
-          );
-        };
-        var $phollyer$elm_phoenix_websocket$Phoenix$Channel$join = F2(
-          function(_v0, portOut) {
-            var topic = _v0.topic;
-            var events = _v0.events;
-            var payload = _v0.payload;
-            var timeout = _v0.timeout;
-            return portOut(
-              {
-                msg: "join",
-                payload: $elm$json$Json$Encode$object(
-                  _List_fromArray(
-                    [
-                      _Utils_Tuple2(
-                        "topic",
-                        $elm$json$Json$Encode$string(topic)
-                      ),
-                      _Utils_Tuple2(
-                        "events",
-                        A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, events)
-                      ),
-                      _Utils_Tuple2("payload", payload),
-                      _Utils_Tuple2(
-                        "timeout",
-                        A2($elm_community$json_extra$Json$Encode$Extra$maybe, $elm$json$Json$Encode$int, timeout)
-                      )
-                    ]
-                  )
-                )
-              }
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Internal$Channel$queueJoin = F2(
-          function(topic, _v0) {
-            var channel = _v0.a;
-            var queuedJoins = channel.queuedJoins;
-            return $phollyer$elm_phoenix_websocket$Internal$Channel$Channel(
-              _Utils_update(
-                channel,
-                {
-                  queuedJoins: A2($phollyer$elm_phoenix_websocket$Internal$Unique$insert, topic, queuedJoins)
-                }
-              )
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Internal$Channel$join = F2(
-          function(topic, _v0) {
-            var channel = _v0.a;
-            var _v1 = A2($phollyer$elm_phoenix_websocket$Internal$Config$get, topic, channel.joinConfigs);
-            if (_v1.$ === "Just") {
-              var joinConfig = _v1.a;
-              return _Utils_Tuple2(
-                A2(
-                  $phollyer$elm_phoenix_websocket$Internal$Channel$queueJoin,
-                  topic,
-                  $phollyer$elm_phoenix_websocket$Internal$Channel$Channel(channel)
-                ),
-                A2($phollyer$elm_phoenix_websocket$Phoenix$Channel$join, joinConfig, channel.portOut)
-              );
-            } else {
-              return A2(
-                $phollyer$elm_phoenix_websocket$Internal$Channel$join,
-                topic,
-                A2(
-                  $phollyer$elm_phoenix_websocket$Internal$Channel$setJoinConfig,
-                  $phollyer$elm_phoenix_websocket$Internal$Channel$defaultJoinConfig(topic),
-                  $phollyer$elm_phoenix_websocket$Internal$Channel$Channel(channel)
-                )
-              );
-            }
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Phoenix$queueJoin = F2(
-          function(topic, _v0) {
-            var model = _v0.a;
-            return $phollyer$elm_phoenix_websocket$Phoenix$Model(
-              _Utils_update(
-                model,
-                {
-                  channel: A2($phollyer$elm_phoenix_websocket$Internal$Channel$queueJoin, topic, model.channel)
-                }
-              )
-            );
-          }
-        );
-        var $phollyer$elm_phoenix_websocket$Phoenix$join = F2(
-          function(topic, _v0) {
-            var model = _v0.a;
-            var channel = model.channel;
-            if (A2($phollyer$elm_phoenix_websocket$Internal$Channel$isJoined, topic, channel)) {
-              return _Utils_Tuple2(
-                $phollyer$elm_phoenix_websocket$Phoenix$Model(model),
-                $elm$core$Platform$Cmd$none
-              );
-            } else {
-              var _v1 = $phollyer$elm_phoenix_websocket$Internal$Socket$currentState(model.socket);
-              switch (_v1.$) {
-                case "Connected":
-                  var _v2 = A2($phollyer$elm_phoenix_websocket$Internal$Channel$join, topic, channel);
-                  var channel_ = _v2.a;
-                  var channelCmd = _v2.b;
-                  return _Utils_Tuple2(
-                    $phollyer$elm_phoenix_websocket$Phoenix$Model(
-                      _Utils_update(
-                        model,
-                        { channel: channel_ }
-                      )
-                    ),
-                    channelCmd
-                  );
-                case "Connecting":
-                  return _Utils_Tuple2(
-                    A2(
-                      $phollyer$elm_phoenix_websocket$Phoenix$queueJoin,
-                      topic,
-                      $phollyer$elm_phoenix_websocket$Phoenix$Model(model)
-                    ),
-                    $elm$core$Platform$Cmd$none
-                  );
-                case "Disconnecting":
-                  return _Utils_Tuple2(
-                    A2(
-                      $phollyer$elm_phoenix_websocket$Phoenix$queueJoin,
-                      topic,
-                      $phollyer$elm_phoenix_websocket$Phoenix$Model(model)
-                    ),
-                    $elm$core$Platform$Cmd$none
-                  );
-                default:
-                  return $phollyer$elm_phoenix_websocket$Phoenix$connect(
-                    A2(
-                      $phollyer$elm_phoenix_websocket$Phoenix$queueJoin,
-                      topic,
-                      $phollyer$elm_phoenix_websocket$Phoenix$Model(model)
-                    )
-                  );
-              }
             }
           }
         );
@@ -15463,43 +15471,30 @@
                 var newModel = _v1.a;
                 var cmd = _v1.b;
                 var phoenixMsg = _v1.c;
-                _v2$2:
-                  while (true) {
-                    switch (phoenixMsg.$) {
-                      case "ChannelEvent":
-                        var topic = phoenixMsg.a;
-                        var event = phoenixMsg.b;
-                        var payload = phoenixMsg.c;
-                        var _v3 = A2(
-                          $elm$core$Debug$log,
-                          "* topic, event, payload:",
-                          _Utils_Tuple3(topic, event, payload)
-                        );
-                        return _Utils_Tuple2(newModel, cmd);
-                      case "SocketMessage":
-                        if (phoenixMsg.a.$ === "StateChange") {
-                          var state = phoenixMsg.a.a;
-                          var _v4 = A2($elm$core$Debug$log, "* state", state);
-                          return _Utils_Tuple2(newModel, cmd);
-                        } else {
-                          break _v2$2;
-                        }
-                      default:
-                        break _v2$2;
-                    }
-                  }
-                return _Utils_Tuple2(newModel, cmd);
+                if (phoenixMsg.$ === "ChannelEvent") {
+                  var topic = phoenixMsg.a;
+                  var event = phoenixMsg.b;
+                  var payload = phoenixMsg.c;
+                  var _v3 = A2(
+                    $elm$core$Debug$log,
+                    "* topic, event, payload:",
+                    _Utils_Tuple3(topic, event, payload)
+                  );
+                  return _Utils_Tuple2(newModel, cmd);
+                } else {
+                  return _Utils_Tuple2(newModel, cmd);
+                }
               default:
                 var message = msg.a;
-                var _v5 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$websocketMessageDecoder, message);
-                if (_v5.$ === "Ok") {
-                  var ws = _v5.a;
-                  var _v6 = ws.action;
-                  switch (_v6) {
+                var _v4 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$websocketMessageDecoder, message);
+                if (_v4.$ === "Ok") {
+                  var ws = _v4.a;
+                  var _v5 = ws.action;
+                  switch (_v5) {
                     case "spotify_music_updated":
-                      var _v7 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$songInfoDecoder, ws.payload);
-                      if (_v7.$ === "Ok") {
-                        var song = _v7.a;
+                      var _v6 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$songInfoDecoder, ws.payload);
+                      if (_v6.$ === "Ok") {
+                        var song = _v6.a;
                         var newCurrentSongStyle = A2(
                           $mdgriffith$elm_style_animation$Animation$interrupt,
                           _List_fromArray(
@@ -16366,10 +16361,1397 @@
 
   // src/index.js
   var import_Main = __toESM(require_Main());
+
+  // src/elmPhoenixWebSocket.js
+  var ElmPhoenixWebSocket = {
+    phoenixSocket: {},
+    socket: {},
+    channels: {},
+    events: {},
+    phoenixPresence: {},
+    presences: {},
+    elmPorts: {},
+    url: "/socket",
+    allowReconnect: false,
+    init(ports, socket, presence) {
+      this.elmPorts = ports;
+      this.elmPorts.phoenixSend.subscribe((params) => this[params.msg](params.payload));
+      this.phoenixSocket = socket;
+      this.phoenixPresence = presence;
+      this.socket = new this.phoenixSocket(this.url, {});
+      this.info();
+    },
+    connect(data) {
+      this.socket = new this.phoenixSocket(this.url, this.setOptionsAndParams(data));
+      this.socket.onError((resp) => this.socketSend("Error", { reason: "" }));
+      this.socket.onMessage((resp) => this.onMessage(resp));
+      this.socket.onOpen((resp) => {
+        this.socketSend("Opened", resp);
+        this.info();
+        this.allowReconnect = true;
+      });
+      this.socket.onClose((resp) => {
+        if (resp.code != 1e3) {
+          if (this.allowReconnect) {
+            this.socketSend("Error", { reason: "Unreachable" });
+          } else {
+            this.socket.reconnectTimer.reset();
+            this.socketSend("Error", { reason: "Denied" });
+          }
+        }
+        this.info();
+        this.socketSend("Closed", resp);
+      });
+      this.info();
+      this.allowReconnect = false;
+      this.socketSend("Connecting", {});
+      this.socket.connect();
+    },
+    setOptionsAndParams(data) {
+      if (data) {
+        let options = data.options;
+        if (options) {
+          if (options.reconnectSteppedBackoff && options.reconnectAfterMs) {
+            options.reconnectAfterMs = function(tries) {
+              return options.reconnectSteppedBackoff[tries - 1] || options.reconnectAfterMs;
+            };
+            delete options.reconnectSteppedBackoff;
+          }
+          if (options.rejoinSteppedBackoff && options.rejoinAfterMs) {
+            options.rejoinAfterMs = function(tries) {
+              return options.rejoinSteppedBackoff[tries - 1] || options.rejoinAfterMs;
+            };
+            delete options.rejoinSteppedBackoff;
+          }
+          if (options.logger) {
+            options.logger = this.logger;
+          }
+        }
+        if (data.params && options) {
+          options.params = data.params;
+        } else if (data.params) {
+          options = data;
+        }
+        return options;
+      }
+      return null;
+    },
+    disconnect(params) {
+      this.channels = {};
+      this.presences = {};
+      this.events = {};
+      this.socketSend("Disconnecting", {});
+      this.socket.disconnect(() => {
+      }, params.code);
+    },
+    onMessage(resp) {
+      if (resp.topic == "phoenix") {
+        this.socketSend("Heartbeat", resp);
+      } else if (resp.event.indexOf("presence") == 0) {
+        this.socketSend("Presence", resp);
+      } else {
+        this.socketSend("Channel", resp);
+      }
+    },
+    connectionState() {
+      this.socketSend("ConnectionState", this.socket.connectionState());
+    },
+    endPointURL() {
+      this.socketSend("EndPointURL", this.socket.endPointURL());
+    },
+    hasLogger() {
+      this.socketSend("HasLogger", this.getHasLogger());
+    },
+    getHasLogger() {
+      if (this.socket.hasLogger) {
+        return this.socket.hasLogger();
+      } else {
+        return null;
+      }
+    },
+    isConnected() {
+      this.socketSend("IsConnected", this.socket.isConnected());
+    },
+    makeRef() {
+      this.socketSend("MakeRef", this.socket.makeRef());
+    },
+    protocol() {
+      this.socketSend("Protocol", this.socket.protocol());
+    },
+    info() {
+      let info = {
+        connectionState: this.socket.connectionState(),
+        endPointURL: this.socket.endPointURL(),
+        hasLogger: this.getHasLogger(),
+        isConnected: this.socket.isConnected(),
+        nextMessageRef: this.socket.makeRef(),
+        protocol: this.socket.protocol()
+      };
+      this.socketSend("Info", info);
+    },
+    socketSend(msg, payload) {
+      this.elmPorts.socketReceiver.send(
+        {
+          msg,
+          payload
+        }
+      );
+    },
+    log(params) {
+      if (this.socket.hasLogger && this.socket.hasLogger()) {
+        this.socket.log(params.kind, params.msg, params.data);
+      }
+    },
+    startLogging() {
+      this.socket.logger = this.logger;
+    },
+    stopLogging() {
+      this.socket.logger = null;
+    },
+    logger(kind, msg, data) {
+      console.log(`${kind}: ${msg}`, data);
+    },
+    join(params) {
+      let channel = this.createChannel(params);
+      let join = {};
+      if (params.timeout) {
+        join = channel.join(params.timeout);
+      } else {
+        join = channel.join();
+      }
+      join.receive("ok", (payload) => this.channelSend(params.topic, "JoinOk", payload)).receive("error", (payload) => this.channelSend(params.topic, "JoinError", payload)).receive("timeout", () => this.channelSend(params.topic, "JoinTimeout", params.payload));
+    },
+    createChannel(params) {
+      let channel = this.socket.channel(params.topic, params.payload);
+      channel.onClose(() => this.channelSend(params.topic, "Closed", {}));
+      channel.onError(() => this.channelSend(params.topic, "Error", {}));
+      channel.on("presence_diff", (diff) => this.onDiff(params.topic, diff));
+      channel.on("presence_state", (state) => this.onState(params.topic, state));
+      this.channels[params.topic] = channel;
+      this.allOn(params);
+      return channel;
+    },
+    push(params) {
+      let channel = this.find(params.topic);
+      let push = {};
+      if (params.timeout && params.payload) {
+        push = channel.push(params.event, params.payload, params.timeout);
+      } else if (params.payload) {
+        push = channel.push(params.event, params.payload);
+      } else {
+        push = channel.push(params.event, {});
+      }
+      push.receive("ok", (payload) => this.channelSend(params.topic, "PushOk", { event: params.event, payload, ref: params.ref })).receive("error", (payload) => this.channelSend(params.topic, "PushError", { event: params.event, payload, ref: params.ref })).receive("timeout", () => this.channelSend(params.topic, "PushTimeout", { event: params.event, payload: params.payload, ref: params.ref }));
+    },
+    on(params) {
+      let channel = this.find(params.topic);
+      let events = this.events[params.topic];
+      if (channel && !events) {
+        this.events[params.topic] = [params.event];
+        this.subscribe(channel, params.topic, params.event);
+      } else if (channel && events && events.indexOf(params.event) == -1) {
+        events.push(params.event);
+        this.subscribe(channel, params.topic, params.event);
+      }
+    },
+    allOn(params) {
+      for (let i = 0; i < params.events.length; i++) {
+        this.on({ topic: params.topic, event: params.events[i] });
+      }
+    },
+    subscribe(channel, topic, event) {
+      channel.on(event, (payload) => this.channelSend(topic, "Message", { event, payload }));
+    },
+    off(params) {
+      let channel = this.find(params.topic);
+      let events = this.events[params.topic];
+      if (channel && events && events.indexOf(params.event) != -1) {
+        channel.off(params.event);
+        events.splice(events.indexOf(params.event), 1);
+      }
+    },
+    allOff(params) {
+      for (let i = 0; i < params.events.length; i++) {
+        this.off({ topic: params.topic, event: params.events[i] });
+      }
+    },
+    leave(params) {
+      let channel = this.find(params.topic);
+      this.events[params.topic] = [];
+      if (channel) {
+        channel.leave(params.timeout).receive("ok", (_) => this.leaveOk(params.topic));
+      } else {
+        this.channelSend(params.topic, "LeaveOk", {});
+      }
+    },
+    leaveOk(topic) {
+      this.channelSend(topic, "LeaveOk", {});
+      delete this.find(topic);
+    },
+    find(topic) {
+      return this.channels[topic];
+    },
+    channelSend(topic, msg, payload) {
+      this.elmPorts.channelReceiver.send(
+        {
+          topic,
+          msg,
+          payload
+        }
+      );
+    },
+    onDiff(topic, diff) {
+      let currentPresence = this.presences[topic] || {};
+      let newPresence = this.phoenixPresence.syncDiff(
+        currentPresence,
+        diff,
+        (id, current, newPres) => this.presenceSend(topic, "Join", this.packageForElm(id, newPres)),
+        (id, current, leftPres) => this.presenceSend(topic, "Leave", this.packageForElm(id, leftPres))
+      );
+      this.presenceSend(topic, "Diff", { leaves: this.toList(diff.leaves), joins: this.toList(diff.joins) });
+      this.presenceSend(topic, "State", { list: this.phoenixPresence.list(newPresence, (id, metas) => this.packageForElm(id, metas)) });
+      this.presences[topic] = newPresence;
+    },
+    onState(topic, state) {
+      let currentPresence = this.presences[topic];
+      let newPresence = this.phoenixPresence.syncState(
+        currentPresence,
+        state,
+        (id, current, newPres) => this.presenceSend(topic, "Join", this.packageForElm(id, newPres)),
+        (id, current, leftPres) => this.presenceSend(topic, "Leave", this.packageForElm(id, leftPres))
+      );
+      this.presenceSend(topic, "State", { list: this.phoenixPresence.list(newPresence, (id, presence) => this.packageForElm(id, presence)) });
+      this.presences[topic] = newPresence;
+    },
+    toList(presence) {
+      let list = [];
+      for (var id in presence) {
+        list.push(this.packageForElm(id, presence[id]));
+      }
+      return list;
+    },
+    packageForElm(id, presence) {
+      return { id, metas: presence.metas, user: presence.user || null, presence };
+    },
+    presenceSend(topic, msg, payload) {
+      if (this.elmPorts.presenceReceiver) {
+        this.elmPorts.presenceReceiver.send(
+          {
+            topic,
+            msg,
+            payload
+          }
+        );
+      } else {
+        console.warn("No presenceReceiver port found.");
+      }
+    }
+  };
+  var elmPhoenixWebSocket_default = ElmPhoenixWebSocket;
+
+  // ../../../../deps/phoenix/priv/static/phoenix.mjs
+  var closure = (value) => {
+    if (typeof value === "function") {
+      return value;
+    } else {
+      let closure2 = function() {
+        return value;
+      };
+      return closure2;
+    }
+  };
+  var globalSelf = typeof self !== "undefined" ? self : null;
+  var phxWindow = typeof window !== "undefined" ? window : null;
+  var global = globalSelf || phxWindow || global;
+  var DEFAULT_VSN = "2.0.0";
+  var SOCKET_STATES = { connecting: 0, open: 1, closing: 2, closed: 3 };
+  var DEFAULT_TIMEOUT = 1e4;
+  var WS_CLOSE_NORMAL = 1e3;
+  var CHANNEL_STATES = {
+    closed: "closed",
+    errored: "errored",
+    joined: "joined",
+    joining: "joining",
+    leaving: "leaving"
+  };
+  var CHANNEL_EVENTS = {
+    close: "phx_close",
+    error: "phx_error",
+    join: "phx_join",
+    reply: "phx_reply",
+    leave: "phx_leave"
+  };
+  var TRANSPORTS = {
+    longpoll: "longpoll",
+    websocket: "websocket"
+  };
+  var XHR_STATES = {
+    complete: 4
+  };
+  var Push = class {
+    constructor(channel, event, payload, timeout) {
+      this.channel = channel;
+      this.event = event;
+      this.payload = payload || function() {
+        return {};
+      };
+      this.receivedResp = null;
+      this.timeout = timeout;
+      this.timeoutTimer = null;
+      this.recHooks = [];
+      this.sent = false;
+    }
+    resend(timeout) {
+      this.timeout = timeout;
+      this.reset();
+      this.send();
+    }
+    send() {
+      if (this.hasReceived("timeout")) {
+        return;
+      }
+      this.startTimeout();
+      this.sent = true;
+      this.channel.socket.push({
+        topic: this.channel.topic,
+        event: this.event,
+        payload: this.payload(),
+        ref: this.ref,
+        join_ref: this.channel.joinRef()
+      });
+    }
+    receive(status, callback) {
+      if (this.hasReceived(status)) {
+        callback(this.receivedResp.response);
+      }
+      this.recHooks.push({ status, callback });
+      return this;
+    }
+    reset() {
+      this.cancelRefEvent();
+      this.ref = null;
+      this.refEvent = null;
+      this.receivedResp = null;
+      this.sent = false;
+    }
+    matchReceive({ status, response, _ref }) {
+      this.recHooks.filter((h) => h.status === status).forEach((h) => h.callback(response));
+    }
+    cancelRefEvent() {
+      if (!this.refEvent) {
+        return;
+      }
+      this.channel.off(this.refEvent);
+    }
+    cancelTimeout() {
+      clearTimeout(this.timeoutTimer);
+      this.timeoutTimer = null;
+    }
+    startTimeout() {
+      if (this.timeoutTimer) {
+        this.cancelTimeout();
+      }
+      this.ref = this.channel.socket.makeRef();
+      this.refEvent = this.channel.replyEventName(this.ref);
+      this.channel.on(this.refEvent, (payload) => {
+        this.cancelRefEvent();
+        this.cancelTimeout();
+        this.receivedResp = payload;
+        this.matchReceive(payload);
+      });
+      this.timeoutTimer = setTimeout(() => {
+        this.trigger("timeout", {});
+      }, this.timeout);
+    }
+    hasReceived(status) {
+      return this.receivedResp && this.receivedResp.status === status;
+    }
+    trigger(status, response) {
+      this.channel.trigger(this.refEvent, { status, response });
+    }
+  };
+  var Timer = class {
+    constructor(callback, timerCalc) {
+      this.callback = callback;
+      this.timerCalc = timerCalc;
+      this.timer = null;
+      this.tries = 0;
+    }
+    reset() {
+      this.tries = 0;
+      clearTimeout(this.timer);
+    }
+    scheduleTimeout() {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.tries = this.tries + 1;
+        this.callback();
+      }, this.timerCalc(this.tries + 1));
+    }
+  };
+  var Channel = class {
+    constructor(topic, params, socket) {
+      this.state = CHANNEL_STATES.closed;
+      this.topic = topic;
+      this.params = closure(params || {});
+      this.socket = socket;
+      this.bindings = [];
+      this.bindingRef = 0;
+      this.timeout = this.socket.timeout;
+      this.joinedOnce = false;
+      this.joinPush = new Push(this, CHANNEL_EVENTS.join, this.params, this.timeout);
+      this.pushBuffer = [];
+      this.stateChangeRefs = [];
+      this.rejoinTimer = new Timer(() => {
+        if (this.socket.isConnected()) {
+          this.rejoin();
+        }
+      }, this.socket.rejoinAfterMs);
+      this.stateChangeRefs.push(this.socket.onError(() => this.rejoinTimer.reset()));
+      this.stateChangeRefs.push(this.socket.onOpen(() => {
+        this.rejoinTimer.reset();
+        if (this.isErrored()) {
+          this.rejoin();
+        }
+      }));
+      this.joinPush.receive("ok", () => {
+        this.state = CHANNEL_STATES.joined;
+        this.rejoinTimer.reset();
+        this.pushBuffer.forEach((pushEvent) => pushEvent.send());
+        this.pushBuffer = [];
+      });
+      this.joinPush.receive("error", () => {
+        this.state = CHANNEL_STATES.errored;
+        if (this.socket.isConnected()) {
+          this.rejoinTimer.scheduleTimeout();
+        }
+      });
+      this.onClose(() => {
+        this.rejoinTimer.reset();
+        if (this.socket.hasLogger())
+          this.socket.log("channel", `close ${this.topic} ${this.joinRef()}`);
+        this.state = CHANNEL_STATES.closed;
+        this.socket.remove(this);
+      });
+      this.onError((reason) => {
+        if (this.socket.hasLogger())
+          this.socket.log("channel", `error ${this.topic}`, reason);
+        if (this.isJoining()) {
+          this.joinPush.reset();
+        }
+        this.state = CHANNEL_STATES.errored;
+        if (this.socket.isConnected()) {
+          this.rejoinTimer.scheduleTimeout();
+        }
+      });
+      this.joinPush.receive("timeout", () => {
+        if (this.socket.hasLogger())
+          this.socket.log("channel", `timeout ${this.topic} (${this.joinRef()})`, this.joinPush.timeout);
+        let leavePush = new Push(this, CHANNEL_EVENTS.leave, closure({}), this.timeout);
+        leavePush.send();
+        this.state = CHANNEL_STATES.errored;
+        this.joinPush.reset();
+        if (this.socket.isConnected()) {
+          this.rejoinTimer.scheduleTimeout();
+        }
+      });
+      this.on(CHANNEL_EVENTS.reply, (payload, ref) => {
+        this.trigger(this.replyEventName(ref), payload);
+      });
+    }
+    join(timeout = this.timeout) {
+      if (this.joinedOnce) {
+        throw new Error("tried to join multiple times. 'join' can only be called a single time per channel instance");
+      } else {
+        this.timeout = timeout;
+        this.joinedOnce = true;
+        this.rejoin();
+        return this.joinPush;
+      }
+    }
+    onClose(callback) {
+      this.on(CHANNEL_EVENTS.close, callback);
+    }
+    onError(callback) {
+      return this.on(CHANNEL_EVENTS.error, (reason) => callback(reason));
+    }
+    on(event, callback) {
+      let ref = this.bindingRef++;
+      this.bindings.push({ event, ref, callback });
+      return ref;
+    }
+    off(event, ref) {
+      this.bindings = this.bindings.filter((bind) => {
+        return !(bind.event === event && (typeof ref === "undefined" || ref === bind.ref));
+      });
+    }
+    canPush() {
+      return this.socket.isConnected() && this.isJoined();
+    }
+    push(event, payload, timeout = this.timeout) {
+      payload = payload || {};
+      if (!this.joinedOnce) {
+        throw new Error(`tried to push '${event}' to '${this.topic}' before joining. Use channel.join() before pushing events`);
+      }
+      let pushEvent = new Push(this, event, function() {
+        return payload;
+      }, timeout);
+      if (this.canPush()) {
+        pushEvent.send();
+      } else {
+        pushEvent.startTimeout();
+        this.pushBuffer.push(pushEvent);
+      }
+      return pushEvent;
+    }
+    leave(timeout = this.timeout) {
+      this.rejoinTimer.reset();
+      this.joinPush.cancelTimeout();
+      this.state = CHANNEL_STATES.leaving;
+      let onClose = () => {
+        if (this.socket.hasLogger())
+          this.socket.log("channel", `leave ${this.topic}`);
+        this.trigger(CHANNEL_EVENTS.close, "leave");
+      };
+      let leavePush = new Push(this, CHANNEL_EVENTS.leave, closure({}), timeout);
+      leavePush.receive("ok", () => onClose()).receive("timeout", () => onClose());
+      leavePush.send();
+      if (!this.canPush()) {
+        leavePush.trigger("ok", {});
+      }
+      return leavePush;
+    }
+    onMessage(_event, payload, _ref) {
+      return payload;
+    }
+    isMember(topic, event, payload, joinRef) {
+      if (this.topic !== topic) {
+        return false;
+      }
+      if (joinRef && joinRef !== this.joinRef()) {
+        if (this.socket.hasLogger())
+          this.socket.log("channel", "dropping outdated message", { topic, event, payload, joinRef });
+        return false;
+      } else {
+        return true;
+      }
+    }
+    joinRef() {
+      return this.joinPush.ref;
+    }
+    rejoin(timeout = this.timeout) {
+      if (this.isLeaving()) {
+        return;
+      }
+      this.socket.leaveOpenTopic(this.topic);
+      this.state = CHANNEL_STATES.joining;
+      this.joinPush.resend(timeout);
+    }
+    trigger(event, payload, ref, joinRef) {
+      let handledPayload = this.onMessage(event, payload, ref, joinRef);
+      if (payload && !handledPayload) {
+        throw new Error("channel onMessage callbacks must return the payload, modified or unmodified");
+      }
+      let eventBindings = this.bindings.filter((bind) => bind.event === event);
+      for (let i = 0; i < eventBindings.length; i++) {
+        let bind = eventBindings[i];
+        bind.callback(handledPayload, ref, joinRef || this.joinRef());
+      }
+    }
+    replyEventName(ref) {
+      return `chan_reply_${ref}`;
+    }
+    isClosed() {
+      return this.state === CHANNEL_STATES.closed;
+    }
+    isErrored() {
+      return this.state === CHANNEL_STATES.errored;
+    }
+    isJoined() {
+      return this.state === CHANNEL_STATES.joined;
+    }
+    isJoining() {
+      return this.state === CHANNEL_STATES.joining;
+    }
+    isLeaving() {
+      return this.state === CHANNEL_STATES.leaving;
+    }
+  };
+  var Ajax = class {
+    static request(method, endPoint, accept, body, timeout, ontimeout, callback) {
+      if (global.XDomainRequest) {
+        let req = new global.XDomainRequest();
+        return this.xdomainRequest(req, method, endPoint, body, timeout, ontimeout, callback);
+      } else {
+        let req = new global.XMLHttpRequest();
+        return this.xhrRequest(req, method, endPoint, accept, body, timeout, ontimeout, callback);
+      }
+    }
+    static xdomainRequest(req, method, endPoint, body, timeout, ontimeout, callback) {
+      req.timeout = timeout;
+      req.open(method, endPoint);
+      req.onload = () => {
+        let response = this.parseJSON(req.responseText);
+        callback && callback(response);
+      };
+      if (ontimeout) {
+        req.ontimeout = ontimeout;
+      }
+      req.onprogress = () => {
+      };
+      req.send(body);
+      return req;
+    }
+    static xhrRequest(req, method, endPoint, accept, body, timeout, ontimeout, callback) {
+      req.open(method, endPoint, true);
+      req.timeout = timeout;
+      req.setRequestHeader("Content-Type", accept);
+      req.onerror = () => callback && callback(null);
+      req.onreadystatechange = () => {
+        if (req.readyState === XHR_STATES.complete && callback) {
+          let response = this.parseJSON(req.responseText);
+          callback(response);
+        }
+      };
+      if (ontimeout) {
+        req.ontimeout = ontimeout;
+      }
+      req.send(body);
+      return req;
+    }
+    static parseJSON(resp) {
+      if (!resp || resp === "") {
+        return null;
+      }
+      try {
+        return JSON.parse(resp);
+      } catch (e) {
+        console && console.log("failed to parse JSON response", resp);
+        return null;
+      }
+    }
+    static serialize(obj, parentKey) {
+      let queryStr = [];
+      for (var key in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+          continue;
+        }
+        let paramKey = parentKey ? `${parentKey}[${key}]` : key;
+        let paramVal = obj[key];
+        if (typeof paramVal === "object") {
+          queryStr.push(this.serialize(paramVal, paramKey));
+        } else {
+          queryStr.push(encodeURIComponent(paramKey) + "=" + encodeURIComponent(paramVal));
+        }
+      }
+      return queryStr.join("&");
+    }
+    static appendParams(url, params) {
+      if (Object.keys(params).length === 0) {
+        return url;
+      }
+      let prefix = url.match(/\?/) ? "&" : "?";
+      return `${url}${prefix}${this.serialize(params)}`;
+    }
+  };
+  var LongPoll = class {
+    constructor(endPoint) {
+      this.endPoint = null;
+      this.token = null;
+      this.skipHeartbeat = true;
+      this.reqs = /* @__PURE__ */ new Set();
+      this.onopen = function() {
+      };
+      this.onerror = function() {
+      };
+      this.onmessage = function() {
+      };
+      this.onclose = function() {
+      };
+      this.pollEndpoint = this.normalizeEndpoint(endPoint);
+      this.readyState = SOCKET_STATES.connecting;
+      this.poll();
+    }
+    normalizeEndpoint(endPoint) {
+      return endPoint.replace("ws://", "http://").replace("wss://", "https://").replace(new RegExp("(.*)/" + TRANSPORTS.websocket), "$1/" + TRANSPORTS.longpoll);
+    }
+    endpointURL() {
+      return Ajax.appendParams(this.pollEndpoint, { token: this.token });
+    }
+    closeAndRetry(code, reason, wasClean) {
+      this.close(code, reason, wasClean);
+      this.readyState = SOCKET_STATES.connecting;
+    }
+    ontimeout() {
+      this.onerror("timeout");
+      this.closeAndRetry(1005, "timeout", false);
+    }
+    isActive() {
+      return this.readyState === SOCKET_STATES.open || this.readyState === SOCKET_STATES.connecting;
+    }
+    poll() {
+      this.ajax("GET", null, () => this.ontimeout(), (resp) => {
+        if (resp) {
+          var { status, token, messages } = resp;
+          this.token = token;
+        } else {
+          status = 0;
+        }
+        switch (status) {
+          case 200:
+            messages.forEach((msg) => {
+              setTimeout(() => this.onmessage({ data: msg }), 0);
+            });
+            this.poll();
+            break;
+          case 204:
+            this.poll();
+            break;
+          case 410:
+            this.readyState = SOCKET_STATES.open;
+            this.onopen({});
+            this.poll();
+            break;
+          case 403:
+            this.onerror(403);
+            this.close(1008, "forbidden", false);
+            break;
+          case 0:
+          case 500:
+            this.onerror(500);
+            this.closeAndRetry(1011, "internal server error", 500);
+            break;
+          default:
+            throw new Error(`unhandled poll status ${status}`);
+        }
+      });
+    }
+    send(body) {
+      this.ajax("POST", body, () => this.onerror("timeout"), (resp) => {
+        if (!resp || resp.status !== 200) {
+          this.onerror(resp && resp.status);
+          this.closeAndRetry(1011, "internal server error", false);
+        }
+      });
+    }
+    close(code, reason, wasClean) {
+      for (let req of this.reqs) {
+        req.abort();
+      }
+      this.readyState = SOCKET_STATES.closed;
+      let opts = Object.assign({ code: 1e3, reason: void 0, wasClean: true }, { code, reason, wasClean });
+      if (typeof CloseEvent !== "undefined") {
+        this.onclose(new CloseEvent("close", opts));
+      } else {
+        this.onclose(opts);
+      }
+    }
+    ajax(method, body, onCallerTimeout, callback) {
+      let req;
+      let ontimeout = () => {
+        this.reqs.delete(req);
+        onCallerTimeout();
+      };
+      req = Ajax.request(method, this.endpointURL(), "application/json", body, this.timeout, ontimeout, (resp) => {
+        this.reqs.delete(req);
+        if (this.isActive()) {
+          callback(resp);
+        }
+      });
+      this.reqs.add(req);
+    }
+  };
+  var Presence = class {
+    constructor(channel, opts = {}) {
+      let events = opts.events || { state: "presence_state", diff: "presence_diff" };
+      this.state = {};
+      this.pendingDiffs = [];
+      this.channel = channel;
+      this.joinRef = null;
+      this.caller = {
+        onJoin: function() {
+        },
+        onLeave: function() {
+        },
+        onSync: function() {
+        }
+      };
+      this.channel.on(events.state, (newState) => {
+        let { onJoin, onLeave, onSync } = this.caller;
+        this.joinRef = this.channel.joinRef();
+        this.state = Presence.syncState(this.state, newState, onJoin, onLeave);
+        this.pendingDiffs.forEach((diff) => {
+          this.state = Presence.syncDiff(this.state, diff, onJoin, onLeave);
+        });
+        this.pendingDiffs = [];
+        onSync();
+      });
+      this.channel.on(events.diff, (diff) => {
+        let { onJoin, onLeave, onSync } = this.caller;
+        if (this.inPendingSyncState()) {
+          this.pendingDiffs.push(diff);
+        } else {
+          this.state = Presence.syncDiff(this.state, diff, onJoin, onLeave);
+          onSync();
+        }
+      });
+    }
+    onJoin(callback) {
+      this.caller.onJoin = callback;
+    }
+    onLeave(callback) {
+      this.caller.onLeave = callback;
+    }
+    onSync(callback) {
+      this.caller.onSync = callback;
+    }
+    list(by) {
+      return Presence.list(this.state, by);
+    }
+    inPendingSyncState() {
+      return !this.joinRef || this.joinRef !== this.channel.joinRef();
+    }
+    static syncState(currentState, newState, onJoin, onLeave) {
+      let state = this.clone(currentState);
+      let joins = {};
+      let leaves = {};
+      this.map(state, (key, presence) => {
+        if (!newState[key]) {
+          leaves[key] = presence;
+        }
+      });
+      this.map(newState, (key, newPresence) => {
+        let currentPresence = state[key];
+        if (currentPresence) {
+          let newRefs = newPresence.metas.map((m) => m.phx_ref);
+          let curRefs = currentPresence.metas.map((m) => m.phx_ref);
+          let joinedMetas = newPresence.metas.filter((m) => curRefs.indexOf(m.phx_ref) < 0);
+          let leftMetas = currentPresence.metas.filter((m) => newRefs.indexOf(m.phx_ref) < 0);
+          if (joinedMetas.length > 0) {
+            joins[key] = newPresence;
+            joins[key].metas = joinedMetas;
+          }
+          if (leftMetas.length > 0) {
+            leaves[key] = this.clone(currentPresence);
+            leaves[key].metas = leftMetas;
+          }
+        } else {
+          joins[key] = newPresence;
+        }
+      });
+      return this.syncDiff(state, { joins, leaves }, onJoin, onLeave);
+    }
+    static syncDiff(state, diff, onJoin, onLeave) {
+      let { joins, leaves } = this.clone(diff);
+      if (!onJoin) {
+        onJoin = function() {
+        };
+      }
+      if (!onLeave) {
+        onLeave = function() {
+        };
+      }
+      this.map(joins, (key, newPresence) => {
+        let currentPresence = state[key];
+        state[key] = this.clone(newPresence);
+        if (currentPresence) {
+          let joinedRefs = state[key].metas.map((m) => m.phx_ref);
+          let curMetas = currentPresence.metas.filter((m) => joinedRefs.indexOf(m.phx_ref) < 0);
+          state[key].metas.unshift(...curMetas);
+        }
+        onJoin(key, currentPresence, newPresence);
+      });
+      this.map(leaves, (key, leftPresence) => {
+        let currentPresence = state[key];
+        if (!currentPresence) {
+          return;
+        }
+        let refsToRemove = leftPresence.metas.map((m) => m.phx_ref);
+        currentPresence.metas = currentPresence.metas.filter((p) => {
+          return refsToRemove.indexOf(p.phx_ref) < 0;
+        });
+        onLeave(key, currentPresence, leftPresence);
+        if (currentPresence.metas.length === 0) {
+          delete state[key];
+        }
+      });
+      return state;
+    }
+    static list(presences, chooser) {
+      if (!chooser) {
+        chooser = function(key, pres) {
+          return pres;
+        };
+      }
+      return this.map(presences, (key, presence) => {
+        return chooser(key, presence);
+      });
+    }
+    static map(obj, func) {
+      return Object.getOwnPropertyNames(obj).map((key) => func(key, obj[key]));
+    }
+    static clone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+  };
+  var serializer_default = {
+    HEADER_LENGTH: 1,
+    META_LENGTH: 4,
+    KINDS: { push: 0, reply: 1, broadcast: 2 },
+    encode(msg, callback) {
+      if (msg.payload.constructor === ArrayBuffer) {
+        return callback(this.binaryEncode(msg));
+      } else {
+        let payload = [msg.join_ref, msg.ref, msg.topic, msg.event, msg.payload];
+        return callback(JSON.stringify(payload));
+      }
+    },
+    decode(rawPayload, callback) {
+      if (rawPayload.constructor === ArrayBuffer) {
+        return callback(this.binaryDecode(rawPayload));
+      } else {
+        let [join_ref, ref, topic, event, payload] = JSON.parse(rawPayload);
+        return callback({ join_ref, ref, topic, event, payload });
+      }
+    },
+    binaryEncode(message) {
+      let { join_ref, ref, event, topic, payload } = message;
+      let metaLength = this.META_LENGTH + join_ref.length + ref.length + topic.length + event.length;
+      let header = new ArrayBuffer(this.HEADER_LENGTH + metaLength);
+      let view = new DataView(header);
+      let offset = 0;
+      view.setUint8(offset++, this.KINDS.push);
+      view.setUint8(offset++, join_ref.length);
+      view.setUint8(offset++, ref.length);
+      view.setUint8(offset++, topic.length);
+      view.setUint8(offset++, event.length);
+      Array.from(join_ref, (char) => view.setUint8(offset++, char.charCodeAt(0)));
+      Array.from(ref, (char) => view.setUint8(offset++, char.charCodeAt(0)));
+      Array.from(topic, (char) => view.setUint8(offset++, char.charCodeAt(0)));
+      Array.from(event, (char) => view.setUint8(offset++, char.charCodeAt(0)));
+      var combined = new Uint8Array(header.byteLength + payload.byteLength);
+      combined.set(new Uint8Array(header), 0);
+      combined.set(new Uint8Array(payload), header.byteLength);
+      return combined.buffer;
+    },
+    binaryDecode(buffer) {
+      let view = new DataView(buffer);
+      let kind = view.getUint8(0);
+      let decoder = new TextDecoder();
+      switch (kind) {
+        case this.KINDS.push:
+          return this.decodePush(buffer, view, decoder);
+        case this.KINDS.reply:
+          return this.decodeReply(buffer, view, decoder);
+        case this.KINDS.broadcast:
+          return this.decodeBroadcast(buffer, view, decoder);
+      }
+    },
+    decodePush(buffer, view, decoder) {
+      let joinRefSize = view.getUint8(1);
+      let topicSize = view.getUint8(2);
+      let eventSize = view.getUint8(3);
+      let offset = this.HEADER_LENGTH + this.META_LENGTH - 1;
+      let joinRef = decoder.decode(buffer.slice(offset, offset + joinRefSize));
+      offset = offset + joinRefSize;
+      let topic = decoder.decode(buffer.slice(offset, offset + topicSize));
+      offset = offset + topicSize;
+      let event = decoder.decode(buffer.slice(offset, offset + eventSize));
+      offset = offset + eventSize;
+      let data = buffer.slice(offset, buffer.byteLength);
+      return { join_ref: joinRef, ref: null, topic, event, payload: data };
+    },
+    decodeReply(buffer, view, decoder) {
+      let joinRefSize = view.getUint8(1);
+      let refSize = view.getUint8(2);
+      let topicSize = view.getUint8(3);
+      let eventSize = view.getUint8(4);
+      let offset = this.HEADER_LENGTH + this.META_LENGTH;
+      let joinRef = decoder.decode(buffer.slice(offset, offset + joinRefSize));
+      offset = offset + joinRefSize;
+      let ref = decoder.decode(buffer.slice(offset, offset + refSize));
+      offset = offset + refSize;
+      let topic = decoder.decode(buffer.slice(offset, offset + topicSize));
+      offset = offset + topicSize;
+      let event = decoder.decode(buffer.slice(offset, offset + eventSize));
+      offset = offset + eventSize;
+      let data = buffer.slice(offset, buffer.byteLength);
+      let payload = { status: event, response: data };
+      return { join_ref: joinRef, ref, topic, event: CHANNEL_EVENTS.reply, payload };
+    },
+    decodeBroadcast(buffer, view, decoder) {
+      let topicSize = view.getUint8(1);
+      let eventSize = view.getUint8(2);
+      let offset = this.HEADER_LENGTH + 2;
+      let topic = decoder.decode(buffer.slice(offset, offset + topicSize));
+      offset = offset + topicSize;
+      let event = decoder.decode(buffer.slice(offset, offset + eventSize));
+      offset = offset + eventSize;
+      let data = buffer.slice(offset, buffer.byteLength);
+      return { join_ref: null, ref: null, topic, event, payload: data };
+    }
+  };
+  var Socket = class {
+    constructor(endPoint, opts = {}) {
+      this.stateChangeCallbacks = { open: [], close: [], error: [], message: [] };
+      this.channels = [];
+      this.sendBuffer = [];
+      this.ref = 0;
+      this.timeout = opts.timeout || DEFAULT_TIMEOUT;
+      this.transport = opts.transport || global.WebSocket || LongPoll;
+      this.establishedConnections = 0;
+      this.defaultEncoder = serializer_default.encode.bind(serializer_default);
+      this.defaultDecoder = serializer_default.decode.bind(serializer_default);
+      this.closeWasClean = false;
+      this.binaryType = opts.binaryType || "arraybuffer";
+      this.connectClock = 1;
+      if (this.transport !== LongPoll) {
+        this.encode = opts.encode || this.defaultEncoder;
+        this.decode = opts.decode || this.defaultDecoder;
+      } else {
+        this.encode = this.defaultEncoder;
+        this.decode = this.defaultDecoder;
+      }
+      let awaitingConnectionOnPageShow = null;
+      if (phxWindow && phxWindow.addEventListener) {
+        phxWindow.addEventListener("pagehide", (_e) => {
+          if (this.conn) {
+            this.disconnect();
+            awaitingConnectionOnPageShow = this.connectClock;
+          }
+        });
+        phxWindow.addEventListener("pageshow", (_e) => {
+          if (awaitingConnectionOnPageShow === this.connectClock) {
+            awaitingConnectionOnPageShow = null;
+            this.connect();
+          }
+        });
+      }
+      this.heartbeatIntervalMs = opts.heartbeatIntervalMs || 3e4;
+      this.rejoinAfterMs = (tries) => {
+        if (opts.rejoinAfterMs) {
+          return opts.rejoinAfterMs(tries);
+        } else {
+          return [1e3, 2e3, 5e3][tries - 1] || 1e4;
+        }
+      };
+      this.reconnectAfterMs = (tries) => {
+        if (opts.reconnectAfterMs) {
+          return opts.reconnectAfterMs(tries);
+        } else {
+          return [10, 50, 100, 150, 200, 250, 500, 1e3, 2e3][tries - 1] || 5e3;
+        }
+      };
+      this.logger = opts.logger || null;
+      this.longpollerTimeout = opts.longpollerTimeout || 2e4;
+      this.params = closure(opts.params || {});
+      this.endPoint = `${endPoint}/${TRANSPORTS.websocket}`;
+      this.vsn = opts.vsn || DEFAULT_VSN;
+      this.heartbeatTimer = null;
+      this.pendingHeartbeatRef = null;
+      this.reconnectTimer = new Timer(() => {
+        this.teardown(() => this.connect());
+      }, this.reconnectAfterMs);
+    }
+    getLongPollTransport() {
+      return LongPoll;
+    }
+    replaceTransport(newTransport) {
+      this.connectClock++;
+      this.closeWasClean = true;
+      this.reconnectTimer.reset();
+      this.sendBuffer = [];
+      if (this.conn) {
+        this.conn.close();
+        this.conn = null;
+      }
+      this.transport = newTransport;
+    }
+    protocol() {
+      return location.protocol.match(/^https/) ? "wss" : "ws";
+    }
+    endPointURL() {
+      let uri = Ajax.appendParams(Ajax.appendParams(this.endPoint, this.params()), { vsn: this.vsn });
+      if (uri.charAt(0) !== "/") {
+        return uri;
+      }
+      if (uri.charAt(1) === "/") {
+        return `${this.protocol()}:${uri}`;
+      }
+      return `${this.protocol()}://${location.host}${uri}`;
+    }
+    disconnect(callback, code, reason) {
+      this.connectClock++;
+      this.closeWasClean = true;
+      this.reconnectTimer.reset();
+      this.teardown(callback, code, reason);
+    }
+    connect(params) {
+      if (params) {
+        console && console.log("passing params to connect is deprecated. Instead pass :params to the Socket constructor");
+        this.params = closure(params);
+      }
+      if (this.conn) {
+        return;
+      }
+      this.connectClock++;
+      this.closeWasClean = false;
+      this.conn = new this.transport(this.endPointURL());
+      this.conn.binaryType = this.binaryType;
+      this.conn.timeout = this.longpollerTimeout;
+      this.conn.onopen = () => this.onConnOpen();
+      this.conn.onerror = (error) => this.onConnError(error);
+      this.conn.onmessage = (event) => this.onConnMessage(event);
+      this.conn.onclose = (event) => this.onConnClose(event);
+    }
+    log(kind, msg, data) {
+      this.logger(kind, msg, data);
+    }
+    hasLogger() {
+      return this.logger !== null;
+    }
+    onOpen(callback) {
+      let ref = this.makeRef();
+      this.stateChangeCallbacks.open.push([ref, callback]);
+      return ref;
+    }
+    onClose(callback) {
+      let ref = this.makeRef();
+      this.stateChangeCallbacks.close.push([ref, callback]);
+      return ref;
+    }
+    onError(callback) {
+      let ref = this.makeRef();
+      this.stateChangeCallbacks.error.push([ref, callback]);
+      return ref;
+    }
+    onMessage(callback) {
+      let ref = this.makeRef();
+      this.stateChangeCallbacks.message.push([ref, callback]);
+      return ref;
+    }
+    ping(callback) {
+      if (!this.isConnected()) {
+        return false;
+      }
+      let ref = this.makeRef();
+      let startTime = Date.now();
+      this.push({ topic: "phoenix", event: "heartbeat", payload: {}, ref });
+      let onMsgRef = this.onMessage((msg) => {
+        if (msg.ref === ref) {
+          this.off([onMsgRef]);
+          callback(Date.now() - startTime);
+        }
+      });
+      return true;
+    }
+    onConnOpen() {
+      if (this.hasLogger())
+        this.log("transport", `connected to ${this.endPointURL()}`);
+      this.closeWasClean = false;
+      this.establishedConnections++;
+      this.flushSendBuffer();
+      this.reconnectTimer.reset();
+      this.resetHeartbeat();
+      this.stateChangeCallbacks.open.forEach(([, callback]) => callback());
+    }
+    heartbeatTimeout() {
+      if (this.pendingHeartbeatRef) {
+        this.pendingHeartbeatRef = null;
+        if (this.hasLogger()) {
+          this.log("transport", "heartbeat timeout. Attempting to re-establish connection");
+        }
+        this.abnormalClose("heartbeat timeout");
+      }
+    }
+    resetHeartbeat() {
+      if (this.conn && this.conn.skipHeartbeat) {
+        return;
+      }
+      this.pendingHeartbeatRef = null;
+      clearTimeout(this.heartbeatTimer);
+      setTimeout(() => this.sendHeartbeat(), this.heartbeatIntervalMs);
+    }
+    teardown(callback, code, reason) {
+      if (!this.conn) {
+        return callback && callback();
+      }
+      this.waitForBufferDone(() => {
+        if (this.conn) {
+          if (code) {
+            this.conn.close(code, reason || "");
+          } else {
+            this.conn.close();
+          }
+        }
+        this.waitForSocketClosed(() => {
+          if (this.conn) {
+            this.conn.onclose = function() {
+            };
+            this.conn = null;
+          }
+          callback && callback();
+        });
+      });
+    }
+    waitForBufferDone(callback, tries = 1) {
+      if (tries === 5 || !this.conn || !this.conn.bufferedAmount) {
+        callback();
+        return;
+      }
+      setTimeout(() => {
+        this.waitForBufferDone(callback, tries + 1);
+      }, 150 * tries);
+    }
+    waitForSocketClosed(callback, tries = 1) {
+      if (tries === 5 || !this.conn || this.conn.readyState === SOCKET_STATES.closed) {
+        callback();
+        return;
+      }
+      setTimeout(() => {
+        this.waitForSocketClosed(callback, tries + 1);
+      }, 150 * tries);
+    }
+    onConnClose(event) {
+      let closeCode = event && event.code;
+      if (this.hasLogger())
+        this.log("transport", "close", event);
+      this.triggerChanError();
+      clearTimeout(this.heartbeatTimer);
+      if (!this.closeWasClean && closeCode !== 1e3) {
+        this.reconnectTimer.scheduleTimeout();
+      }
+      this.stateChangeCallbacks.close.forEach(([, callback]) => callback(event));
+    }
+    onConnError(error) {
+      if (this.hasLogger())
+        this.log("transport", error);
+      let transportBefore = this.transport;
+      let establishedBefore = this.establishedConnections;
+      this.stateChangeCallbacks.error.forEach(([, callback]) => {
+        callback(error, transportBefore, establishedBefore);
+      });
+      if (transportBefore === this.transport || establishedBefore > 0) {
+        this.triggerChanError();
+      }
+    }
+    triggerChanError() {
+      this.channels.forEach((channel) => {
+        if (!(channel.isErrored() || channel.isLeaving() || channel.isClosed())) {
+          channel.trigger(CHANNEL_EVENTS.error);
+        }
+      });
+    }
+    connectionState() {
+      switch (this.conn && this.conn.readyState) {
+        case SOCKET_STATES.connecting:
+          return "connecting";
+        case SOCKET_STATES.open:
+          return "open";
+        case SOCKET_STATES.closing:
+          return "closing";
+        default:
+          return "closed";
+      }
+    }
+    isConnected() {
+      return this.connectionState() === "open";
+    }
+    remove(channel) {
+      this.off(channel.stateChangeRefs);
+      this.channels = this.channels.filter((c) => c.joinRef() !== channel.joinRef());
+    }
+    off(refs) {
+      for (let key in this.stateChangeCallbacks) {
+        this.stateChangeCallbacks[key] = this.stateChangeCallbacks[key].filter(([ref]) => {
+          return refs.indexOf(ref) === -1;
+        });
+      }
+    }
+    channel(topic, chanParams = {}) {
+      let chan = new Channel(topic, chanParams, this);
+      this.channels.push(chan);
+      return chan;
+    }
+    push(data) {
+      if (this.hasLogger()) {
+        let { topic, event, payload, ref, join_ref } = data;
+        this.log("push", `${topic} ${event} (${join_ref}, ${ref})`, payload);
+      }
+      if (this.isConnected()) {
+        this.encode(data, (result) => this.conn.send(result));
+      } else {
+        this.sendBuffer.push(() => this.encode(data, (result) => this.conn.send(result)));
+      }
+    }
+    makeRef() {
+      let newRef = this.ref + 1;
+      if (newRef === this.ref) {
+        this.ref = 0;
+      } else {
+        this.ref = newRef;
+      }
+      return this.ref.toString();
+    }
+    sendHeartbeat() {
+      if (this.pendingHeartbeatRef && !this.isConnected()) {
+        return;
+      }
+      this.pendingHeartbeatRef = this.makeRef();
+      this.push({ topic: "phoenix", event: "heartbeat", payload: {}, ref: this.pendingHeartbeatRef });
+      this.heartbeatTimer = setTimeout(() => this.heartbeatTimeout(), this.heartbeatIntervalMs);
+    }
+    abnormalClose(reason) {
+      this.closeWasClean = false;
+      if (this.isConnected()) {
+        this.conn.close(WS_CLOSE_NORMAL, reason);
+      }
+    }
+    flushSendBuffer() {
+      if (this.isConnected() && this.sendBuffer.length > 0) {
+        this.sendBuffer.forEach((callback) => callback());
+        this.sendBuffer = [];
+      }
+    }
+    onConnMessage(rawMessage) {
+      this.decode(rawMessage.data, (msg) => {
+        let { topic, event, payload, ref, join_ref } = msg;
+        if (ref && ref === this.pendingHeartbeatRef) {
+          clearTimeout(this.heartbeatTimer);
+          this.pendingHeartbeatRef = null;
+          setTimeout(() => this.sendHeartbeat(), this.heartbeatIntervalMs);
+        }
+        if (this.hasLogger())
+          this.log("receive", `${payload.status || ""} ${topic} ${event} ${ref && "(" + ref + ")" || ""}`, payload);
+        for (let i = 0; i < this.channels.length; i++) {
+          const channel = this.channels[i];
+          if (!channel.isMember(topic, event, payload, join_ref)) {
+            continue;
+          }
+          channel.trigger(event, payload, ref, join_ref);
+        }
+        for (let i = 0; i < this.stateChangeCallbacks.message.length; i++) {
+          let [, callback] = this.stateChangeCallbacks.message[i];
+          callback(msg);
+        }
+      });
+    }
+    leaveOpenTopic(topic) {
+      let dupChannel = this.channels.find((c) => c.topic === topic && (c.isJoined() || c.isJoining()));
+      if (dupChannel) {
+        if (this.hasLogger())
+          this.log("transport", `leaving duplicate topic "${topic}"`);
+        dupChannel.leave();
+      }
+    }
+  };
+
+  // src/index.js
   var $root = document.createElement("div");
   document.body.appendChild($root);
   var app = import_Main.Elm.Main.init({
     node: $root
   });
   app.ports.playUrl.subscribe((url) => new Audio(url).play());
+  elmPhoenixWebSocket_default.init(app.ports, Socket, Presence);
 })();

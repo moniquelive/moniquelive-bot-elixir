@@ -48,7 +48,7 @@ defmodule Chatbot.State do
   def handle_cast({:add_users, users}, state) do
     users
     |> Enum.each(fn user ->
-      :ets.insert(:chatbot_state_users, {user, DateTime.utc_now(), MapSet.new()})
+      handle_cast({:add_user, user}, state)
     end)
 
     {:noreply, state}
