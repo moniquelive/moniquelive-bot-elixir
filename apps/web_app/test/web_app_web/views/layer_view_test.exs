@@ -1,3 +1,3 @@
-defmodule WebAppWeb.PageViewTest do
+defmodule WebAppWeb.LayerViewTest do
   use WebAppWeb.ConnCase, async: true
 end

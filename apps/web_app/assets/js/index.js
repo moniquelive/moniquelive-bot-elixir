@@ -12126,6 +12126,9 @@
             )
           );
         };
+        var $author$project$Main$MarqueeMessage = function(text) {
+          return { text };
+        };
         var $elm$time$Time$posixToMillis = function(_v0) {
           var millis = _v0.a;
           return millis;
@@ -12185,6 +12188,11 @@
         var $mdgriffith$elm_style_animation$Animation$loop = function(steps) {
           return $mdgriffith$elm_style_animation$Animation$Model$Loop(steps);
         };
+        var $author$project$Main$marqueeMessageDecoder = A2(
+          $elm$json$Json$Decode$map,
+          $author$project$Main$MarqueeMessage,
+          A2($elm$json$Json$Decode$field, "text", $elm$json$Json$Decode$string)
+        );
         var $author$project$Main$playUrl = _Platform_outgoingPort("playUrl", $elm$json$Json$Encode$string);
         var $author$project$Main$songInfoDecoder = A4(
           $elm$json$Json$Decode$map3,
@@ -15475,26 +15483,97 @@
                   var topic = phoenixMsg.a;
                   var event = phoenixMsg.b;
                   var payload = phoenixMsg.c;
-                  var _v3 = A2(
-                    $elm$core$Debug$log,
-                    "* topic, event, payload:",
-                    _Utils_Tuple3(topic, event, payload)
-                  );
-                  return _Utils_Tuple2(newModel, cmd);
+                  switch (event) {
+                    case "marquee_updated":
+                      var newMarqueeStyle = A2(
+                        $mdgriffith$elm_style_animation$Animation$interrupt,
+                        _List_fromArray(
+                          [
+                            $mdgriffith$elm_style_animation$Animation$loop(
+                              _List_fromArray(
+                                [
+                                  $mdgriffith$elm_style_animation$Animation$to(
+                                    _List_fromArray(
+                                      [
+                                        A2(
+                                          $mdgriffith$elm_style_animation$Animation$translate,
+                                          $mdgriffith$elm_style_animation$Animation$percent(0),
+                                          $mdgriffith$elm_style_animation$Animation$percent(0)
+                                        )
+                                      ]
+                                    )
+                                  ),
+                                  $mdgriffith$elm_style_animation$Animation$wait(
+                                    $elm$time$Time$millisToPosix(60 * 1e3)
+                                  ),
+                                  $mdgriffith$elm_style_animation$Animation$to(
+                                    _List_fromArray(
+                                      [
+                                        A2(
+                                          $mdgriffith$elm_style_animation$Animation$translate,
+                                          $mdgriffith$elm_style_animation$Animation$percent(0),
+                                          $mdgriffith$elm_style_animation$Animation$percent(100)
+                                        )
+                                      ]
+                                    )
+                                  ),
+                                  $mdgriffith$elm_style_animation$Animation$wait(
+                                    $elm$time$Time$millisToPosix(30 * 1e3)
+                                  )
+                                ]
+                              )
+                            )
+                          ]
+                        ),
+                        model.marqueeStyle
+                      );
+                      var marqueePayload = function() {
+                        var _v4 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$marqueeMessageDecoder, payload);
+                        if (_v4.$ === "Ok") {
+                          var newText = _v4.a;
+                          return newText;
+                        } else {
+                          var err = _v4.a;
+                          return $author$project$Main$MarqueeMessage(
+                            $elm$json$Json$Decode$errorToString(err)
+                          );
+                        }
+                      }();
+                      return _Utils_Tuple2(
+                        _Utils_update(
+                          model,
+                          { marqueeMessage: marqueePayload.text, marqueeStyle: newMarqueeStyle }
+                        ),
+                        cmd
+                      );
+                    case "tts_created":
+                      var _v5 = A2($elm$core$Debug$log, "tts_created", payload);
+                      return _Utils_Tuple2(newModel, cmd);
+                    case "spotify_music_changed":
+                      var _v6 = A2($elm$core$Debug$log, "spotify_music_changed", payload);
+                      return _Utils_Tuple2(newModel, cmd);
+                    default:
+                      var _v7 = A2(
+                        $elm$core$Debug$log,
+                        "* topic, event, payload:",
+                        _Utils_Tuple3(topic, event, payload)
+                      );
+                      return _Utils_Tuple2(newModel, cmd);
+                  }
                 } else {
                   return _Utils_Tuple2(newModel, cmd);
                 }
               default:
                 var message = msg.a;
-                var _v4 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$websocketMessageDecoder, message);
-                if (_v4.$ === "Ok") {
-                  var ws = _v4.a;
-                  var _v5 = ws.action;
-                  switch (_v5) {
+                var _v8 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$websocketMessageDecoder, message);
+                if (_v8.$ === "Ok") {
+                  var ws = _v8.a;
+                  var _v9 = ws.action;
+                  switch (_v9) {
                     case "spotify_music_updated":
-                      var _v6 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$songInfoDecoder, ws.payload);
-                      if (_v6.$ === "Ok") {
-                        var song = _v6.a;
+                      var _v10 = A2($elm$json$Json$Decode$decodeString, $author$project$Main$songInfoDecoder, ws.payload);
+                      if (_v10.$ === "Ok") {
+                        var song = _v10.a;
                         var newCurrentSongStyle = A2(
                           $mdgriffith$elm_style_animation$Animation$interrupt,
                           _List_fromArray(
@@ -15542,56 +15621,6 @@
                       return _Utils_Tuple2(
                         model,
                         $author$project$Main$playUrl(ws.payload)
-                      );
-                    case "marquee_updated":
-                      var newMarqueeStyle = A2(
-                        $mdgriffith$elm_style_animation$Animation$interrupt,
-                        _List_fromArray(
-                          [
-                            $mdgriffith$elm_style_animation$Animation$loop(
-                              _List_fromArray(
-                                [
-                                  $mdgriffith$elm_style_animation$Animation$to(
-                                    _List_fromArray(
-                                      [
-                                        A2(
-                                          $mdgriffith$elm_style_animation$Animation$translate,
-                                          $mdgriffith$elm_style_animation$Animation$percent(0),
-                                          $mdgriffith$elm_style_animation$Animation$percent(0)
-                                        )
-                                      ]
-                                    )
-                                  ),
-                                  $mdgriffith$elm_style_animation$Animation$wait(
-                                    $elm$time$Time$millisToPosix(60 * 1e3)
-                                  ),
-                                  $mdgriffith$elm_style_animation$Animation$to(
-                                    _List_fromArray(
-                                      [
-                                        A2(
-                                          $mdgriffith$elm_style_animation$Animation$translate,
-                                          $mdgriffith$elm_style_animation$Animation$percent(0),
-                                          $mdgriffith$elm_style_animation$Animation$percent(100)
-                                        )
-                                      ]
-                                    )
-                                  ),
-                                  $mdgriffith$elm_style_animation$Animation$wait(
-                                    $elm$time$Time$millisToPosix(30 * 1e3)
-                                  )
-                                ]
-                              )
-                            )
-                          ]
-                        ),
-                        model.marqueeStyle
-                      );
-                      return _Utils_Tuple2(
-                        _Utils_update(
-                          model,
-                          { marqueeMessage: ws.payload, marqueeStyle: newMarqueeStyle }
-                        ),
-                        $elm$core$Platform$Cmd$none
                       );
                     default:
                       return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -17747,10 +17776,8 @@
   };
 
   // src/index.js
-  var $root = document.createElement("div");
-  document.body.appendChild($root);
   var app = import_Main.Elm.Main.init({
-    node: $root
+    node: document.getElementById("app")
   });
   app.ports.playUrl.subscribe((url) => new Audio(url).play());
   elmPhoenixWebSocket_default.init(app.ports, Socket, Presence);

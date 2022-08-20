@@ -39,6 +39,10 @@ port messageReceiver : (String -> msg) -> Sub msg
 -- MODEL
 
 
+type alias MarqueeMessage =
+    { text : String }
+
+
 type alias WebsocketMessage =
     { action : String
     , payload : String
@@ -120,18 +124,56 @@ update msg model =
             in
             case phoenixMsg of
                 Phoenix.ChannelEvent topic event payload ->
-                    let
-                        _ =
-                            Debug.log "* topic, event, payload:" ( topic, event, payload )
-                    in
-                    ( newModel, cmd )
+                    case event of
+                        "marquee_updated" ->
+                            let
+                                marqueePayload =
+                                    case D.decodeValue marqueeMessageDecoder payload of
+                                        Ok newText ->
+                                            newText
 
-                -- Phoenix.SocketMessage (Phoenix.StateChange state) ->
-                --     let
-                --         _ =
-                --             Debug.log "* state" state
-                --     in
-                --     ( newModel, cmd )
+                                        Err err ->
+                                            MarqueeMessage (D.errorToString err)
+
+                                newMarqueeStyle =
+                                    Animation.interrupt
+                                        [ Animation.loop
+                                            [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
+                                            , Animation.wait (Time.millisToPosix <| 60 * 1000)
+                                            , Animation.to [ Animation.translate (percent 0) (percent 100) ]
+                                            , Animation.wait (Time.millisToPosix <| 30 * 1000)
+                                            ]
+                                        ]
+                                        model.marqueeStyle
+                            in
+                            ( { model
+                                | marqueeMessage = marqueePayload.text
+                                , marqueeStyle = newMarqueeStyle
+                              }
+                            , cmd
+                            )
+
+                        "tts_created" ->
+                            let
+                                _ =
+                                    Debug.log "tts_created" payload
+                            in
+                            ( newModel, cmd )
+
+                        "spotify_music_changed" ->
+                            let
+                                _ =
+                                    Debug.log "spotify_music_changed" payload
+                            in
+                            ( newModel, cmd )
+
+                        _ ->
+                            let
+                                _ =
+                                    Debug.log "* topic, event, payload:" ( topic, event, payload )
+                            in
+                            ( newModel, cmd )
+
                 _ ->
                     ( newModel, cmd )
 
@@ -163,26 +205,6 @@ update msg model =
 
                         "tts_created" ->
                             ( model, playUrl ws.payload )
-
-                        "marquee_updated" ->
-                            let
-                                newMarqueeStyle =
-                                    Animation.interrupt
-                                        [ Animation.loop
-                                            [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
-                                            , Animation.wait (Time.millisToPosix <| 60 * 1000)
-                                            , Animation.to [ Animation.translate (percent 0) (percent 100) ]
-                                            , Animation.wait (Time.millisToPosix <| 30 * 1000)
-                                            ]
-                                        ]
-                                        model.marqueeStyle
-                            in
-                            ( { model
-                                | marqueeMessage = ws.payload
-                                , marqueeStyle = newMarqueeStyle
-                              }
-                            , Cmd.none
-                            )
 
                         _ ->
                             ( model, Cmd.none )
@@ -239,6 +261,12 @@ view model =
 
 
 -- JSON decode
+
+
+marqueeMessageDecoder : D.Decoder MarqueeMessage
+marqueeMessageDecoder =
+    D.map MarqueeMessage
+        (D.field "text" D.string)
 
 
 websocketMessageDecoder : D.Decoder WebsocketMessage

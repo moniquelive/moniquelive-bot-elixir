@@ -17,7 +17,7 @@ defmodule WebAppWeb.Router do
   scope "/", WebAppWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    get "/layer", LayerController, :index
   end
 
   # Other scopes may use custom stacks.

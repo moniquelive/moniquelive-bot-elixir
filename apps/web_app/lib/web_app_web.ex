@@ -51,6 +51,17 @@ defmodule WebAppWeb do
     end
   end
 
+  def layer_view do
+    quote do
+      use Phoenix.View,
+        root: "lib/web_app_web/templates",
+        namespace: WebAppWeb,
+        layout: {WebAppWeb.LayoutView, "layer.html"}
+
+      # unquote(view_helpers())
+    end
+  end
+
   def live_component do
     quote do
       use Phoenix.LiveComponent

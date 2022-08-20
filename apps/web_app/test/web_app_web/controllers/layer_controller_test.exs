@@ -1,4 +1,4 @@
-defmodule WebAppWeb.PageControllerTest do
+defmodule WebAppWeb.LayerControllerTest do
   use WebAppWeb.ConnCase
 
   test "GET /", %{conn: conn} do
