@@ -5,7 +5,7 @@ config :chatbot,
     [
       bot: Chatbot.Bot,
       user: "moniquelive_bot",
-      pass: "oauth:xoh4luwe55xabmetacqats3gob8zbt",
+      pass: System.get_env("TWITCH_TMI_OAUTH"),
       channels: ["moniquelive"],
       capabilities: ['membership', 'tags', 'commands'],
       debug: false
