@@ -26,38 +26,38 @@ defmodule Chatbot.Bot do
 
   @impl TMI.Handler
   def handle_join("#moniquelive", user) do
-    Logger.debug("*** #{user} logged in")
+    # Logger.debug("*** #{user} logged in")
     State.user_joined(user)
   end
 
   @impl TMI.Handler
   def handle_part("#moniquelive", user) do
-    Logger.debug("*** #{user} left")
+    # Logger.debug("*** #{user} left")
     State.user_left(user)
   end
 
   @impl TMI.Handler
   def handle_unrecognized({:names_list, _channel, users}) do
-    Logger.debug("*** #{users} logged in (unrecog)")
-
     users
     |> String.split(" ", trim: true)
     |> State.user_joined()
   end
 
-  def handle_unrecognized(msg),
-    do: Logger.debug("*** unrecog/1: #{inspect(msg)}")
+  def handle_unrecognized(_msg),
+    # Logger.debug("*** unrecog/1: #{inspect(msg)}")
+    do: nil
 
-  def handle_unrecognized(msg, _tags),
-    do: Logger.debug("*** unrecog/2: #{inspect(msg)}")
+  def handle_unrecognized(_msg, _tags),
+    # Logger.debug("*** unrecog/2: #{inspect(msg)}")
+    do: nil
 
-  @impl TMI.Handler
-  def handle_action(msg, sender, chat),
-    do: IO.puts({:"action/3", msg, sender, chat})
+  # @impl TMI.Handler
+  # def handle_action(msg, sender, chat),
+  #   do: IO.puts({:"action/3", msg, sender, chat})
 
-  @impl TMI.Handler
-  def handle_mention(msg, sender, chat),
-    do: IO.puts({:"mention/3", msg, sender, chat})
+  # @impl TMI.Handler
+  # def handle_mention(msg, sender, chat),
+  #   do: IO.puts({:"mention/3", msg, sender, chat})
 
   # --- PRIVATE ---------------------------------------------------------------
 
