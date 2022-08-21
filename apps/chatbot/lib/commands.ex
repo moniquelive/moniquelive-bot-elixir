@@ -168,11 +168,8 @@ defmodule Chatbot.Commands do
     |> Calendar.strftime("dia %x as %X", preferred_date: "%d/%m/%Y")
   end
 
-  defp seconds_ago(dt) do
-    dt
-    |> DateTime.diff(DateTime.utc_now(), :second)
-    |> (&Kernel.-/1).()
-  end
+  defp seconds_ago(dt),
+    do: DateTime.diff(DateTime.utc_now(), dt, :second)
 
   @doc """
   ----------------------------------------------------------------------------
@@ -182,44 +179,56 @@ defmodule Chatbot.Commands do
   def follow_age(sender, command) do
     case String.split(command) do
       [_followage] ->
-        follow_age(sender, "!followage " <> sender)
+        follow_age(sender, "!followage #{sender}")
 
       [_followage, login | _] ->
-        [follower_info] =
-          TwitchApi.Users.GetUsers.call(%{login: login})
-          |> elem(1)
-          |> Map.get(:body)
-          |> Jason.decode!()
-          |> Map.get("data")
+        case get_twitch_user_info(login) do
+          [follower_info] ->
+            format_follower_info(follower_info)
 
-        follower_id = follower_info["id"]
-        follower_display_name = follower_info["display_name"]
-
-        TwitchApi.Users.GetUsersFollows.call(%{from_id: follower_id, to_id: @moniquelive_id})
-        |> elem(1)
-        |> Map.get(:body)
-        |> Jason.decode!()
-        |> Map.get("data")
-        |> case do
-          [follow_info] ->
-            followed_at = follow_info["followed_at"]
-
-            case DateTime.from_iso8601(followed_at) do
-              {:error, _} ->
-                "não consegui fazer parse da data: #{followed_at}"
-
-              {:ok, since, _} ->
-                seconds =
-                  since
-                  |> DateTime.diff(DateTime.utc_now(), :second)
-                  |> (&Kernel.-/1).()
-
-                "#{follower_display_name} segue a moniquelive há #{Utils.format_duration(seconds)} segundos"
-            end
-
-          [] ->
-            "#{login} não segue a moniquelive..."
+          _ ->
+            "não encontrei o usuário #{login}..."
         end
     end
   end
+
+  defp format_follower_info(info) do
+    case get_user_followage_moniquelive(info["id"]) do
+      [followage_info] ->
+        format_followed_at(followage_info)
+
+      _ ->
+        "#{info["display_name"]} não segue a moniquelive..."
+    end
+  end
+
+  defp format_followed_at(info) do
+    case DateTime.from_iso8601(info["followed_at"]) do
+      {:ok, since, 0} ->
+        period =
+          DateTime.diff(DateTime.utc_now(), since, :second)
+          |> Utils.format_duration()
+
+        "#{info["from_name"]} segue a #{info["to_name"]} há #{period}"
+
+      _ ->
+        "não consegui fazer parse da data: #{info["followed_at"]}"
+    end
+  end
+
+  defp get_twitch_user_info(login),
+    do:
+      TwitchApi.Users.GetUsers.call(%{login: login})
+      |> elem(1)
+      |> Map.get(:body)
+      |> Jason.decode!()
+      |> Map.get("data")
+
+  defp get_user_followage_moniquelive(follower_id),
+    do:
+      TwitchApi.Users.GetUsersFollows.call(%{from_id: follower_id, to_id: @moniquelive_id})
+      |> elem(1)
+      |> Map.get(:body)
+      |> Jason.decode!()
+      |> Map.get("data")
 end

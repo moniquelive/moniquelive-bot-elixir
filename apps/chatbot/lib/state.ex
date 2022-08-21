@@ -72,7 +72,8 @@ defmodule Chatbot.State do
   end
 
   def handle_cast({:command, command}, state) do
-    :ets.update_counter(:chatbot_state_commands, command, 1, {command, 0})
+    default = {command, 1}
+    :ets.update_counter(:chatbot_state_commands, command, 1, default)
     {:noreply, state}
   end
 
