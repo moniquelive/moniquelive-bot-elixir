@@ -1,7 +1,9 @@
 defmodule Chatbot.Commands do
   @moduledoc false
 
-  alias Chatbot.{Config, State}
+  @moniquelive_id "4930146"
+
+  alias Chatbot.{Config, State, Utils}
 
   def action_for_command(cmd),
     do:
@@ -170,5 +172,54 @@ defmodule Chatbot.Commands do
     dt
     |> DateTime.diff(DateTime.utc_now(), :second)
     |> (&Kernel.-/1).()
+  end
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !followage
+  ----------------------------------------------------------------------------
+  """
+  def follow_age(sender, command) do
+    case String.split(command) do
+      [_followage] ->
+        follow_age(sender, "!followage " <> sender)
+
+      [_followage, login | _] ->
+        [follower_info] =
+          TwitchApi.Users.GetUsers.call(%{login: login})
+          |> elem(1)
+          |> Map.get(:body)
+          |> Jason.decode!()
+          |> Map.get("data")
+
+        follower_id = follower_info["id"]
+        follower_display_name = follower_info["display_name"]
+
+        TwitchApi.Users.GetUsersFollows.call(%{from_id: follower_id, to_id: @moniquelive_id})
+        |> elem(1)
+        |> Map.get(:body)
+        |> Jason.decode!()
+        |> Map.get("data")
+        |> case do
+          [follow_info] ->
+            followed_at = follow_info["followed_at"]
+
+            case DateTime.from_iso8601(followed_at) do
+              {:error, _} ->
+                "não consegui fazer parse da data: #{followed_at}"
+
+              {:ok, since, _} ->
+                seconds =
+                  since
+                  |> DateTime.diff(DateTime.utc_now(), :second)
+                  |> (&Kernel.-/1).()
+
+                "#{follower_display_name} segue a moniquelive há #{Utils.format_duration(seconds)} segundos"
+            end
+
+          [] ->
+            "#{login} não segue a moniquelive..."
+        end
+    end
   end
 end

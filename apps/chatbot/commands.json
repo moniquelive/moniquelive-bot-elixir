@@ -596,7 +596,7 @@
       ],
       "responses": [
         "/color yellowgreen",
-        "/me {{ .Command.FollowAge .CmdLine .Sender }}"
+        "/me #{Commands.follow_age(sender, command)}"
       ]
     },
     {
