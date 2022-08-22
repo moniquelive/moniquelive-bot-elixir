@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Animation exposing (percent)
 import Animation.Spring.Presets exposing (wobbly)
@@ -26,27 +26,11 @@ main =
 
 
 
--- PORTS
-
-
-port playUrl : String -> Cmd msg
-
-
-port messageReceiver : (String -> msg) -> Sub msg
-
-
-
 -- MODEL
 
 
 type alias MarqueeMessage =
     { text : String }
-
-
-type alias WebsocketMessage =
-    { action : String
-    , payload : String
-    }
 
 
 type alias SongInfo =
@@ -73,7 +57,7 @@ init _ =
                 |> Phoenix.setJoinConfig
                     { joinConfig
                         | topic = "chatbot:events"
-                        , events = [ "marquee_updated", "tts_created", "spotify_music_changed" ]
+                        , events = [ "marquee_updated", "spotify_music_changed" ]
                     }
                 |> Phoenix.join "chatbot:events"
 
@@ -109,108 +93,73 @@ update msg model =
                 newMarqueeStyle =
                     Animation.update animMsg model.marqueeStyle
             in
-            ( { model
-                | currentSongStyle = newCurrentSongStyle
-                , marqueeStyle = newMarqueeStyle
-              }
-            , Cmd.none
-            )
+            ( { model | currentSongStyle = newCurrentSongStyle, marqueeStyle = newMarqueeStyle }, Cmd.none )
 
         PhoenixMsg subMsg ->
-            let
-                ( newModel, cmd, phoenixMsg ) =
-                    Phoenix.update subMsg model.phoenix
-                        |> Phoenix.updateWith PhoenixMsg model
-            in
-            case phoenixMsg of
-                Phoenix.ChannelEvent topic event payload ->
-                    case event of
-                        "marquee_updated" ->
-                            let
-                                marqueePayload =
-                                    case D.decodeValue marqueeMessageDecoder payload of
-                                        Ok newText ->
-                                            newText
+            processPhoenixMsg model subMsg
 
-                                        Err err ->
-                                            MarqueeMessage (D.errorToString err)
+        _ ->
+            ( model, Cmd.none )
 
-                                newMarqueeStyle =
-                                    Animation.interrupt
-                                        [ Animation.loop
-                                            [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
-                                            , Animation.wait (Time.millisToPosix <| 60 * 1000)
-                                            , Animation.to [ Animation.translate (percent 0) (percent 100) ]
-                                            , Animation.wait (Time.millisToPosix <| 30 * 1000)
-                                            ]
-                                        ]
-                                        model.marqueeStyle
-                            in
-                            ( { model
-                                | marqueeMessage = marqueePayload.text
-                                , marqueeStyle = newMarqueeStyle
-                              }
-                            , cmd
-                            )
 
-                        "tts_created" ->
-                            let
-                                _ =
-                                    Debug.log "tts_created" payload
-                            in
-                            ( newModel, cmd )
+processPhoenixMsg : Model -> Phoenix.Msg -> ( Model, Cmd Msg )
+processPhoenixMsg model subMsg =
+    let
+        ( newModel, cmd, phoenixMsg ) =
+            Phoenix.update subMsg model.phoenix
+                |> Phoenix.updateWith PhoenixMsg model
+    in
+    case phoenixMsg of
+        Phoenix.ChannelEvent _ event payload ->
+            case event of
+                "marquee_updated" ->
+                    let
+                        marqueePayload =
+                            case D.decodeValue marqueeMessageDecoder payload of
+                                Ok newText ->
+                                    newText
 
-                        "spotify_music_changed" ->
-                            let
-                                _ =
-                                    Debug.log "spotify_music_changed" payload
-                            in
-                            ( newModel, cmd )
+                                Err err ->
+                                    MarqueeMessage (D.errorToString err)
 
-                        _ ->
-                            let
-                                _ =
-                                    Debug.log "* topic, event, payload:" ( topic, event, payload )
-                            in
-                            ( newModel, cmd )
+                        newMarqueeStyle =
+                            Animation.interrupt
+                                [ Animation.loop
+                                    [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
+                                    , Animation.wait (Time.millisToPosix <| 60 * 1000)
+                                    , Animation.to [ Animation.translate (percent 0) (percent 100) ]
+                                    , Animation.wait (Time.millisToPosix <| 30 * 1000)
+                                    ]
+                                ]
+                                model.marqueeStyle
+                    in
+                    ( { model | marqueeMessage = marqueePayload.text, marqueeStyle = newMarqueeStyle }, cmd )
+
+                "spotify_music_changed" ->
+                    let
+                        songPayload =
+                            case D.decodeValue songInfoDecoder payload of
+                                Ok musicInfo ->
+                                    musicInfo
+
+                                Err _ ->
+                                    SongInfo "" "erro" "erro"
+
+                        newCurrentSongStyle =
+                            Animation.interrupt
+                                [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
+                                , Animation.wait (Time.millisToPosix <| 8 * 1000)
+                                , Animation.to [ Animation.translate (percent 115) (percent 0) ]
+                                ]
+                                model.currentSongStyle
+                    in
+                    ( { newModel | currentSong = songPayload, currentSongStyle = newCurrentSongStyle }, cmd )
 
                 _ ->
                     ( newModel, cmd )
 
-        Recv message ->
-            case D.decodeString websocketMessageDecoder message of
-                Ok ws ->
-                    case ws.action of
-                        "spotify_music_updated" ->
-                            case D.decodeString songInfoDecoder ws.payload of
-                                Ok song ->
-                                    let
-                                        newCurrentSongStyle =
-                                            Animation.interrupt
-                                                [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
-                                                , Animation.wait (Time.millisToPosix <| 8 * 1000)
-                                                , Animation.to [ Animation.translate (percent 115) (percent 0) ]
-                                                ]
-                                                model.currentSongStyle
-                                    in
-                                    ( { model
-                                        | currentSong = song
-                                        , currentSongStyle = newCurrentSongStyle
-                                      }
-                                    , Cmd.none
-                                    )
-
-                                Err _ ->
-                                    ( model, Cmd.none )
-
-                        "tts_created" ->
-                            ( model, playUrl ws.payload )
-
-                        _ ->
-                            ( model, Cmd.none )
-
-                Err _ ->
-                    ( model, Cmd.none )
+        _ ->
+            ( newModel, cmd )
 
 
 
@@ -220,8 +169,7 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ messageReceiver Recv
-        , Animation.subscription Animate
+        [ Animation.subscription Animate
             [ model.currentSongStyle
             , model.marqueeStyle
             ]
@@ -267,13 +215,6 @@ marqueeMessageDecoder : D.Decoder MarqueeMessage
 marqueeMessageDecoder =
     D.map MarqueeMessage
         (D.field "text" D.string)
-
-
-websocketMessageDecoder : D.Decoder WebsocketMessage
-websocketMessageDecoder =
-    D.map2 WebsocketMessage
-        (D.field "action" D.string)
-        (D.field "payload" D.string)
 
 
 songInfoDecoder : D.Decoder SongInfo
