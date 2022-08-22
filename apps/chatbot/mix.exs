@@ -18,7 +18,7 @@ defmodule Chatbot.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :spotify_ex],
       mod: {Chatbot.Application, []}
     ]
   end
@@ -34,7 +34,8 @@ defmodule Chatbot.MixProject do
       {:scrapped_twitch_api,
        only: [:dev, :prod],
        git: "git@github.com:moniquelive/scrapped_twitch_api.git",
-       branch: :main}
+       branch: :main},
+      {:spotify_ex, "~> 2.2.1"}
       # {:tmi, "~> 0.5.3"}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},

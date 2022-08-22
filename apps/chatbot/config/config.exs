@@ -20,3 +20,10 @@ config :scrapped_twitch_api,
   callback_protocol: :http,
   callback_uri: "localhost",
   callback_port: 8090
+
+config :spotify_ex,
+  user_id: "moniquelive",
+  scopes: ~w(user-modify-playback-state user-read-playback-state user-read-currently-playing),
+  callback_url: ""
+
+import_config "secret.exs"
