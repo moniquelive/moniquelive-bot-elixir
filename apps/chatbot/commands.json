@@ -176,7 +176,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me {{ .Player.CurrentSong }}"
+        "/me #{Commands.Player.current_song}"
       ]
     },
     {
@@ -552,7 +552,7 @@
       ],
       "responses": [
         "/color yellowgreen",
-        "/me {{ .Command.SkipMusic .Sender.Name }}"
+        "/me #{Commands.Player.skip_song(sender)}"
       ]
     },
     {
@@ -560,6 +560,7 @@
       "ajuda": "Vota para música não mudar",
       "actions": [
         "!noskip",
+        "!keep",
         "!naopula",
         "!fica",
         "!amelhorquenostemos",
@@ -578,7 +579,7 @@
       ],
       "responses": [
         "/color yellowgreen",
-        "/me {{ .Command.KeepMusic .Sender.Name }}"
+        "/me #{Commands.Player.keep_song(sender)}"
       ]
     },
     {
