@@ -11,14 +11,18 @@ defmodule Chatbot.Commands.Player do
   def current_song() do
     curr = SpotifyMonitor.current_song()
 
-    artist = hd(curr.item.artists)["name"]
-    title = curr.item.name
+    if curr do
+      artist = hd(curr.item.artists)["name"]
+      title = curr.item.name
 
-    song_url =
-      hd(curr.item.album["images"])["url"]
-      |> String.replace("https://open.spotify.com/track/", "https://song.link/s/")
+      song_url =
+        hd(curr.item.album["images"])["url"]
+        |> String.replace("https://open.spotify.com/track/", "https://song.link/s/")
 
-    "#{artist} - #{title} - #{song_url}"
+      "#{artist} - #{title} - #{song_url}"
+    else
+      "sem música no momento..."
+    end
   end
 
   @doc """
