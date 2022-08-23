@@ -8,7 +8,7 @@ esbuild.build({
   watch: process.argv.includes('--watch'),
   plugins: [
     ElmPlugin({
-      debug: true, // debug (default: false): Enable the time-travelling debugger
+      //debug: true, // debug (default: false): Enable the time-travelling debugger
       clearOnWatch: true, // clearOnWatch (default: false): Clear the console before re-building on file changes
       // optimize (default: NODE_ENV === 'production'): Optimize the js output (true by default if NODE_ENV is production)
       // pathToElm (default: node_modules/.bin/elm || elm): Specify an explicit path to the elm executable

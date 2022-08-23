@@ -5,7 +5,11 @@ defmodule Chatbot.Application do
 
   use Application
 
-  alias Chatbot.{Config, State}
+  alias Chatbot.{
+    Config,
+    SpotifyMonitor,
+    State
+  }
 
   @impl true
   def start(_type, _args) do
@@ -14,6 +18,7 @@ defmodule Chatbot.Application do
     children = [
       # Starts a worker by calling: Chatbot.Worker.start_link(arg)
       # {Chatbot.Worker, arg}
+      {SpotifyMonitor, Application.fetch_env!(:spotify_ex, :refresh_token)},
       State,
       {Config, [dirs: [Path.expand("../..", __DIR__)]]},
       {TMI.Supervisor, bot_config}
