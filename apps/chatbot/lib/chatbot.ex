@@ -50,16 +50,20 @@ defmodule Chatbot.Bot do
         |> String.split("?")
         |> hd()
 
-      SpotifyMonitor.enqueue(song_id)
+      case SpotifyMonitor.song_info(song_id) do
+        {:ok, song_info} ->
+          artist = hd(song_info.artists)["name"]
+          title = song_info.name
+          dur = Utils.format_duration(div(song_info.duration_ms, 1000))
 
-      song_info = SpotifyMonitor.song_info(song_id)
+          say(chat, "/color GoldenRod")
+          say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
+          SpotifyMonitor.enqueue(song_id)
 
-      artist = hd(song_info.artists)["name"]
-      title = song_info.name
-      dur = Utils.format_duration(div(song_info.duration_ms, 1000))
-
-      say(chat, "/color GoldenRod")
-      say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
+        {:error, reason} ->
+          say(chat, "/color Red")
+          say(chat, "Não consegui enfileirar: #{song_id} (#{reason})")
+      end
     else
       State.process_sentence(sentence, user)
     end

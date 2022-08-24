@@ -32,8 +32,13 @@ defmodule Chatbot.SpotifyMonitor do
     do: {:reply, state.curr, state}
 
   def handle_call({:song_info, song_id}, _from, state) do
-    {:ok, info} = Spotify.Track.get_track(state.creds, song_id)
-    {:reply, info, state}
+    case Spotify.Track.get_track(state.creds, song_id) do
+      {:ok, %{"error" => %{"message" => message}}} ->
+        {:reply, {:error, message}, state}
+
+      {:ok, info} ->
+        {:reply, {:ok, info}, state}
+    end
   end
 
   @impl GenServer
@@ -83,6 +88,7 @@ defmodule Chatbot.SpotifyMonitor do
         _ ->
           state.curr
       end
+
     Process.send_after(self(), :monitor_timer, 2_000)
     {:noreply, %{state | curr: curr}}
   end
