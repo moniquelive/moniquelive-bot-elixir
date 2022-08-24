@@ -642,6 +642,20 @@
         "/color YellowGreen",
         "/me meus artigos traduzidos: https://monique.dev/"
       ]
+    },
+    {
+      "help": "Shows 🤖️ project",
+      "ajuda": "Mostra a url do 🤖️",
+      "actions": [
+        "!bot",
+        "!robot",
+        "!🤖️",
+        "!robo"
+      ],
+      "responses": [
+        "/color YellowGreen",
+        "/me github do 🤖️: https://github.com/moniquelive/moniquelive-bot-elixir.git"
+      ]
     }
   ]
 }
