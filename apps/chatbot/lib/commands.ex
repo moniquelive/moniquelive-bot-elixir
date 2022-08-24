@@ -154,7 +154,7 @@ defmodule Chatbot.Commands do
       [_uptime, friend | _] ->
         case State.get_user(friend) do
           {_, dt, _} ->
-            "#{friend} entrou #{format_date(dt)} (há #{seconds_ago(dt)} segundos)"
+            "#{friend} entrou #{format_date(dt)} (há #{time_ago(dt)})"
 
           _ ->
             "#{friend} não tem horário de entrada... :("
@@ -168,8 +168,8 @@ defmodule Chatbot.Commands do
     |> Calendar.strftime("dia %x as %X", preferred_date: "%d/%m/%Y")
   end
 
-  defp seconds_ago(dt),
-    do: DateTime.diff(DateTime.utc_now(), dt, :second)
+  defp time_ago(dt),
+    do: DateTime.diff(DateTime.utc_now(), dt, :second) |> Utils.format_duration()
 
   @doc """
   ----------------------------------------------------------------------------
