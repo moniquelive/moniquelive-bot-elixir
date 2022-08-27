@@ -11,18 +11,9 @@ defmodule Chatbot.Commands.Player do
   def current_song() do
     curr = SpotifyMonitor.current_song()
 
-    if curr do
-      artist = hd(curr.item.artists)["name"]
-      title = curr.item.name
-
-      song_url =
-        curr.item.href
-        |> String.replace("https://api.spotify.com/v1/tracks/", "https://song.link/s/")
-
-      "#{artist} - #{title} - #{song_url}"
-    else
-      "sem música no momento..."
-    end
+    if curr && curr.is_playing,
+      do: SpotifyMonitor.broadcast_song_info(curr),
+      else: "sem música no momento..."
   end
 
   @doc """

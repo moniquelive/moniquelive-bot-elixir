@@ -18,6 +18,17 @@ defmodule Chatbot.SpotifyMonitor do
   def song_info(song_id), do: GenServer.call(__MODULE__, {:song_info, song_id})
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
 
+  def broadcast_song_info(curr) do
+    artist = hd(curr.item.artists)["name"]
+    title = curr.item.name
+    song_url = hd(curr.item.album["images"])["url"]
+
+    payload = %{imgUrl: song_url, title: title, artist: artist}
+    WebAppWeb.Endpoint.broadcast!("chatbot:events", "spotify_music_changed", payload)
+    Phoenix.PubSub.broadcast!(WebApp.PubSub, "spotify:music_changed", curr)
+    nil
+  end
+
   # Server
 
   @impl GenServer
@@ -73,15 +84,8 @@ defmodule Chatbot.SpotifyMonitor do
     curr =
       case Spotify.Player.get_current_playback(state.creds) do
         {:ok, curr} ->
-          if state.curr == nil or curr.item.id != state.curr.item.id do
-            artist = hd(curr.item.artists)["name"]
-            title = curr.item.name
-            song_url = hd(curr.item.album["images"])["url"]
-
-            payload = %{imgUrl: song_url, title: title, artist: artist}
-            WebAppWeb.Endpoint.broadcast!("chatbot:events", "spotify_music_changed", payload)
-            Phoenix.PubSub.broadcast!(WebApp.PubSub, "spotify:music_changed", curr)
-          end
+          if curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id),
+            do: broadcast_song_info(curr)
 
           curr
 
