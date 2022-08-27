@@ -93,8 +93,8 @@ defmodule Chatbot.Bot do
     title = curr.item.name
 
     song_url =
-      hd(curr.item.album["images"])["url"]
-      |> String.replace("https://open.spotify.com/track/", "https://song.link/s/")
+      curr.item.href
+      |> String.replace("https://api.spotify.com/v1/tracks/", "https://song.link/s/")
 
     dur = Utils.format_duration(div(curr.item.duration_ms, 1000))
     say(@channel_name, "/color Chocolate")
