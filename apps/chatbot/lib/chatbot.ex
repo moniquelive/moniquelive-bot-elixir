@@ -29,14 +29,12 @@ defmodule Chatbot.Bot do
     [cmd | _] = String.split(command_line)
 
     if cmd not in Config.ignored() do
-      action = Commands.action_for_command(cmd)
-
-      if is_nil(action) do
-        say(chat, "/color FireBrick")
-        say(chat, "@#{sender}, não conheço esse: #{command_line}")
-      else
+      if action = Commands.action_for_command(cmd) do
         run(action, chat, command_line, sender)
         State.performed_command(cmd)
+      else
+        say(chat, "/color FireBrick")
+        say(chat, "@#{sender}, não conheço esse: #{command_line}")
       end
     end
   end
@@ -54,7 +52,11 @@ defmodule Chatbot.Bot do
         {:ok, song_info} ->
           artist = hd(song_info.artists)["name"]
           title = song_info.name
-          dur = Utils.format_duration(div(song_info.duration_ms, 1000))
+
+          dur =
+            song_info.duration_ms
+            |> div(1000)
+            |> Utils.format_duration()
 
           say(chat, "/color GoldenRod")
           say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
@@ -70,23 +72,17 @@ defmodule Chatbot.Bot do
   end
 
   @impl TMI.Handler
-  def handle_join("#moniquelive", user) do
-    # Logger.debug("*** #{user} logged in")
-    State.user_joined(user)
-  end
+  def handle_join("#moniquelive", user), do: State.user_joined(user)
 
   @impl TMI.Handler
-  def handle_part("#moniquelive", user) do
-    # Logger.debug("*** #{user} left")
-    State.user_left(user)
-  end
+  def handle_part("#moniquelive", user), do: State.user_left(user)
 
   @impl TMI.Handler
-  def handle_unrecognized({:names_list, _channel, users}) do
-    users
-    |> String.split(" ", trim: true)
-    |> State.user_joined()
-  end
+  def handle_unrecognized({:names_list, _channel, users}),
+    do:
+      users
+      |> String.split(" ", trim: true)
+      |> State.user_joined()
 
   def handle_unrecognized(%Spotify.Playback{} = curr) do
     artist = hd(curr.item.artists)["name"]
@@ -96,7 +92,11 @@ defmodule Chatbot.Bot do
       curr.item.href
       |> String.replace("https://api.spotify.com/v1/tracks/", "https://song.link/s/")
 
-    dur = Utils.format_duration(div(curr.item.duration_ms, 1000))
+    dur =
+      curr.item.duration_ms
+      |> div(1000)
+      |> Utils.format_duration()
+
     say(@channel_name, "/color Chocolate")
     say(@channel_name, "/me #{artist} - #{title} - #{song_url} (#{dur})")
   end
