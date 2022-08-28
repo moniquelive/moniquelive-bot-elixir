@@ -67,7 +67,7 @@
         "/me #{length(Commands.roster)} loucos no hospício... 👀"
       ],
       "logs": [
-        "#{Commands.roster}"
+        "#{Commands.roster |> Enum.join(\",\")}"
       ]
     },
     {

@@ -120,6 +120,12 @@ defmodule Chatbot.Bot do
     |> Enum.map(&eval_string(&1, command, sender))
     |> Enum.flat_map(&Utils.word_wrap(&1, 500))
     |> Enum.each(&say(chat, &1))
+
+    if logs = action["logs"],
+      do:
+        logs
+        |> Enum.map(&eval_string(&1, command, sender))
+        |> Logger.info()
   end
 
   defp eval_string(response_line, command, sender) do
