@@ -21,22 +21,12 @@ defmodule Chatbot.Commands.Player do
   !skip
   ----------------------------------------------------------------------------
   """
-  def skip_song(_sender) do
-    # TODO: implementar logica de cabo de guerra
-
-    SpotifyMonitor.skip_to_next()
-
-    "pulando..."
-  end
+  def skip_song(sender), do: SpotifyMonitor.skip_song(sender)
 
   @doc """
   ----------------------------------------------------------------------------
   !keep
   ----------------------------------------------------------------------------
   """
-  def keep_song(_sender) do
-    # TODO: implementar logica de cabo de guerra
-
-    "ficando..."
-  end
+  def keep_song(sender), do: SpotifyMonitor.keep_song(sender)
 end

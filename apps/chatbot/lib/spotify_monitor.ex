@@ -9,14 +9,15 @@ defmodule Chatbot.SpotifyMonitor do
     do:
       GenServer.start_link(
         __MODULE__,
-        %{refresh_token: rt, curr: nil, creds: nil},
+        %{refresh_token: rt, curr: nil, creds: nil, skip_set: nil, keep_set: nil},
         name: __MODULE__
       )
 
   def current_song(), do: GenServer.call(__MODULE__, :current_song)
-  def skip_to_next(), do: GenServer.cast(__MODULE__, :skip_to_next)
   def song_info(song_id), do: GenServer.call(__MODULE__, {:song_info, song_id})
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
+  def skip_song(username), do: GenServer.call(__MODULE__, {:skip_song, username})
+  def keep_song(username), do: GenServer.call(__MODULE__, {:keep_song, username})
 
   def broadcast_song_info(curr) do
     artist = hd(curr.item.artists)["name"]
@@ -52,12 +53,50 @@ defmodule Chatbot.SpotifyMonitor do
     end
   end
 
-  @impl GenServer
-  def handle_cast(:skip_to_next, state) do
-    Spotify.Player.skip_to_next(state.creds)
-    {:noreply, state}
+  def handle_call({:skip_song, username}, _from, state) do
+    skip_set =
+      state.skip_set
+      |> MapSet.put(username |> String.downcase())
+
+    keep_votes = MapSet.size(state.keep_set)
+    skip_votes = MapSet.size(skip_set)
+
+    keep_members =
+      state.keep_set
+      |> MapSet.to_list()
+      |> Enum.sort()
+      |> Enum.join(",")
+
+    skip_members =
+      skip_set
+      |> MapSet.to_list()
+      |> Enum.sort()
+      |> Enum.join(",")
+
+    response =
+      if skip_votes - keep_votes >= 5 do
+        Spotify.Player.skip_to_next(state.creds)
+        "PULANDO!!!! 💃 (#{skip_members}) X (#{keep_members})"
+      else
+        "Aaaaa parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
+      end
+
+    {:reply, response, %{state | skip_set: skip_set}}
   end
 
+  def handle_call({:keep_song, username}, _from, state) do
+    keep_set =
+      state.keep_set
+      |> MapSet.put(username |> String.downcase())
+
+    keep_votes = MapSet.size(keep_set)
+    skip_votes = MapSet.size(state.skip_set)
+
+    response = "kumaPls parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
+    {:reply, response, %{state | keep_set: keep_set}}
+  end
+
+  @impl GenServer
   def handle_cast({:enqueue, song_id}, state) do
     Spotify.Player.enqueue(state.creds, "spotify:track:#{song_id}")
     {:noreply, state}
@@ -81,19 +120,21 @@ defmodule Chatbot.SpotifyMonitor do
   end
 
   defp monitor_loop(state) do
-    curr =
+    new_state =
       case Spotify.Player.get_current_playback(state.creds) do
         {:ok, curr} ->
-          if curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id),
-            do: broadcast_song_info(curr)
-
-          curr
+          if curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id) do
+            broadcast_song_info(curr)
+            %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
+          else
+            state
+          end
 
         _ ->
-          state.curr
+          state
       end
 
     Process.send_after(self(), :monitor_timer, 2_000)
-    {:noreply, %{state | curr: curr}}
+    {:noreply, new_state}
   end
 end
