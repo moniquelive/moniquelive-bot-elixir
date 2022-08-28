@@ -27,7 +27,19 @@ defmodule Chatbot.SpotifyMonitor do
     payload = %{imgUrl: song_url, title: title, artist: artist}
     WebAppWeb.Endpoint.broadcast!("chatbot:events", "spotify_music_changed", payload)
     Phoenix.PubSub.broadcast!(WebApp.PubSub, "spotify:music_changed", curr)
+    broadcast_keepers_and_skippers(MapSet.new(), MapSet.new())
     nil
+  end
+
+  defp broadcast_keepers_and_skippers(keepers, skippers) do
+    WebAppWeb.Endpoint.broadcast!(
+      "chatbot:events",
+      "keepers_skipers_changed",
+      %{
+        keepers: keepers |> MapSet.to_list(),
+        skippers: skippers |> MapSet.to_list()
+      }
+    )
   end
 
   # Server
@@ -81,6 +93,7 @@ defmodule Chatbot.SpotifyMonitor do
         "Aaaaa parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
       end
 
+    broadcast_keepers_and_skippers(state.keep_set, skip_set)
     {:reply, response, %{state | skip_set: skip_set}}
   end
 
@@ -93,6 +106,8 @@ defmodule Chatbot.SpotifyMonitor do
     skip_votes = MapSet.size(state.skip_set)
 
     response = "kumaPls parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
+
+    broadcast_keepers_and_skippers(keep_set, state.skip_set)
     {:reply, response, %{state | keep_set: keep_set}}
   end
 

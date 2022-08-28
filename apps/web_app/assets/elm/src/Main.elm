@@ -40,12 +40,19 @@ type alias SongInfo =
     }
 
 
+type alias KeepersSkippers =
+    { keepers : List String
+    , skippers : List String
+    }
+
+
 type alias Model =
     { phoenix : Phoenix.Model
     , currentSong : SongInfo
     , currentSongStyle : Animation.State
     , marqueeMessage : String
     , marqueeStyle : Animation.State
+    , keepersSkippers : KeepersSkippers
     }
 
 
@@ -57,7 +64,11 @@ init _ =
                 |> Phoenix.setJoinConfig
                     { joinConfig
                         | topic = "chatbot:events"
-                        , events = [ "marquee_updated", "spotify_music_changed" ]
+                        , events =
+                            [ "marquee_updated"
+                            , "spotify_music_changed"
+                            , "keepers_skipers_changed"
+                            ]
                     }
                 |> Phoenix.join "chatbot:events"
 
@@ -67,6 +78,7 @@ init _ =
             , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
             , marqueeMessage = ""
             , marqueeStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 0) (percent 100) ]
+            , keepersSkippers = KeepersSkippers [] []
             }
     in
     ( model, Cmd.map PhoenixMsg cmd )
@@ -155,6 +167,18 @@ processPhoenixMsg model subMsg =
                     in
                     ( { newModel | currentSong = songPayload, currentSongStyle = newCurrentSongStyle }, cmd )
 
+                "keepers_skipers_changed" ->
+                    let
+                        keepersSkippersPayload =
+                            case D.decodeValue keepersSkippersDecoder payload of
+                                Ok keepersSkippers ->
+                                    keepersSkippers
+
+                                Err _ ->
+                                    KeepersSkippers [] []
+                    in
+                    ( { newModel | keepersSkippers = keepersSkippersPayload }, cmd )
+
                 _ ->
                     ( newModel, cmd )
 
@@ -191,6 +215,22 @@ songInfoView song =
     ]
 
 
+keepersSkippersView : KeepersSkippers -> List (Html Msg)
+keepersSkippersView keepersSkippers =
+    let
+        keepersCount =
+            keepersSkippers.keepers
+                |> List.length
+                |> String.fromInt
+
+        skippersCount =
+            keepersSkippers.skippers
+                |> List.length
+                |> String.fromInt
+    in
+    [ skippersCount ++ " x " ++ keepersCount |> text ]
+
+
 view : Model -> Html Msg
 view model =
     div [ id "root" ]
@@ -199,6 +239,7 @@ view model =
                 ++ [ class "main" ]
             )
             (songInfoView model.currentSong)
+        , h1 [] (keepersSkippersView model.keepersSkippers)
         , node "marquee"
             (Animation.render model.marqueeStyle
                 ++ [ attribute "scrolldelay" "60" ]
@@ -223,3 +264,10 @@ songInfoDecoder =
         (D.field "imgUrl" D.string)
         (D.field "title" D.string)
         (D.field "artist" D.string)
+
+
+keepersSkippersDecoder : D.Decoder KeepersSkippers
+keepersSkippersDecoder =
+    D.map2 KeepersSkippers
+        (D.field "keepers" (D.list D.string))
+        (D.field "skippers" (D.list D.string))
