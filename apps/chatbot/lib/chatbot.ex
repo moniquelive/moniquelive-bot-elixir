@@ -5,6 +5,7 @@ defmodule Chatbot.Bot do
 
   @channel_name "moniquelive"
   @enqueue_song_reward_id "bf07c491-1ffb-4eb7-a7d8-5c9f2fe51818"
+  @on_load :init
 
   alias Chatbot.{
     Commands,
@@ -14,10 +15,14 @@ defmodule Chatbot.Bot do
     Utils
   }
 
+  def init() do
+    send(__MODULE__, :subscribe)
+    :ok
+  end
+
   @impl TMI.Handler
   def handle_join(channel) do
     Logger.debug("*** [#{__MODULE__}] [#{channel}] you joined")
-    Phoenix.PubSub.subscribe(WebApp.PubSub, "spotify:music_changed")
     say(channel, "/color seagreen")
     say(channel, "/me Tô na área!")
     # say(channel, "/slow 1")
@@ -84,6 +89,7 @@ defmodule Chatbot.Bot do
       |> String.split(" ", trim: true)
       |> State.user_joined()
 
+  @impl TMI.Handler
   def handle_unrecognized(%Spotify.Playback{} = curr) do
     artist = hd(curr.item.artists)["name"]
     title = curr.item.name
@@ -101,8 +107,14 @@ defmodule Chatbot.Bot do
     say(@channel_name, "/me #{artist} - #{title} - #{song_url} (#{dur})")
   end
 
+  def handle_unrecognized(:subscribe) do
+    Logger.info("[subscribe] Subscribing...")
+    Phoenix.PubSub.unsubscribe(WebApp.PubSub, "spotify:music_changed")
+    Phoenix.PubSub.subscribe(WebApp.PubSub, "spotify:music_changed")
+  end
+
   def handle_unrecognized(_msg),
-    # do: Logger.debug("*** unrecog/1: #{inspect(msg)}")
+    # do: IO.puts("*** #{inspect(msg)}")
     do: nil
 
   def handle_unrecognized(_msg, _tags),
@@ -111,7 +123,7 @@ defmodule Chatbot.Bot do
 
   # @impl TMI.Handler
   # def handle_action(msg, sender, chat),
-  #   do: IO.inspect({:"action/3", msg, sender, chat})
+  #   do: Logger.debug(inspect({"action/3", msg, sender, chat}))
 
   # --- PRIVATE ---------------------------------------------------------------
 
