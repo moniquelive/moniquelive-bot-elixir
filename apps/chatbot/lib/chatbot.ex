@@ -16,7 +16,7 @@ defmodule Chatbot.Bot do
   }
 
   def init() do
-    send(__MODULE__, :subscribe)
+    Process.send_after(__MODULE__, :subscribe, 10_000)
     :ok
   end
 
