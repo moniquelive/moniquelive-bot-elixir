@@ -3,21 +3,43 @@ defmodule Chatbot.State do
 
   use GenServer
 
+  @default_name Chatbot.State
+
   # Client
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
+  def start_link(name),
+    do: GenServer.start_link(__MODULE__, name, name: via_tuple(name))
 
-  def user_joined(users) when is_list(users), do: GenServer.cast(__MODULE__, {:add_users, users})
-  def user_joined(user) when is_binary(user), do: GenServer.cast(__MODULE__, {:add_user, user})
-  def user_left(user) when is_binary(user), do: GenServer.cast(__MODULE__, {:del_user, user})
-  def user_typed_url(user, url), do: GenServer.cast(__MODULE__, {:add_user_url, user, url})
-  def urls_for(user), do: GenServer.call(__MODULE__, {:urls_for, user})
-  def roster(), do: GenServer.call(__MODULE__, :roster)
-  def get_user(user), do: GenServer.call(__MODULE__, {:get_user, user})
-  def performed_command(command), do: GenServer.cast(__MODULE__, {:command, command})
-  def command_count(), do: GenServer.call(__MODULE__, :command_count)
+  defp via_tuple(name), do: {:via, Registry, {Registry.Chatbot, name}}
+
+  def user_joined(name \\ @default_name, users)
+
+  def user_joined(name, users) when is_list(users),
+    do: via_tuple(name) |> GenServer.cast({:add_users, users})
+
+  def user_joined(name, user) when is_binary(user),
+    do: via_tuple(name) |> GenServer.cast({:add_user, user})
+
+  def user_left(name \\ @default_name, user) when is_binary(user),
+    do: via_tuple(name) |> GenServer.cast({:del_user, user})
+
+  def user_typed_url(name \\ @default_name, user, url),
+    do: via_tuple(name) |> GenServer.cast({:add_user_url, user, url})
+
+  def urls_for(name \\ @default_name, user),
+    do: via_tuple(name) |> GenServer.call({:urls_for, user})
+
+  def roster(name \\ @default_name),
+    do: via_tuple(name) |> GenServer.call(:roster)
+
+  def get_user(name \\ @default_name, user),
+    do: via_tuple(name) |> GenServer.call({:get_user, user})
+
+  def performed_command(name \\ @default_name, command),
+    do: via_tuple(name) |> GenServer.cast({:command, command})
+
+  def command_count(name \\ @default_name),
+    do: via_tuple(name) |> GenServer.call(:command_count)
 
   def process_sentence(sentence, user) do
     flatten =
@@ -38,7 +60,7 @@ defmodule Chatbot.State do
   # Server
 
   @impl true
-  def init(_) do
+  def init(_name) do
     {:ok, %{users_info: %{}, commands_info: %{}}}
   end
 

@@ -11,6 +11,7 @@ defmodule Chatbot.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       deps: deps()
     ]
   end
@@ -20,6 +21,12 @@ defmodule Chatbot.MixProject do
     [
       extra_applications: [:logger, :spotify_ex],
       mod: {Chatbot.Application, []}
+    ]
+  end
+
+  defp aliases do
+    [
+      test: "test --no-start"
     ]
   end
 

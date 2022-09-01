@@ -16,7 +16,8 @@ defmodule Chatbot.Application do
     [bot_config] = Application.fetch_env!(:chatbot, :bots)
 
     children = [
-      State,
+      {Registry, keys: :unique, name: Registry.Chatbot},
+      {State, Chatbot.State},
       {Config, [dirs: [Path.expand("../..", __DIR__)]]},
       {TMI.Supervisor, bot_config},
       {SpotifyMonitor, Application.fetch_env!(:spotify_ex, :refresh_token)}
