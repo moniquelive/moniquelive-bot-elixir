@@ -15,7 +15,7 @@ defmodule Chatbot.State do
   def user_typed_url(user, url), do: GenServer.cast(__MODULE__, {:add_user_url, user, url})
   def urls_for(user), do: GenServer.call(__MODULE__, {:urls_for, user})
   def roster(), do: GenServer.call(__MODULE__, :roster)
-  def get_user(user), do: GenServer.call(__MODULE__, [:get_user, user])
+  def get_user(user), do: GenServer.call(__MODULE__, {:get_user, user})
   def performed_command(command), do: GenServer.cast(__MODULE__, {:command, command})
   def command_count(), do: GenServer.call(__MODULE__, :command_count)
 
@@ -39,70 +39,71 @@ defmodule Chatbot.State do
 
   @impl true
   def init(_) do
-    :ets.new(:chatbot_state_users, [:ordered_set, :named_table])
-    :ets.new(:chatbot_state_commands, [:ordered_set, :named_table])
-    {:ok, %{}}
+    {:ok, %{users_info: %{}, commands_info: %{}}}
   end
 
   @impl true
   def handle_cast({:add_users, users}, state) do
-    users
-    |> Enum.each(fn user ->
-      handle_cast({:add_user, user}, state)
-    end)
+    new_state =
+      Enum.reduce(users, state, fn user, s ->
+        {:noreply, new_s} = handle_cast({:add_user, user}, s)
+        new_s
+      end)
 
-    {:noreply, state}
+    {:noreply, new_state}
   end
 
   def handle_cast({:add_user, user}, state) do
-    :ets.insert(:chatbot_state_users, {user, DateTime.utc_now(), MapSet.new()})
-    {:noreply, state}
+    new_users =
+      Map.put(
+        state.users_info,
+        user,
+        %{online_at: DateTime.utc_now(), urls: MapSet.new()}
+      )
+
+    {:noreply, %{state | users_info: new_users}}
   end
 
   def handle_cast({:del_user, user}, state) do
-    :ets.delete(:chatbot_state_users, user)
-    {:noreply, state}
+    new_users = Map.delete(state.users_info, user)
+    {:noreply, %{state | users_info: new_users}}
   end
 
   def handle_cast({:add_user_url, user, url}, state) do
-    [[urls]] = :ets.match(:chatbot_state_users, {user, :_, :"$1"})
-    new_urls = urls |> MapSet.put(url)
-    :ets.update_element(:chatbot_state_users, user, {3, new_urls})
-    {:noreply, state}
+    info = state.users_info[user]
+    new_user = %{info | urls: MapSet.put(info.urls, url)}
+    new_users = %{state.users_info | user => new_user}
+    {:noreply, %{state | users_info: new_users}}
   end
 
   def handle_cast({:command, command}, state) do
-    default = {command, 1}
-    :ets.update_counter(:chatbot_state_commands, command, 1, default)
-    {:noreply, state}
+    count = Map.get(state.commands_info, command, 0)
+    new_commands = Map.put(state.commands_info, command, count + 1)
+    {:noreply, %{state | commands_info: new_commands}}
   end
 
   @impl true
   def handle_call(:roster, _from, state) do
-    roster = :ets.match(:chatbot_state_users, {:"$1", :_, :_}) |> Enum.flat_map(& &1)
+    roster = Map.keys(state.users_info)
     {:reply, roster, state}
   end
 
-  def handle_call([:get_user, user], _from, state) do
-    case :ets.lookup(:chatbot_state_users, user) do
-      [u] -> {:reply, u, state}
-      _ -> {:reply, {}, state}
+  def handle_call({:get_user, user}, _from, state) do
+    case Map.get(state.users_info, user) do
+      nil -> {:reply, {}, state}
+      info -> {:reply, {user, info.online_at, info.urls}, state}
     end
   end
 
   def handle_call(:command_count, _from, state) do
-    counts =
-      :ets.tab2list(:chatbot_state_commands)
-      |> Map.new()
-
-    {:reply, counts, state}
+    {:reply, state.commands_info, state}
   end
 
   def handle_call({:urls_for, ""}, _from, state) do
     urls =
-      :ets.match(:chatbot_state_users, {:"$1", :_, :"$2"})
-      |> Enum.filter(fn [_user, urls] -> MapSet.size(urls) > 0 end)
-      |> Enum.map(fn [user, urls] -> %{user: user, urls: MapSet.to_list(urls)} end)
+      for {user, %{urls: urls}} <- state.users_info,
+          into: [],
+          do: %{user: user, urls: MapSet.to_list(urls)}
 
     {:reply, urls, state}
   end
@@ -111,11 +112,7 @@ defmodule Chatbot.State do
     do: handle_call({:urls_for, user}, from, state)
 
   def handle_call({:urls_for, user}, _from, state) do
-    urls =
-      :ets.match(:chatbot_state_users, {user, :_, :"$2"})
-      |> Enum.flat_map(& &1)
-      |> Enum.flat_map(&MapSet.to_list/1)
-
-    {:reply, [%{user: user, urls: urls}], state}
+    user_urls = MapSet.to_list(state.users_info[user].urls)
+    {:reply, [%{user: user, urls: user_urls}], state}
   end
 end
