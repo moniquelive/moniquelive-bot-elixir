@@ -3,7 +3,7 @@ defmodule Chatbot.State do
 
   use GenServer
 
-  @default_name Chatbot.State
+  @default_name __MODULE__
 
   # Client
 
