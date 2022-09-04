@@ -21,9 +21,9 @@ defmodule Spotify.Monitor do
 
   def current_song(), do: GenServer.call(__MODULE__, :current_song)
   def song_info(song_id), do: GenServer.call(__MODULE__, {:song_info, song_id})
-  def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
   def skip_song(username), do: GenServer.call(__MODULE__, {:skip_song, username})
   def keep_song(username), do: GenServer.call(__MODULE__, {:keep_song, username})
+  def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
   def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
   def format_payload(song) do
@@ -39,9 +39,8 @@ defmodule Spotify.Monitor do
   # Server
 
   @impl GenServer
-  def init(state) do
-    {:ok, state, {:continue, :refresh_tokens}}
-  end
+  def init(state),
+    do: {:ok, state, {:continue, :refresh_tokens}}
 
   @impl GenServer
   def handle_continue(:refresh_tokens, state),
@@ -82,20 +81,20 @@ defmodule Spotify.Monitor do
     keep_votes = MapSet.size(state.keep_set)
     skip_votes = MapSet.size(skip_set)
 
-    keep_members =
-      state.keep_set
-      |> MapSet.to_list()
-      |> Enum.sort()
-      |> Enum.join(",")
-
-    skip_members =
-      skip_set
-      |> MapSet.to_list()
-      |> Enum.sort()
-      |> Enum.join(",")
-
     response =
       if skip_votes - keep_votes >= 5 do
+        keep_members =
+          state.keep_set
+          |> MapSet.to_list()
+          |> Enum.sort()
+          |> Enum.join(",")
+
+        skip_members =
+          skip_set
+          |> MapSet.to_list()
+          |> Enum.sort()
+          |> Enum.join(",")
+
         Spotify.Player.skip_to_next(state.creds)
         "PULANDO!!!! 💃 (#{skip_members}) X (#{keep_members})"
       else
@@ -114,7 +113,6 @@ defmodule Spotify.Monitor do
 
     keep_votes = MapSet.size(keep_set)
     skip_votes = MapSet.size(state.skip_set)
-
     response = "kumaPls parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
 
     new_state = %{state | keep_set: keep_set}
@@ -129,25 +127,17 @@ defmodule Spotify.Monitor do
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    Phoenix.PubSub.broadcast(
-      WebApp.PubSub,
-      "spotify:music_changed",
-      state.curr
-    )
-
+    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:music_changed", state.curr)
     handle_cast(:broadcast_keepers_and_skippers, state)
   end
 
   def handle_cast(:broadcast_keepers_and_skippers, state) do
-    Phoenix.PubSub.broadcast(
-      WebApp.PubSub,
-      "spotify:keepers_and_skippers_changed",
-      %{
-        keepers: state.keep_set |> MapSet.to_list(),
-        skippers: state.skip_set |> MapSet.to_list()
-      }
-    )
+    payload = %{
+      keepers: state.keep_set |> MapSet.to_list(),
+      skippers: state.skip_set |> MapSet.to_list()
+    }
 
+    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:keepers_and_skippers_changed", payload)
     {:noreply, state}
   end
 
@@ -155,25 +145,26 @@ defmodule Spotify.Monitor do
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
       case Spotify.Player.get_current_playback(state.creds) do
-        {:ok, curr} ->
-          if curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id) do
-            broadcast_song_info()
-            %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
-          else
-            state
-          end
+        {:ok, %{is_playing: true} = curr}
+        when state.curr == nil or curr.item.id != state.curr.item.id ->
+          broadcast_song_info()
+          %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
 
         _ ->
-          state
+          %{state | curr: nil}
       end
 
     {:noreply, new_state}
   end
 
   def handle_info(:refresh_token_timer, state) do
-    {:ok, creds} =
-      Spotify.Authentication.refresh(%Spotify.Credentials{refresh_token: state.refresh_token})
+    case Spotify.Authentication.refresh(%Spotify.Credentials{refresh_token: state.refresh_token}) do
+      {:ok, creds} ->
+        {:noreply, %{state | creds: creds}}
 
-    {:noreply, %{state | creds: creds}}
+      _ ->
+        :timer.send_after(60_000, :refresh_token_timer)
+        {:noreply, state}
+    end
   end
 end
