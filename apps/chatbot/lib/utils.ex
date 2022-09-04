@@ -4,6 +4,31 @@ defmodule Chatbot.Utils do
   @doc """
   ----------------------------------------------------------------------------
   word_wrap
+
+  iex> word_wrap("", 0)
+  [""]
+
+  iex> word_wrap("", 10)
+  [""]
+
+  iex> word_wrap("abc", 10)
+  ["abc"]
+
+  iex> word_wrap("abc def ghi jkl", 10)
+  ["abc def", "ghi jkl"]
+
+  iex> word_wrap("abcdefghijk l", 10)
+  ["abcdefghijk", "l"]
+
+  iex> word_wrap("a bcdefghijkl", 10)
+  ["a", "bcdefghijkl"]
+
+  iex> word_wrap("moniquelive compartilhou: https://tour.golang.org/welcome/1 https://en.wikipedia.org/wiki/Test-driven_development https://hack.ainfosec.com/ https://github.com/moniquelive/iniciante - streamholics compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando https://twitch.tv/pachicodes https://twitch.tv/adielseffrin https://twitch.tv/LadyDriveer https://twitch.tv/adielseffrin - acaverna compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando https://twitch.tv/pachicodes https://twitch.tv/adielseffrin https://twitch.tv/adielseffrin - vivendoouexistindo compartilhou: https://discord.com/invite/cD7VJJZTnA - debora_666 compartilhou: https://mma.prnewswire.com/media/1438929/first_Logo.jpg?p=publish", 500)
+  [ "moniquelive compartilhou: https://tour.golang.org/welcome/1 https://en.wikipedia.org/wiki/Test-driven_development https://hack.ainfosec.com/ https://github.com/moniquelive/iniciante - streamholics compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando",
+    "https://twitch.tv/pachicodes https://twitch.tv/adielseffrin https://twitch.tv/LadyDriveer https://twitch.tv/adielseffrin - acaverna compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando https://twitch.tv/pachicodes https://twitch.tv/adielseffrin",
+    "https://twitch.tv/adielseffrin - vivendoouexistindo compartilhou: https://discord.com/invite/cD7VJJZTnA - debora_666 compartilhou: https://mma.prnewswire.com/media/1438929/first_Logo.jpg?p=publish"
+  ]
+
   ----------------------------------------------------------------------------
   """
   @spec word_wrap(String.t(), integer) :: [String.t()]
@@ -31,6 +56,34 @@ defmodule Chatbot.Utils do
   @doc """
   ----------------------------------------------------------------------------
   format_duration
+
+  iex> format_duration(1)
+  "1 segundo"
+
+  iex> format_duration(10)
+  "10 segundos"
+
+  iex> format_duration(60)
+  "1 minuto"
+
+  iex> format_duration(300)
+  "5 minutos"
+
+  iex> format_duration(630)
+  "10 minutos e 30 segundos"
+
+  iex> format_duration(11947)
+  "3 horas, 19 minutos e 7 segundos"
+
+  iex> format_duration(962347)
+  "11 dias, 3 horas, 19 minutos e 7 segundos"
+
+  iex> format_duration(13922347)
+  "5 meses, 11 dias, 3 horas, 19 minutos e 7 segundos"
+
+  iex> format_duration(45026347)
+  "1 ano, 5 meses, 11 dias, 3 horas, 19 minutos e 7 segundos"
+
   ----------------------------------------------------------------------------
   """
   @spec format_duration(integer) :: String.t()
