@@ -125,21 +125,17 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def urls(command) do
-    user_urls =
-      case String.split(command) do
-        [_url] -> State.urls_for("")
-        [_url, user | _] -> State.urls_for(user)
-      end
-
-    if Enum.empty?(user_urls) do
-      "/me (sem urls no momento)"
-    else
-      user_urls
-      |> Enum.map_join(" ", fn %{user: user, urls: urls} ->
-        ~s(#{user}: #{Enum.join(urls, " ")})
-      end)
+    case String.split(command) do
+      [_url] -> State.urls_for("")
+      [_url, user | _] -> State.urls_for(user)
     end
+    |> Enum.filter(&(!Enum.empty?(&1.urls)))
+    |> Enum.map_join(" ", &~s(#{&1.user}: [#{Enum.join(&1.urls, " ")}]))
+    |> urls_resp()
   end
+
+  defp urls_resp(""), do: "/me (sem urls no momento)"
+  defp urls_resp(msg), do: "/me " <> msg
 
   @doc """
   ----------------------------------------------------------------------------
@@ -152,12 +148,12 @@ defmodule Chatbot.Commands do
         uptime(sender, "!uptime " <> sender)
 
       [_uptime, friend | _] ->
-        case State.get_user(friend) do
-          {_, dt, _} ->
-            "#{friend} entrou #{format_date(dt)} (há #{time_ago(dt)})"
-
-          _ ->
+        case State.online_at(friend) do
+          nil ->
             "#{friend} não tem horário de entrada... :("
+
+          dt ->
+            "#{friend} entrou #{format_date(dt)} (há #{time_ago(dt)})"
         end
     end
   end
