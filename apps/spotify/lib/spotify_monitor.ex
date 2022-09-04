@@ -145,13 +145,13 @@ defmodule Spotify.Monitor do
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
       case Spotify.Player.get_current_playback(state.creds) do
-        {:ok, %{is_playing: true} = curr}
-        when state.curr == nil or curr.item.id != state.curr.item.id ->
+        {:ok, curr}
+        when curr.isplaying and (state.curr == nil or curr.item.id != state.curr.item.id) ->
           broadcast_song_info()
           %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
 
         _ ->
-          %{state | curr: nil}
+          state
       end
 
     {:noreply, new_state}

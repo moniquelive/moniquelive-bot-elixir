@@ -15,9 +15,8 @@ defmodule Chatbot.Application do
     [bot_config] = Application.fetch_env!(:chatbot, :bots)
 
     children = [
-      {Registry, keys: :unique, name: Registry.Chatbot},
-      {State, Chatbot.State},
-      {Config, [dirs: [Path.expand("../..", __DIR__)]]},
+      {State, name: Chatbot.State},
+      {Config, dirs: [Path.expand("../..", __DIR__)]},
       {TMI.Supervisor, bot_config}
     ]
 

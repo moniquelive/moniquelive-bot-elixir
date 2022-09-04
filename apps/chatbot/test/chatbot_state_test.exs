@@ -7,9 +7,8 @@ defmodule Chatbot.StateTest do
   @name __MODULE__
 
   setup do
-    start_supervised!({Registry, keys: :unique, name: Registry.Chatbot})
-    start_supervised!({State, @name})
-    %{}
+    start_supervised!({State, name: @name})
+    :ok
   end
 
   test "empty initial state" do

@@ -7,31 +7,25 @@ defmodule Chatbot.State do
 
   # Client
 
-  def start_link(name), do: GenServer.start_link(__MODULE__, [], name: via(name))
+  def start_link(opts \\ []), do: GenServer.start_link(__MODULE__, [], opts)
 
-  defp via(name), do: {:via, Registry, {Registry.Chatbot, name}}
+  def command_count(name \\ @name), do: GenServer.call(name, :command_count)
+  def urls_for(name \\ @name, user), do: GenServer.call(name, {:urls_for, user})
+  def roster(name \\ @name), do: GenServer.call(name, :roster)
+  def online_at(name \\ @name, user), do: GenServer.call(name, {:online_at, user})
 
   def user_joined(name \\ @name, users)
-
-  def user_joined(name, users) when is_list(users),
-    do: GenServer.cast(via(name), {:add_users, users})
-
-  def user_joined(name, user) when is_binary(user),
-    do: GenServer.cast(via(name), {:add_user, user})
+  def user_joined(name, users) when is_list(users), do: GenServer.cast(name, {:add_users, users})
+  def user_joined(name, user) when is_binary(user), do: GenServer.cast(name, {:add_user, user})
 
   def user_left(name \\ @name, user) when is_binary(user),
-    do: GenServer.cast(via(name), {:del_user, user})
+    do: GenServer.cast(name, {:del_user, user})
 
   def user_typed_url(name \\ @name, user, url),
-    do: GenServer.cast(via(name), {:add_user_url, user, url})
-
-  def command_count(name \\ @name), do: GenServer.call(via(name), :command_count)
-  def urls_for(name \\ @name, user), do: GenServer.call(via(name), {:urls_for, user})
-  def roster(name \\ @name), do: GenServer.call(via(name), :roster)
-  def online_at(name \\ @name, user), do: GenServer.call(via(name), {:online_at, user})
+    do: GenServer.cast(name, {:add_user_url, user, url})
 
   def performed_command(name \\ @name, command),
-    do: GenServer.cast(via(name), {:command, command})
+    do: GenServer.cast(name, {:command, command})
 
   def process_sentence(name \\ @name, sentence, user) do
     Regex.scan(~r{https?://\S*}, sentence)
