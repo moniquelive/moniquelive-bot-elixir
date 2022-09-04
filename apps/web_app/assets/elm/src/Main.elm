@@ -67,7 +67,7 @@ init _ =
                         , events =
                             [ "marquee_updated"
                             , "spotify_music_changed"
-                            , "keepers_skipers_changed"
+                            , "keepers_skippers_changed"
                             ]
                     }
                 |> Phoenix.join "chatbot:events"
@@ -167,7 +167,7 @@ processPhoenixMsg model subMsg =
                     in
                     ( { newModel | currentSong = songPayload, currentSongStyle = newCurrentSongStyle }, cmd )
 
-                "keepers_skipers_changed" ->
+                "keepers_skippers_changed" ->
                     let
                         keepersSkippersPayload =
                             case D.decodeValue keepersSkippersDecoder payload of

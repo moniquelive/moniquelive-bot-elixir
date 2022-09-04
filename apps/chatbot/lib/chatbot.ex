@@ -10,7 +10,6 @@ defmodule Chatbot.Bot do
   alias Chatbot.{
     Commands,
     Config,
-    SpotifyMonitor,
     State,
     Utils
   }
@@ -53,7 +52,7 @@ defmodule Chatbot.Bot do
         |> String.split("?")
         |> hd()
 
-      case SpotifyMonitor.song_info(song_id) do
+      case Spotify.Monitor.song_info(song_id) do
         {:ok, song_info} ->
           artist = hd(song_info.artists)["name"]
           title = song_info.name
@@ -65,7 +64,7 @@ defmodule Chatbot.Bot do
 
           say(chat, "/color GoldenRod")
           say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
-          SpotifyMonitor.enqueue(song_id)
+          Spotify.Monitor.enqueue(song_id)
 
         {:error, reason} ->
           say(chat, "/color Red")

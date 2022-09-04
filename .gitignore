@@ -23,6 +23,3 @@ erl_crash.dump
 /tmp/
 
 elm-stuff
-/apps/web_app/assets/js/index.js
-/apps/chatbot/config/secret.exs
-/apps/chatbot/config/.spotify_refresh_token

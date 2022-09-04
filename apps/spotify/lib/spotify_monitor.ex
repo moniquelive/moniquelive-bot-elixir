@@ -1,4 +1,4 @@
-defmodule Chatbot.SpotifyMonitor do
+defmodule Spotify.Monitor do
   @moduledoc false
 
   use GenServer
@@ -9,7 +9,13 @@ defmodule Chatbot.SpotifyMonitor do
     do:
       GenServer.start_link(
         __MODULE__,
-        %{refresh_token: rt, curr: nil, creds: nil, skip_set: nil, keep_set: nil},
+        %{
+          refresh_token: rt,
+          curr: nil,
+          creds: nil,
+          skip_set: MapSet.new(),
+          keep_set: MapSet.new()
+        },
         name: __MODULE__
       )
 
@@ -18,29 +24,17 @@ defmodule Chatbot.SpotifyMonitor do
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
   def skip_song(username), do: GenServer.call(__MODULE__, {:skip_song, username})
   def keep_song(username), do: GenServer.call(__MODULE__, {:keep_song, username})
+  def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
-  def broadcast_song_info(curr) do
-    artist = hd(curr.item.artists)["name"]
-    title = curr.item.name
-    song_url = hd(curr.item.album["images"])["url"]
-
-    payload = %{imgUrl: song_url, title: title, artist: artist}
-    WebAppWeb.Endpoint.broadcast!("chatbot:events", "spotify_music_changed", payload)
-    Phoenix.PubSub.broadcast!(WebApp.PubSub, "spotify:music_changed", curr)
-    broadcast_keepers_and_skippers(MapSet.new(), MapSet.new())
-    nil
+  def format_payload(song) do
+    artist = hd(song.artists)["name"]
+    title = song.name
+    song_url = hd(song.album["images"])["url"]
+    %{imgUrl: song_url, title: title, artist: artist}
   end
 
-  defp broadcast_keepers_and_skippers(keepers, skippers) do
-    WebAppWeb.Endpoint.broadcast!(
-      "chatbot:events",
-      "keepers_skipers_changed",
-      %{
-        keepers: keepers |> MapSet.to_list(),
-        skippers: skippers |> MapSet.to_list()
-      }
-    )
-  end
+  def broadcast_keepers_and_skippers(),
+    do: GenServer.cast(__MODULE__, :broadcast_keepers_and_skippers)
 
   # Server
 
@@ -108,8 +102,9 @@ defmodule Chatbot.SpotifyMonitor do
         "Aaaaa parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
       end
 
-    broadcast_keepers_and_skippers(state.keep_set, skip_set)
-    {:reply, response, %{state | skip_set: skip_set}}
+    new_state = %{state | skip_set: skip_set}
+    handle_cast(:broadcast_keepers_and_skippers, new_state)
+    {:reply, response, new_state}
   end
 
   def handle_call({:keep_song, username}, _from, state) do
@@ -122,13 +117,37 @@ defmodule Chatbot.SpotifyMonitor do
 
     response = "kumaPls parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
 
-    broadcast_keepers_and_skippers(keep_set, state.skip_set)
-    {:reply, response, %{state | keep_set: keep_set}}
+    new_state = %{state | keep_set: keep_set}
+    handle_cast(:broadcast_keepers_and_skippers, new_state)
+    {:reply, response, new_state}
   end
 
   @impl GenServer
   def handle_cast({:enqueue, song_id}, state) do
     Spotify.Player.enqueue(state.creds, "spotify:track:#{song_id}")
+    {:noreply, state}
+  end
+
+  def handle_cast(:broadcast_song_info, state) do
+    Phoenix.PubSub.broadcast(
+      WebApp.PubSub,
+      "spotify:music_changed",
+      state.curr
+    )
+
+    handle_cast(:broadcast_keepers_and_skippers, state)
+  end
+
+  def handle_cast(:broadcast_keepers_and_skippers, state) do
+    Phoenix.PubSub.broadcast(
+      WebApp.PubSub,
+      "spotify:keepers_and_skippers_changed",
+      %{
+        keepers: state.keep_set |> MapSet.to_list(),
+        skippers: state.skip_set |> MapSet.to_list()
+      }
+    )
+
     {:noreply, state}
   end
 
@@ -138,7 +157,7 @@ defmodule Chatbot.SpotifyMonitor do
       case Spotify.Player.get_current_playback(state.creds) do
         {:ok, curr} ->
           if curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id) do
-            broadcast_song_info(curr)
+            broadcast_song_info()
             %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
           else
             state

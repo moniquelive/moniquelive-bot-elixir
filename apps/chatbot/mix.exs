@@ -19,7 +19,7 @@ defmodule Chatbot.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :spotify_ex],
+      extra_applications: [:logger],
       mod: {Chatbot.Application, []}
     ]
   end
@@ -42,7 +42,7 @@ defmodule Chatbot.MixProject do
        only: [:dev, :prod],
        git: "git@github.com:moniquelive/scrapped_twitch_api.git",
        branch: :main},
-      {:spotify_ex, "~> 2.2.1"},
+      {:spotify, in_umbrella: true},
       {:web_app, in_umbrella: true}
       # {:tmi, "~> 0.5.3"}
       # {:dep_from_hexpm, "~> 0.3.0"},

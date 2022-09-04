@@ -7,7 +7,6 @@ defmodule Chatbot.Application do
 
   alias Chatbot.{
     Config,
-    SpotifyMonitor,
     State
   }
 
@@ -19,8 +18,7 @@ defmodule Chatbot.Application do
       {Registry, keys: :unique, name: Registry.Chatbot},
       {State, Chatbot.State},
       {Config, [dirs: [Path.expand("../..", __DIR__)]]},
-      {TMI.Supervisor, bot_config},
-      {SpotifyMonitor, Application.fetch_env!(:spotify_ex, :refresh_token)}
+      {TMI.Supervisor, bot_config}
     ]
 
     opts = [strategy: :one_for_one, name: Chatbot.Supervisor]
