@@ -46,9 +46,24 @@ defmodule Chatbot.SpotifyMonitor do
 
   @impl GenServer
   def init(state) do
-    {:noreply, state} = refresh_token_loop(state)
-    {:noreply, state} = monitor_loop(state)
-    {:ok, state}
+    {:ok, state, {:continue, :refresh_tokens}}
+  end
+
+  @impl GenServer
+  def handle_continue(:refresh_tokens, state),
+    do:
+      handle_info(:refresh_token_timer, state)
+      |> Tuple.append({:continue, :monitor_spotify})
+
+  def handle_continue(:monitor_spotify, state),
+    do:
+      handle_info(:monitor_spotify_timer, state)
+      |> Tuple.append({:continue, :setup_timers})
+
+  def handle_continue(:setup_timers, state) do
+    :timer.send_interval(50 * 60_000, :refresh_token_timer)
+    :timer.send_interval(2_000, :monitor_spotify_timer)
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -118,23 +133,7 @@ defmodule Chatbot.SpotifyMonitor do
   end
 
   @impl GenServer
-  def handle_info(:monitor_timer, state),
-    do: monitor_loop(state)
-
-  def handle_info(:refresh_token_timer, state),
-    do: refresh_token_loop(state)
-
-  # --------------------------------------------------------------------------
-
-  defp refresh_token_loop(state) do
-    {:ok, creds} =
-      Spotify.Authentication.refresh(%Spotify.Credentials{refresh_token: state.refresh_token})
-
-    Process.send_after(self(), :refresh_token_timer, 50 * 1_000 * 60)
-    {:noreply, %{state | creds: creds}}
-  end
-
-  defp monitor_loop(state) do
+  def handle_info(:monitor_spotify_timer, state) do
     new_state =
       case Spotify.Player.get_current_playback(state.creds) do
         {:ok, curr} ->
@@ -149,7 +148,13 @@ defmodule Chatbot.SpotifyMonitor do
           state
       end
 
-    Process.send_after(self(), :monitor_timer, 2_000)
     {:noreply, new_state}
+  end
+
+  def handle_info(:refresh_token_timer, state) do
+    {:ok, creds} =
+      Spotify.Authentication.refresh(%Spotify.Credentials{refresh_token: state.refresh_token})
+
+    {:noreply, %{state | creds: creds}}
   end
 end
