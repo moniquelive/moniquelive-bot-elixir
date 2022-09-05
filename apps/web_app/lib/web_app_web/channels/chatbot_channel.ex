@@ -23,7 +23,7 @@ defmodule WebAppWeb.ChatbotChannel do
   end
 
   def handle_info(%{keepers: _, skippers: _} = keepers_and_skippers, socket) do
-    broadcast(socket, "keepers_skippers_changed", keepers_and_skippers)
+    push(socket, "keepers_skippers_changed", keepers_and_skippers)
     {:noreply, socket}
   end
 

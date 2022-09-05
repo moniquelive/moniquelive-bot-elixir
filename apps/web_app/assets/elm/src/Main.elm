@@ -3,6 +3,7 @@ module Main exposing (..)
 import Animation exposing (percent)
 import Animation.Spring.Presets exposing (wobbly)
 import Browser
+import Ease exposing (inOutBounce)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode as D
@@ -50,6 +51,8 @@ type alias Model =
     { phoenix : Phoenix.Model
     , currentSong : SongInfo
     , currentSongStyle : Animation.State
+    , keepersStyle : Animation.State
+    , skippersStyle : Animation.State
     , marqueeMessage : String
     , marqueeStyle : Animation.State
     , keepersSkippers : KeepersSkippers
@@ -76,6 +79,8 @@ init _ =
             { phoenix = phxConfig
             , currentSong = SongInfo "" "" ""
             , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
+            , keepersStyle = Animation.styleWith (Animation.easing { duration = 150, ease = inOutBounce }) [ Animation.scale 1 ]
+            , skippersStyle = Animation.styleWith (Animation.easing { duration = 150, ease = inOutBounce }) [ Animation.scale 1 ]
             , marqueeMessage = ""
             , marqueeStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 0) (percent 100) ]
             , keepersSkippers = KeepersSkippers [] []
@@ -102,10 +107,23 @@ update msg model =
                 newCurrentSongStyle =
                     Animation.update animMsg model.currentSongStyle
 
+                newKeepersStyle =
+                    Animation.update animMsg model.keepersStyle
+
+                newSkippersStyle =
+                    Animation.update animMsg model.skippersStyle
+
                 newMarqueeStyle =
                     Animation.update animMsg model.marqueeStyle
             in
-            ( { model | currentSongStyle = newCurrentSongStyle, marqueeStyle = newMarqueeStyle }, Cmd.none )
+            ( { model
+                | currentSongStyle = newCurrentSongStyle
+                , marqueeStyle = newMarqueeStyle
+                , keepersStyle = newKeepersStyle
+                , skippersStyle = newSkippersStyle
+              }
+            , Cmd.none
+            )
 
         PhoenixMsg subMsg ->
             processPhoenixMsg model subMsg
@@ -169,15 +187,49 @@ processPhoenixMsg model subMsg =
 
                 "keepers_skippers_changed" ->
                     let
-                        keepersSkippersPayload =
+                        newKeepersSkippers =
                             case D.decodeValue keepersSkippersDecoder payload of
                                 Ok keepersSkippers ->
                                     keepersSkippers
 
                                 Err _ ->
                                     KeepersSkippers [] []
+
+                        keepersChanged =
+                            List.length model.keepersSkippers.keepers /= List.length newKeepersSkippers.keepers
+
+                        skippersChanged =
+                            List.length model.keepersSkippers.skippers /= List.length newKeepersSkippers.skippers
+
+                        newKeepersStyle =
+                            if keepersChanged then
+                                Animation.interrupt
+                                    [ Animation.set [ Animation.scale 10 ]
+                                    , Animation.to [ Animation.scale 1 ]
+                                    ]
+                                    model.keepersStyle
+
+                            else
+                                model.keepersStyle
+
+                        newSkippersStyle =
+                            if skippersChanged then
+                                Animation.interrupt
+                                    [ Animation.set [ Animation.scale 10 ]
+                                    , Animation.to [ Animation.scale 1 ]
+                                    ]
+                                    model.skippersStyle
+
+                            else
+                                model.skippersStyle
                     in
-                    ( { newModel | keepersSkippers = keepersSkippersPayload }, cmd )
+                    ( { newModel
+                        | keepersSkippers = newKeepersSkippers
+                        , keepersStyle = newKeepersStyle
+                        , skippersStyle = newSkippersStyle
+                      }
+                    , cmd
+                    )
 
                 _ ->
                     ( newModel, cmd )
@@ -195,6 +247,8 @@ subscriptions model =
     Sub.batch
         [ Animation.subscription Animate
             [ model.currentSongStyle
+            , model.keepersStyle
+            , model.skippersStyle
             , model.marqueeStyle
             ]
         , Sub.map PhoenixMsg <| Phoenix.subscriptions model.phoenix
@@ -215,20 +269,23 @@ songInfoView song =
     ]
 
 
-keepersSkippersView : KeepersSkippers -> List (Html Msg)
-keepersSkippersView keepersSkippers =
+keepersSkippersView : Model -> List (Html Msg)
+keepersSkippersView model =
     let
         keepersCount =
-            keepersSkippers.keepers
+            model.keepersSkippers.keepers
                 |> List.length
                 |> String.fromInt
 
         skippersCount =
-            keepersSkippers.skippers
+            model.keepersSkippers.skippers
                 |> List.length
                 |> String.fromInt
     in
-    [ skippersCount ++ " x " ++ keepersCount |> text ]
+    [ div (Animation.render model.skippersStyle ++ [ style "color" "red", style "display" "inline-block" ]) [ skippersCount |> text ]
+    , div [ style "display" "inline-block" ] [ text " x " ]
+    , div (Animation.render model.keepersStyle ++ [ style "color" "green", style "display" "inline-block" ]) [ keepersCount |> text ]
+    ]
 
 
 view : Model -> Html Msg
@@ -239,7 +296,7 @@ view model =
                 ++ [ class "main" ]
             )
             (songInfoView model.currentSong)
-        , h1 [] (keepersSkippersView model.keepersSkippers)
+        , h1 [] (keepersSkippersView model)
         , node "marquee"
             (Animation.render model.marqueeStyle
                 ++ [ attribute "scrolldelay" "60" ]

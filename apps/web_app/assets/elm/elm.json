@@ -11,6 +11,7 @@
             "elm/html": "1.0.0",
             "elm/json": "1.1.3",
             "elm/time": "1.0.0",
+            "elm-community/easing-functions": "2.0.0",
             "mdgriffith/elm-style-animation": "4.0.0",
             "phollyer/elm-phoenix-websocket": "4.0.0"
         },
