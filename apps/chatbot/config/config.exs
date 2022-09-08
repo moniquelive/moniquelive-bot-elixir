@@ -16,7 +16,7 @@ config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 config :scrapped_twitch_api,
   default_adapter: "https://dev.twitch.tv/docs/api/reference",
-  access_token_scopes: ["user:read:email"],
+  access_token_scopes: ~w(user:read:email channel:manage:broadcast),
   callback_protocol: :http,
   callback_uri: "localhost",
   callback_port: 8090

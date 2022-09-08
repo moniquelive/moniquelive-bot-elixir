@@ -476,7 +476,7 @@
       ],
       "responses": [
         "/color YellowGreen",
-        "/me {{ .Command.Marquee .Sender .CmdLine }}"
+        "/me #{Commands.marquee(sender, command)}"
       ]
     },
     {

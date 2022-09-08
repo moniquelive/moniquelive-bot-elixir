@@ -79,10 +79,10 @@ init _ =
             { phoenix = phxConfig
             , currentSong = SongInfo "" "" ""
             , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
-            , keepersStyle = Animation.styleWith (Animation.easing { duration = 150, ease = inOutBounce }) [ Animation.scale 1 ]
-            , skippersStyle = Animation.styleWith (Animation.easing { duration = 150, ease = inOutBounce }) [ Animation.scale 1 ]
+            , keepersStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.scale 1 ]
+            , skippersStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.scale 1 ]
             , marqueeMessage = ""
-            , marqueeStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 0) (percent 100) ]
+            , marqueeStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 0) (percent 125) ]
             , keepersSkippers = KeepersSkippers [] []
             }
     in
@@ -157,7 +157,7 @@ processPhoenixMsg model subMsg =
                                 [ Animation.loop
                                     [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
                                     , Animation.wait (Time.millisToPosix <| 60 * 1000)
-                                    , Animation.to [ Animation.translate (percent 0) (percent 100) ]
+                                    , Animation.to [ Animation.translate (percent 0) (percent 125) ]
                                     , Animation.wait (Time.millisToPosix <| 30 * 1000)
                                     ]
                                 ]

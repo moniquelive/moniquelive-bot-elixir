@@ -227,4 +227,50 @@ defmodule Chatbot.Commands do
       |> Map.get(:body)
       |> Jason.decode!()
       |> Map.get("data")
+
+  @doc """
+  ----------------------------------------------------------------------------
+  !marquee
+  ----------------------------------------------------------------------------
+  """
+  def marquee(sender, command) do
+    [info] =
+      TwitchApi.Channels.GetChannelInformation.call(%{broadcaster_id: @moniquelive_id})
+      |> elem(1)
+      |> Map.get(:body)
+      |> Jason.decode!()
+      |> Map.get("data")
+
+    status = ~s(Marquee > #{info["title"]})
+
+    case String.split(command) do
+      [_marquee] ->
+        Phoenix.PubSub.broadcast(
+          WebApp.PubSub,
+          "layer:marquee_updated",
+          {:marquee, info["title"]}
+        )
+
+        status
+
+      [_marquee | sentence] ->
+        if String.downcase(sender) != "moniquelive" do
+          status
+        else
+          sentence = Enum.join(sentence, " ")
+
+          TwitchApi.Channels.ModifyChannelInformation.call(
+            %{broadcaster_id: info["broadcaster_id"]},
+            %{user_id: info["broadcaster_id"]},
+            %{"title" => sentence} |> Jason.encode!()
+          )
+
+          Phoenix.PubSub.broadcast(WebApp.PubSub, "layer:marquee_updated", {:marquee, sentence})
+          "Atualizando marquee: #{sentence}"
+        end
+
+      _ ->
+        status
+    end
+  end
 end
