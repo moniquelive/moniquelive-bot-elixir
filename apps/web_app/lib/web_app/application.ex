@@ -1,6 +1,4 @@
 defmodule WebApp.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
@@ -8,18 +6,11 @@ defmodule WebApp.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Telemetry supervisor
       WebAppWeb.Telemetry,
-      # Start the PubSub system
       {Phoenix.PubSub, name: WebApp.PubSub},
-      # Start the Endpoint (http/https)
       WebAppWeb.Endpoint
-      # Start a worker by calling: WebApp.Worker.start_link(arg)
-      # {WebApp.Worker, arg}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: WebApp.Supervisor]
     Supervisor.start_link(children, opts)
   end

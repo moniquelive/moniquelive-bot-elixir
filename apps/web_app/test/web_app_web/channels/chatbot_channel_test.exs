@@ -1,27 +1,26 @@
 defmodule WebAppWeb.ChatbotChannelTest do
+  @moduledoc false
+
   use WebAppWeb.ChannelCase
 
   setup do
     {:ok, _, socket} =
       WebAppWeb.UserSocket
-      |> socket("user_id", %{some: :assign})
-      |> subscribe_and_join(WebAppWeb.ChatbotChannel, "chatbot:lobby")
+      |> socket()
+      |> subscribe_and_join(WebAppWeb.ChatbotChannel, "chatbot:tests")
 
     %{socket: socket}
   end
 
-  test "ping replies with status ok", %{socket: socket} do
-    ref = push(socket, "ping", %{"hello" => "there"})
-    assert_reply ref, :ok, %{"hello" => "there"}
-  end
-
-  test "shout broadcasts to chatbot:lobby", %{socket: socket} do
-    push(socket, "shout", %{"hello" => "all"})
-    assert_broadcast "shout", %{"hello" => "all"}
-  end
+  # no `handle_in` for now...
+  #
+  # test "shout broadcasts to chatbot:lobby", %{socket: socket} do
+  #   push(socket, "shout", %{"hello" => "all"})
+  #   assert_broadcast "shout", %{"hello" => "all"}
+  # end
 
   test "broadcasts are pushed to the client", %{socket: socket} do
-    broadcast_from!(socket, "broadcast", %{"some" => "data"})
-    assert_push "broadcast", %{"some" => "data"}
+    broadcast_from!(socket, "marquee_updated", %{text: "foobar"})
+    assert_push "marquee_updated", %{text: "foobar"}
   end
 end

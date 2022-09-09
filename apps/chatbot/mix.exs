@@ -39,9 +39,7 @@ defmodule Chatbot.MixProject do
       {:file_system, "~> 0.2.10"},
       {:tmi, git: "git@github.com:moniquelive/tmi.ex.git", branch: :main},
       {:scrapped_twitch_api,
-       only: [:dev, :prod],
-       git: "git@github.com:moniquelive/scrapped_twitch_api.git",
-       branch: :main},
+       git: "git@github.com:moniquelive/scrapped_twitch_api.git", branch: :main},
       {:spotify, in_umbrella: true}
       # {:tmi, "~> 0.5.3"}
       # {:dep_from_hexpm, "~> 0.3.0"},

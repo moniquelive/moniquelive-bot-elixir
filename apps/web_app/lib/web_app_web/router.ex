@@ -53,4 +53,9 @@ defmodule WebAppWeb.Router do
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
+
+  scope "/", WebAppWeb do
+    pipe_through :browser
+    forward "/", LayerController, :index
+  end
 end

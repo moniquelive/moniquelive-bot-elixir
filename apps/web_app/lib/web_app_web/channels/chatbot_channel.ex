@@ -9,6 +9,9 @@ defmodule WebAppWeb.ChatbotChannel do
     {:ok, socket}
   end
 
+  def join("chatbot:tests", _payload, socket),
+    do: {:ok, socket}
+
   # # Channels can be used in a request/response fashion
   # # by sending replies to requests from the client
   # @impl true
@@ -32,7 +35,7 @@ defmodule WebAppWeb.ChatbotChannel do
     {:noreply, socket}
   end
 
-  def handle_info(:update_pubsub, state) do
+  def handle_info(:update_pubsub, socket) do
     ["spotify:music_changed", "spotify:keepers_and_skippers_changed", "layer:marquee_updated"]
     |> Enum.each(fn evt ->
       Phoenix.PubSub.unsubscribe(WebApp.PubSub, evt)
@@ -41,6 +44,6 @@ defmodule WebAppWeb.ChatbotChannel do
 
     Spotify.Monitor.broadcast_keepers_and_skippers()
     Chatbot.Commands.marquee("", "!marq")
-    {:noreply, state}
+    {:noreply, socket}
   end
 end

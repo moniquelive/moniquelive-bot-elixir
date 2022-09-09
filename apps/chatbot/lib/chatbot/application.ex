@@ -16,11 +16,17 @@ defmodule Chatbot.Application do
 
     children = [
       {State, name: Chatbot.State},
-      {Config, dirs: [Path.expand("../..", __DIR__)]},
-      {TMI.Supervisor, bot_config}
+      {Config, dirs: [Path.expand("../..", __DIR__)]}
     ]
 
+    extra_children =
+      if Mix.env() == :test do
+        []
+      else
+        [{TMI.Supervisor, bot_config}]
+      end
+
     opts = [strategy: :one_for_one, name: Chatbot.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children ++ extra_children, opts)
   end
 end

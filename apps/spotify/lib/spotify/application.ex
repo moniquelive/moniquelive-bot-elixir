@@ -5,9 +5,14 @@ defmodule Spotify.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      {Spotify.Monitor, Application.fetch_env!(:spotify_ex, :refresh_token)}
-    ]
+    children =
+      if Mix.env() == :test do
+        []
+      else
+        [
+          {Spotify.Monitor, Application.fetch_env!(:spotify_ex, :refresh_token)}
+        ]
+      end
 
     opts = [strategy: :one_for_one, name: Spotify.Supervisor]
     Supervisor.start_link(children, opts)
