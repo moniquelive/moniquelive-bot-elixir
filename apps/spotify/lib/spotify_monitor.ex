@@ -26,15 +26,15 @@ defmodule Spotify.Monitor do
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
   def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
+  def broadcast_keepers_and_skippers(),
+    do: GenServer.cast(__MODULE__, :broadcast_keepers_and_skippers)
+
   def format_payload(song) do
     artist = hd(song.artists)["name"]
     title = song.name
     song_url = hd(song.album["images"])["url"]
     %{imgUrl: song_url, title: title, artist: artist}
   end
-
-  def broadcast_keepers_and_skippers(),
-    do: GenServer.cast(__MODULE__, :broadcast_keepers_and_skippers)
 
   # Server
 
@@ -101,9 +101,8 @@ defmodule Spotify.Monitor do
         "Aaaaa parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
       end
 
-    new_state = %{state | skip_set: skip_set}
-    handle_cast(:broadcast_keepers_and_skippers, new_state)
-    {:reply, response, new_state}
+    broadcast_keepers_and_skippers()
+    {:reply, response, %{state | skip_set: skip_set}}
   end
 
   def handle_call({:keep_song, username}, _from, state) do
@@ -115,9 +114,8 @@ defmodule Spotify.Monitor do
     skip_votes = MapSet.size(state.skip_set)
     response = "kumaPls parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"
 
-    new_state = %{state | keep_set: keep_set}
-    handle_cast(:broadcast_keepers_and_skippers, new_state)
-    {:reply, response, new_state}
+    broadcast_keepers_and_skippers()
+    {:reply, response, %{state | keep_set: keep_set}}
   end
 
   @impl GenServer
@@ -127,7 +125,7 @@ defmodule Spotify.Monitor do
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:music_changed", state.curr)
+    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:music_changed", state.curr.item)
     handle_cast(:broadcast_keepers_and_skippers, state)
   end
 
@@ -158,13 +156,20 @@ defmodule Spotify.Monitor do
   end
 
   def handle_info(:refresh_token_timer, state) do
-    case Spotify.Authentication.refresh(%Spotify.Credentials{refresh_token: state.refresh_token}) do
-      {:ok, creds} ->
-        {:noreply, %{state | creds: creds}}
+    new_state =
+      try do
+        case Spotify.Authentication.refresh(%Spotify.Credentials{
+               refresh_token: state.refresh_token
+             }) do
+          {:ok, creds} ->
+            %{state | creds: creds}
+        end
+      rescue
+        _ ->
+          :timer.send_after(15_000, :refresh_token_timer)
+          state
+      end
 
-      _ ->
-        :timer.send_after(60_000, :refresh_token_timer)
-        {:noreply, state}
-    end
+    {:noreply, new_state}
   end
 end

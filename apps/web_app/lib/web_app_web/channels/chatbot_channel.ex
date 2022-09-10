@@ -20,7 +20,7 @@ defmodule WebAppWeb.ChatbotChannel do
   # end
 
   @impl true
-  def handle_info(%Spotify.Playback{item: item}, socket) do
+  def handle_info(%Spotify.Track{} = item, socket) do
     push(socket, "spotify_music_changed", Spotify.Monitor.format_payload(item))
     {:noreply, socket}
   end

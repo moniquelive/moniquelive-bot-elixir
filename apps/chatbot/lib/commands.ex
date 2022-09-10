@@ -92,6 +92,8 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def hug(sender, command) do
+    sender = String.downcase(sender)
+
     case String.split(command) do
       [_hug] -> hug(sender, "!hug " <> Enum.random(State.roster()))
       [_hug, ^sender | _] -> "♥ #{sender} se auto-abraça 02Pat"
@@ -143,6 +145,8 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def uptime(sender, command) do
+    sender = String.downcase(sender)
+
     case String.split(command) do
       [_uptime] ->
         uptime(sender, "!uptime " <> sender)
@@ -173,6 +177,8 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def follow_age(sender, command) do
+    sender = String.downcase(sender)
+
     case String.split(command) do
       [_followage] ->
         follow_age(sender, "!followage #{sender}")
@@ -234,6 +240,8 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def marquee(sender, command) do
+    sender = String.downcase(sender)
+
     [info] =
       TwitchApi.Channels.GetChannelInformation.call(%{broadcaster_id: @moniquelive_id})
       |> elem(1)
@@ -254,7 +262,7 @@ defmodule Chatbot.Commands do
         status
 
       [_marquee | sentence] ->
-        if String.downcase(sender) != "moniquelive" do
+        if sender != "moniquelive" do
           status
         else
           sentence = Enum.join(sentence, " ")

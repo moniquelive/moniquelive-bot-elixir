@@ -13,37 +13,40 @@ defmodule Chatbot.Config do
 
   # Server
 
-  @impl true
-  def init([dirs: [dir]] = args) do
-    {:ok, watcher_pid} = FileSystem.start_link(args)
+  @impl GenServer
+  def init(dir) do
+    {:ok, watcher_pid} = FileSystem.start_link(dirs: [dir])
     FileSystem.subscribe(watcher_pid)
 
     {:ok,
      %{
        watcher_pid: watcher_pid,
-       config: parse(Path.join(dir, @config_filename))
+       config: Path.join(dir, @config_filename) |> parse()
      }}
   end
 
-  @impl true
+  @impl GenServer
   def handle_call(:ignored, _from, state),
     do: {:reply, state.config["ignored_commands"], state}
 
   def handle_call(:commands, _from, state),
     do: {:reply, state.config["commands"] |> Enum.sort_by(& &1["actions"]), state}
 
-  @impl true
+  @impl GenServer
   def handle_info(
         {:file_event, watcher_pid, {path, [_, :modified, _]}},
         %{watcher_pid: watcher_pid} = state
       ) do
     if String.ends_with?(path, @config_filename),
-      do: {:noreply, %{state | config: parse(path)}},
+      do: {:noreply, %{state | config: path |> parse()}},
       else: {:noreply, state}
   end
 
-  def handle_info({:file_event, watcher_pid, _}, %{watcher_pid: watcher_pid} = state),
-    do: {:noreply, state}
+  def handle_info(
+        {:file_event, watcher_pid, _},
+        %{watcher_pid: watcher_pid} = state
+      ),
+      do: {:noreply, state}
 
   defp parse(path),
     do:

@@ -89,16 +89,16 @@ defmodule Chatbot.Bot do
       |> State.user_joined()
 
   @impl TMI.Handler
-  def handle_unrecognized(%Spotify.Playback{} = curr) do
-    artist = hd(curr.item.artists)["name"]
-    title = curr.item.name
+  def handle_unrecognized(%Spotify.Track{} = curr) do
+    artist = hd(curr.artists)["name"]
+    title = curr.name
 
     song_url =
-      curr.item.href
+      curr.href
       |> String.replace("https://api.spotify.com/v1/tracks/", "https://song.link/s/")
 
     dur =
-      curr.item.duration_ms
+      curr.duration_ms
       |> div(1000)
       |> Utils.format_duration()
 

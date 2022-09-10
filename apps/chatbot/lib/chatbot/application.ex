@@ -16,7 +16,7 @@ defmodule Chatbot.Application do
 
     children = [
       {State, name: Chatbot.State},
-      {Config, dirs: [Path.expand("../..", __DIR__)]}
+      {Config, Path.expand("../..", __DIR__)}
     ]
 
     extra_children =

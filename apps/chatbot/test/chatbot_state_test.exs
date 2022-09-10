@@ -16,6 +16,13 @@ defmodule Chatbot.StateTest do
     assert State.command_count(@name) == %{}
   end
 
+  describe "command state" do
+    test "user enters command" do
+      State.performed_command(@name, "!help")
+      assert State.command_count(@name) == %{"!help" => 1}
+    end
+  end
+
   describe "user state" do
     test "user enters the chatroom" do
       State.user_joined(@name, "fulano")
@@ -25,14 +32,14 @@ defmodule Chatbot.StateTest do
     test "many users enter the chatroom" do
       people = ["siclano", "fulano", "beltrano"]
       State.user_joined(@name, people)
-      assert Enum.sort(State.roster(@name)) == Enum.sort(people)
+      assert State.roster(@name) |> Enum.sort() == people |> Enum.sort()
     end
 
     test "user enters and leaves the chatroom" do
       State.user_joined(@name, "fulano")
       State.user_left(@name, "beltrano")
       State.user_left(@name, "fulano")
-      assert State.roster(@name) == []
+      assert [] = State.roster(@name)
     end
 
     test "get user online time" do
@@ -49,16 +56,19 @@ defmodule Chatbot.StateTest do
       State.user_typed_url(@name, "fulano", google)
       assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "fulano")
       assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "@fulano")
+      assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "")
     end
 
-    test "urls for unknwon user" do
+    test "urls for unknown user" do
       assert [%{user: "fulano", urls: []}] = State.urls_for(@name, "fulano")
+      assert [] = State.urls_for(@name, "")
     end
 
     test "add url for unknown user" do
       google = "https://google.com"
       State.user_typed_url(@name, "fulano", google)
       assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "fulano")
+      assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "")
     end
 
     test "add url for unknown user then online" do
@@ -66,6 +76,7 @@ defmodule Chatbot.StateTest do
       State.user_typed_url(@name, "fulano", google)
       State.user_joined(@name, "fulano")
       assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "fulano")
+      assert [%{user: "fulano", urls: [^google]}] = State.urls_for(@name, "")
     end
 
     test "users type urls" do
@@ -80,8 +91,8 @@ defmodule Chatbot.StateTest do
     end
 
     test "user types a message with urls" do
-      google = "https://google.com"
-      twitter = "https://twitter.com"
+      google = "https://admin.google.com/"
+      twitter = "https://twitter.com/moniquelive"
       State.user_joined(@name, "fulano")
       State.process_sentence(@name, "foo #{google} bar #{twitter}", "fulano")
       assert [%{user: "fulano", urls: [^google, ^twitter]}] = State.urls_for(@name, "")
@@ -92,12 +103,12 @@ defmodule Chatbot.StateTest do
       State.process_sentence(@name, "foo bar baz", "fulano")
       assert [%{user: "fulano", urls: []}] = State.urls_for(@name, "")
     end
-  end
 
-  describe "command state" do
-    test "user enters command" do
-      State.performed_command(@name, "!help")
-      assert State.command_count(@name) == %{"!help" => 1}
+    test "unknown user types a message with urls" do
+      google = "https://admin.google.com/"
+      twitter = "https://twitter.com/moniquelive"
+      State.process_sentence(@name, "foo #{google} bar #{twitter}", "fulano")
+      assert [%{user: "fulano", urls: [^google, ^twitter]}] = State.urls_for(@name, "")
     end
   end
 end

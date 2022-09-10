@@ -22,12 +22,14 @@ defmodule Chatbot.Commands.Player do
   !skip
   ----------------------------------------------------------------------------
   """
-  def skip_song(sender), do: Spotify.Monitor.skip_song(sender)
+  def skip_song(sender),
+    do: Spotify.Monitor.skip_song(sender)
 
   @doc """
   ----------------------------------------------------------------------------
   !keep
   ----------------------------------------------------------------------------
   """
-  def keep_song(sender), do: Spotify.Monitor.keep_song(sender)
+  def keep_song(sender),
+    do: Spotify.Monitor.keep_song(sender)
 end

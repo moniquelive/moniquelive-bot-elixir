@@ -57,6 +57,9 @@ defmodule Chatbot.Utils do
   ----------------------------------------------------------------------------
   format_duration
 
+  iex> format_duration(0)
+  "0 segundos"
+
   iex> format_duration(1)
   "1 segundo"
 
@@ -89,6 +92,9 @@ defmodule Chatbot.Utils do
   @spec format_duration(integer) :: String.t()
   def format_duration(duration) do
     case format_duration(duration, []) |> Enum.reverse() do
+      [] ->
+        "0 segundos"
+
       [seconds] ->
         seconds
 
@@ -134,7 +140,7 @@ defmodule Chatbot.Utils do
     end
   end
 
-  defp plural(unit, prefix, suffix \\ "s")
-  defp plural(unit, prefix, _suffix) when unit <= 1, do: prefix
-  defp plural(_unit, prefix, suffix), do: prefix <> suffix
+  defp plural(value, prefix, suffix \\ "s")
+  defp plural(1, prefix, _suffix), do: prefix
+  defp plural(_value, prefix, suffix), do: prefix <> suffix
 end

@@ -17,17 +17,15 @@ defmodule Chatbot.State do
   def user_joined(name \\ @name, users)
   def user_joined(name, users) when is_list(users), do: GenServer.cast(name, {:add_users, users})
   def user_joined(name, user) when is_binary(user), do: GenServer.cast(name, {:add_user, user})
-
-  def user_left(name \\ @name, user) when is_binary(user),
-    do: GenServer.cast(name, {:del_user, user})
+  def user_left(name \\ @name, user), do: GenServer.cast(name, {:del_user, user})
+  def performed_command(name \\ @name, command), do: GenServer.cast(name, {:command, command})
 
   def user_typed_url(name \\ @name, user, url),
     do: GenServer.cast(name, {:add_user_url, user, url})
 
-  def performed_command(name \\ @name, command),
-    do: GenServer.cast(name, {:command, command})
-
   def process_sentence(name \\ @name, sentence, user) do
+    user = String.downcase(user)
+
     Regex.scan(~r{https?://\S*}, sentence)
     |> List.flatten()
     |> Enum.each(&user_typed_url(name, user, &1))
@@ -55,16 +53,20 @@ defmodule Chatbot.State do
     do: handle_cast({:add_user, user}, state)
 
   def handle_cast({:add_user, user}, state) do
+    user = String.downcase(user)
     default_user_info = %{online_at: DateTime.utc_now(), urls: MapSet.new()}
-    new_user_info = Map.get(state.users_info, String.downcase(user), default_user_info)
+    new_user_info = Map.get(state.users_info, user, default_user_info)
     {:noreply, %{state | users_info: Map.put(state.users_info, user, new_user_info)}}
   end
 
   def handle_cast({:del_user, user}, state) do
+    user = String.downcase(user)
     {:noreply, %{state | users_info: Map.delete(state.users_info, user)}}
   end
 
   def handle_cast({:add_user_url, user, url}, state) do
+    user = String.downcase(user)
+
     if user_info = state.users_info[user] do
       new_urls = MapSet.put(user_info.urls, url)
       new_user_info = %{user_info | urls: new_urls}
@@ -91,8 +93,10 @@ defmodule Chatbot.State do
     do: handle_call({:online_at, user}, from, state)
 
   def handle_call({:online_at, user}, _from, state) do
+    user = String.downcase(user)
+
     online_at =
-      if user_info = Map.get(state.users_info, String.downcase(user)),
+      if user_info = Map.get(state.users_info, user),
         do: user_info.online_at
 
     {:reply, online_at, state}
@@ -115,8 +119,10 @@ defmodule Chatbot.State do
     do: handle_call({:urls_for, user}, from, state)
 
   def handle_call({:urls_for, user}, _from, state) do
+    user = String.downcase(user)
+
     urls =
-      Map.get(state.users_info, String.downcase(user), %{urls: MapSet.new()})
+      Map.get(state.users_info, user, %{urls: MapSet.new()})
       |> Map.get(:urls)
       |> MapSet.to_list()
 

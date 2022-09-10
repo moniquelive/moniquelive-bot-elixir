@@ -20,7 +20,7 @@ defmodule WebAppWeb.ChatbotChannelTest do
   # end
 
   test "broadcasts are pushed to the client", %{socket: socket} do
-    broadcast_from!(socket, "marquee_updated", %{text: "foobar"})
-    assert_push "marquee_updated", %{text: "foobar"}
+    broadcast_from!(socket, "anything", %{data: "matches"})
+    assert_push "anything", %{data: "matches"}
   end
 end
