@@ -125,7 +125,8 @@
         "/me 📺: https://www.youtube.com/moniquelive",
         "/me 🤝: https://stackoverflow.com/users/9793/cyber-oliveira",
         "/me 📖: https://dev.to/moniquelive",
-        "/me 💌: https://t.me/joinchat/nq7dy4jqN01kNmVh"
+        "/me 💌: https://t.me/joinchat/nq7dy4jqN01kNmVh",
+        "/me 🥏️: https://discord.gg/m5U66SyyyK"
       ]
     },
     {
@@ -347,15 +348,15 @@
       ]
     },
     {
-      "help": "Shows our 'discord' url",
-      "ajuda": "Exibe nossa url do 'discord'",
+      "help": "Shows our discord url",
+      "ajuda": "Exibe nossa url do discord",
       "actions": [
         "!telegram",
         "!discord"
       ],
       "responses": [
         "/color YellowGreen",
-        "/me telegram: https://t.me/joinchat/nq7dy4jqN01kNmVh"
+        "/me discord: https://discord.gg/m5U66SyyyK"
       ]
     },
     {
