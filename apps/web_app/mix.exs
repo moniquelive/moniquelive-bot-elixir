@@ -66,7 +66,8 @@ defmodule WebApp.MixProject do
     [
       # https://hexdocs.pm/phoenix/asset_management.html#esbuild-plugins
       setup: ["deps.get", "ecto.setup", "cmd --cd assets npm install"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["esbuild default --minify", "phx.digest"],
+      test: "test --no-start"
     ]
   end
 end

@@ -10,6 +10,7 @@ defmodule Spotify.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
+      aliases: aliases(),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -28,6 +29,12 @@ defmodule Spotify.MixProject do
     [
       {:phoenix, "~> 1.6.11"},
       {:spotify_ex, "~> 2.2.1"}
+    ]
+  end
+
+  defp aliases do
+    [
+      test: "test --no-start"
     ]
   end
 end

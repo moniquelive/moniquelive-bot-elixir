@@ -4,6 +4,9 @@ defmodule WebAppWeb.ChatbotChannelTest do
   use WebAppWeb.ChannelCase
 
   setup do
+    start_supervised!({Phoenix.PubSub, name: WebApp.PubSub})
+    start_supervised!(WebAppWeb.Endpoint)
+
     {:ok, _, socket} =
       WebAppWeb.UserSocket
       |> socket()
