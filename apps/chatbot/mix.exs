@@ -26,7 +26,8 @@ defmodule Chatbot.MixProject do
 
   defp aliases do
     [
-      test: "test --no-start"
+      test: "test --no-start",
+      "assets.deploy": ["cmd --cd assets node build.js --deploy", "phx.digest"]
     ]
   end
 
@@ -37,9 +38,9 @@ defmodule Chatbot.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.2"},
       {:file_system, "~> 0.2.10"},
-      {:tmi, git: "git@github.com:moniquelive/tmi.ex.git", branch: :main},
+      {:tmi, git: "https://github.com/moniquelive/tmi.ex.git", branch: :main},
       {:scrapped_twitch_api,
-       git: "git@github.com:moniquelive/scrapped_twitch_api.git", branch: :main},
+       git: "https://github.com/moniquelive/scrapped_twitch_api.git", branch: :main},
       {:spotify, in_umbrella: true}
       # {:tmi, "~> 0.5.3"}
       # {:dep_from_hexpm, "~> 0.3.0"},
