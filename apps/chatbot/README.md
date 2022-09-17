@@ -1,5 +1,8 @@
 # Chatbot
 
+Bot que mocka a API da Twitch:
+- https://dev.twitch.tv/docs/cli/mock-api-command
+
 **TODO: Add description**
 
 ## Installation

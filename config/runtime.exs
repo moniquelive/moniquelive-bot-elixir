@@ -1,0 +1,1 @@
+../apps/web_app/config/runtime.exs
