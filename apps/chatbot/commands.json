@@ -352,7 +352,8 @@
       "ajuda": "Exibe nossa url do discord",
       "actions": [
         "!telegram",
-        "!discord"
+        "!discord",
+        "!disc"
       ],
       "responses": [
         "/color YellowGreen",
