@@ -24,6 +24,8 @@ RUN mix do deps.get --only $MIX_ENV, deps.compile
 
 COPY . /app/
 
+ARG TWITCH_TMI_OAUTH
+ENV TWITCH_TMI_OAUTH=$TWITCH_TMI_OAUTH
 
 WORKDIR /app/apps/web_app
 RUN mix compile
