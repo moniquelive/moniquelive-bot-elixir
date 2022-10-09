@@ -19,7 +19,10 @@ defmodule Chatbot.StateTest do
   describe "command state" do
     test "user enters command" do
       State.performed_command(@name, "!help")
-      assert State.command_count(@name) == %{"!help" => 1}
+      State.performed_command(@name, "!cmd")
+      State.performed_command(@name, "!cmd")
+      assert %{"!help" => 1} = State.command_count(@name)
+      assert %{"!cmd" => 2} = State.command_count(@name)
     end
   end
 

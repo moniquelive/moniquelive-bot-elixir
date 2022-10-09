@@ -3,6 +3,8 @@ defmodule Chatbot.State do
 
   use GenServer
 
+  alias Chatbot.State.User
+
   @name __MODULE__
 
   # Client
@@ -41,8 +43,8 @@ defmodule Chatbot.State do
   @impl true
   def handle_cast({:add_users, users}, state) do
     new_state =
-      Enum.reduce(users, state, fn user, s ->
-        {:noreply, new_s} = handle_cast({:add_user, user}, s)
+      Enum.reduce(users, state, fn user, temp_s ->
+        {:noreply, new_s} = handle_cast({:add_user, user}, temp_s)
         new_s
       end)
 
@@ -54,9 +56,8 @@ defmodule Chatbot.State do
 
   def handle_cast({:add_user, user}, state) do
     user = String.downcase(user)
-    default_user_info = %{online_at: DateTime.utc_now(), urls: MapSet.new()}
-    new_user_info = Map.get(state.users_info, user, default_user_info)
-    {:noreply, %{state | users_info: Map.put(state.users_info, user, new_user_info)}}
+    user_info = Map.get(state.users_info, user, %User{online_at: DateTime.utc_now()})
+    {:noreply, %{state | users_info: Map.put(state.users_info, user, user_info)}}
   end
 
   def handle_cast({:del_user, user}, state) do
@@ -67,21 +68,16 @@ defmodule Chatbot.State do
   def handle_cast({:add_user_url, user, url}, state) do
     user = String.downcase(user)
 
-    if user_info = state.users_info[user] do
-      new_urls = MapSet.put(user_info.urls, url)
-      new_user_info = %{user_info | urls: new_urls}
-      new_users_info = %{state.users_info | user => new_user_info}
-      {:noreply, %{state | users_info: new_users_info}}
-    else
-      {:noreply, state} = handle_cast({:add_user, user}, state)
-      handle_cast({:add_user_url, user, url}, state)
-    end
+    user_info =
+      Map.get(state.users_info, user, %User{online_at: DateTime.utc_now()})
+      |> User.add_url(url)
+
+    {:noreply, %{state | users_info: Map.put(state.users_info, user, user_info)}}
   end
 
   def handle_cast({:command, command}, state) do
-    curr_count = Map.get(state.commands_info, command, 0)
-    new_commands_info = Map.put(state.commands_info, command, curr_count + 1)
-    {:noreply, %{state | commands_info: new_commands_info}}
+    commands_info = Map.update(state.commands_info, command, 1, &(&1 + 1))
+    {:noreply, %{state | commands_info: commands_info}}
   end
 
   @impl true
@@ -94,11 +90,7 @@ defmodule Chatbot.State do
 
   def handle_call({:online_at, user}, _from, state) do
     user = String.downcase(user)
-
-    online_at =
-      if user_info = Map.get(state.users_info, user),
-        do: user_info.online_at
-
+    online_at = Map.get(state.users_info, user, %User{online_at: nil}).online_at
     {:reply, online_at, state}
   end
 
@@ -108,9 +100,8 @@ defmodule Chatbot.State do
 
   def handle_call({:urls_for, ""}, _from, state) do
     urls =
-      for {user, %{urls: urls}} <- state.users_info,
-          into: [],
-          do: %{user: user, urls: MapSet.to_list(urls)}
+      for {name, %{urls: urls}} <- state.users_info,
+          do: %{user: name, urls: MapSet.to_list(urls)}
 
     {:reply, urls, state}
   end
@@ -122,8 +113,7 @@ defmodule Chatbot.State do
     user = String.downcase(user)
 
     urls =
-      Map.get(state.users_info, user, %{urls: MapSet.new()})
-      |> Map.get(:urls)
+      Map.get(state.users_info, user, %User{online_at: nil}).urls
       |> MapSet.to_list()
 
     {:reply, [%{user: user, urls: urls}], state}
