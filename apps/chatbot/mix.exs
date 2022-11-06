@@ -38,11 +38,11 @@ defmodule Chatbot.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.2"},
       {:file_system, "~> 0.2.10"},
-      {:tmi, git: "https://github.com/moniquelive/tmi.ex.git", branch: :main},
+      # {:tmi, git: "https://github.com/moniquelive/tmi.ex.git", branch: :main},
       {:scrapped_twitch_api,
        git: "https://github.com/moniquelive/scrapped_twitch_api.git", branch: :main},
-      {:spotify, in_umbrella: true}
-      # {:tmi, "~> 0.5.3"}
+      {:spotify, in_umbrella: true},
+      {:tmi, "~> 0.6"}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
       # {:sibling_app_in_umbrella, in_umbrella: true}
