@@ -3,6 +3,7 @@ defmodule Chatbot.Bot do
 
   use TMI
 
+  @bot_id "moniquelivebot"
   @channel_name "moniquelive"
   @enqueue_song_reward_id "bf07c491-1ffb-4eb7-a7d8-5c9f2fe51818"
   @on_load :init
@@ -22,6 +23,7 @@ defmodule Chatbot.Bot do
   @impl TMI.Handler
   def handle_join(channel) do
     Logger.debug("*** [#{__MODULE__}] [#{channel}] you joined")
+    TwitchApi.Chat.UpdateUserChatColor.call(%{user_id: @bot_id}, "seagreen")
     say(channel, "/color seagreen")
     say(channel, "/me Tô na área!")
     # say(channel, "/slow 1")
