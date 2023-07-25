@@ -20,7 +20,7 @@ COPY apps/spotify/config/.spotify_client_secret /app/apps/spotify/config/.spotif
 COPY apps/web_app/config/*.exs /app/apps/web_app/config/
 
 ENV MIX_ENV=prod
-RUN mix do deps.get --only $MIX_ENV, deps.compile
+RUN mix do deps.get --only $MIX_ENV, deps.update scrapped_twitch_api, deps.compile
 
 COPY . /app/
 
@@ -40,8 +40,10 @@ RUN mix release
 ########################################################################
 
 #FROM debian:stable-slim
-FROM alpine:3.16
-RUN apk --update add ncurses inotify-tools
+FROM alpine:3.18
+RUN apk upgrade --update-cache --available && \
+    apk add openssl ncurses inotify-tools && \
+    rm -rf /var/cache/apk/*
 
 EXPOSE 4000
 ENV PORT=4000 \
