@@ -3,7 +3,6 @@ module Main exposing (..)
 import Animation exposing (percent)
 import Animation.Spring.Presets exposing (wobbly)
 import Browser
-import Ease exposing (inOutBounce)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode as D
@@ -282,8 +281,9 @@ keepersSkippersView model =
                 |> List.length
                 |> String.fromInt
     in
-    [ div (Animation.render model.skippersStyle ++ [ style "color" "red", style "display" "inline-block" ]) [ skippersCount |> text ]
-    , div [ style "display" "inline-block" ] [ text " x " ]
+    [ text (model.currentSong.title ++ " 🔉️ ")
+    , div (Animation.render model.skippersStyle ++ [ style "color" "red", style "display" "inline-block" ]) [ skippersCount |> text ]
+    , text " x "
     , div (Animation.render model.keepersStyle ++ [ style "color" "green", style "display" "inline-block" ]) [ keepersCount |> text ]
     ]
 
@@ -299,7 +299,7 @@ view model =
         , h1 [] (keepersSkippersView model)
         , node "marquee"
             (Animation.render model.marqueeStyle
-                ++ [ attribute "scrolldelay" "60" ]
+                ++ [ style "z-index" "-9999", attribute "scrolldelay" "60" ]
             )
             [ text model.marqueeMessage ]
         ]
