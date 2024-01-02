@@ -33,6 +33,13 @@ type alias MarqueeMessage =
     { text : String }
 
 
+type alias DifmInfo =
+    { channel : String
+    , title : String
+    , artist : String
+    }
+
+
 type alias SongInfo =
     { cover : String
     , title : String
@@ -48,6 +55,7 @@ type alias KeepersSkippers =
 
 type alias Model =
     { phoenix : Phoenix.Model
+    , difmSong : DifmInfo
     , currentSong : SongInfo
     , currentSongStyle : Animation.State
     , keepersStyle : Animation.State
@@ -70,12 +78,14 @@ init _ =
                             [ "marquee_updated"
                             , "spotify_music_changed"
                             , "keepers_skippers_changed"
+                            , "difm_current_song"
                             ]
                     }
                 |> Phoenix.join "chatbot:events"
 
         model =
             { phoenix = phxConfig
+            , difmSong = DifmInfo "" "" ""
             , currentSong = SongInfo "" "" ""
             , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
             , keepersStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.scale 1 ]
@@ -164,6 +174,26 @@ processPhoenixMsg model subMsg =
                     in
                     ( { model | marqueeMessage = marqueePayload.text, marqueeStyle = newMarqueeStyle }, cmd )
 
+                "difm_current_song" ->
+                    let
+                        difmPayload =
+                            case D.decodeValue difmMessageDecoder payload of
+                                Ok musicInfo ->
+                                    musicInfo
+
+                                Err err ->
+                                    DifmInfo (D.errorToString err) "" ""
+
+                        newCurrentSongStyle =
+                            Animation.interrupt
+                                [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
+                                , Animation.wait (Time.millisToPosix <| 8 * 1000)
+                                , Animation.to [ Animation.translate (percent 115) (percent 0) ]
+                                ]
+                                model.currentSongStyle
+                    in
+                    ( { newModel | difmSong = difmPayload, currentSongStyle = newCurrentSongStyle }, cmd )
+
                 "spotify_music_changed" ->
                     let
                         songPayload =
@@ -171,8 +201,8 @@ processPhoenixMsg model subMsg =
                                 Ok musicInfo ->
                                     musicInfo
 
-                                Err _ ->
-                                    SongInfo "" "erro" "erro"
+                                Err err ->
+                                    SongInfo "" (D.errorToString err) "erro"
 
                         newCurrentSongStyle =
                             Animation.interrupt
@@ -258,14 +288,26 @@ subscriptions model =
 -- VIEW
 
 
-songInfoView : SongInfo -> List (Html Msg)
-songInfoView song =
-    [ div [ class "cover" ] [ img [ id "coverImg", src song.cover ] [] ]
-    , div [ class "container" ]
-        [ div [ class "title" ] [ text song.title ]
-        , div [ class "artist" ] [ text song.artist ]
+songInfoView : SongInfo -> DifmInfo -> List (Html Msg)
+songInfoView song difm =
+    if song.cover /= "" then
+        [ div [ class "cover" ] [ img [ id "coverImg", src song.cover ] [] ]
+        , div [ class "container" ]
+            [ div [ class "title" ] [ text song.title ]
+            , div [ class "artist" ] [ text song.artist ]
+            ]
         ]
-    ]
+
+    else if difm.channel /= "" then
+        [ div [ class "cover" ] [ text ("((" ++ difm.channel ++ "))") ]
+        , div [ class "container" ]
+            [ div [ class "title" ] [ text difm.title ]
+            , div [ class "artist" ] [ text difm.artist ]
+            ]
+        ]
+
+    else
+        []
 
 
 keepersSkippersView : Model -> List (Html Msg)
@@ -295,7 +337,7 @@ view model =
             (Animation.render model.currentSongStyle
                 ++ [ class "main" ]
             )
-            (songInfoView model.currentSong)
+            (songInfoView model.currentSong model.difmSong)
         , h1 [] (keepersSkippersView model)
         , node "marquee"
             (Animation.render model.marqueeStyle
@@ -307,6 +349,14 @@ view model =
 
 
 -- JSON decode
+
+
+difmMessageDecoder : D.Decoder DifmInfo
+difmMessageDecoder =
+    D.map3 DifmInfo
+        (D.field "channel_key" D.string)
+        (D.at [ "track", "display_title" ] D.string)
+        (D.at [ "track", "display_artist" ] D.string)
 
 
 marqueeMessageDecoder : D.Decoder MarqueeMessage
