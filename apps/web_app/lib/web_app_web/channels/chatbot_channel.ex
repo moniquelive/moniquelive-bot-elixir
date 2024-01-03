@@ -20,8 +20,8 @@ defmodule WebAppWeb.ChatbotChannel do
   # end
 
   @impl true
-  def handle_info(%Spotify.Track{} = item, socket) do
-    push(socket, "spotify_music_changed", Spotify.Monitor.format_payload(item))
+  def handle_info({:spotify, payload}, socket) do
+    push(socket, "spotify_music_changed", payload)
     {:noreply, socket}
   end
 
@@ -35,15 +35,23 @@ defmodule WebAppWeb.ChatbotChannel do
     {:noreply, socket}
   end
 
+  def handle_info({:difm, payload}, socket) do
+    push(socket, "difm_current_song", payload)
+    {:noreply, socket}
+  end
+
   def handle_info(:update_pubsub, socket) do
-    ["spotify:music_changed", "spotify:keepers_and_skippers_changed", "layer:marquee_updated"]
+    [
+      "spotify:music_changed",
+      "spotify:keepers_and_skippers_changed",
+      "layer:marquee_updated",
+      "difm:current_song"
+    ]
     |> Enum.each(fn evt ->
       Phoenix.PubSub.unsubscribe(WebApp.PubSub, evt)
       Phoenix.PubSub.subscribe(WebApp.PubSub, evt)
     end)
 
-    Spotify.Monitor.broadcast_keepers_and_skippers()
-    Chatbot.Commands.marquee("", "!marq")
     {:noreply, socket}
   end
 end

@@ -33,13 +33,6 @@ type alias MarqueeMessage =
     { text : String }
 
 
-type alias DifmInfo =
-    { channel : String
-    , title : String
-    , artist : String
-    }
-
-
 type alias SongInfo =
     { cover : String
     , title : String
@@ -55,7 +48,6 @@ type alias KeepersSkippers =
 
 type alias Model =
     { phoenix : Phoenix.Model
-    , difmSong : DifmInfo
     , currentSong : SongInfo
     , currentSongStyle : Animation.State
     , keepersStyle : Animation.State
@@ -85,7 +77,6 @@ init _ =
 
         model =
             { phoenix = phxConfig
-            , difmSong = DifmInfo "" "" ""
             , currentSong = SongInfo "" "" ""
             , currentSongStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.translate (percent 115) (percent 0) ]
             , keepersStyle = Animation.styleWith (Animation.spring wobbly) [ Animation.scale 1 ]
@@ -182,7 +173,7 @@ processPhoenixMsg model subMsg =
                                     musicInfo
 
                                 Err err ->
-                                    DifmInfo (D.errorToString err) "" ""
+                                    SongInfo (D.errorToString err) "" ""
 
                         newCurrentSongStyle =
                             Animation.interrupt
@@ -192,7 +183,7 @@ processPhoenixMsg model subMsg =
                                 ]
                                 model.currentSongStyle
                     in
-                    ( { newModel | difmSong = difmPayload, currentSongStyle = newCurrentSongStyle }, cmd )
+                    ( { newModel | currentSong = difmPayload, currentSongStyle = newCurrentSongStyle }, cmd )
 
                 "spotify_music_changed" ->
                     let
@@ -202,7 +193,7 @@ processPhoenixMsg model subMsg =
                                     musicInfo
 
                                 Err err ->
-                                    SongInfo "" (D.errorToString err) "erro"
+                                    SongInfo (D.errorToString err) "" "erro"
 
                         newCurrentSongStyle =
                             Animation.interrupt
@@ -288,9 +279,9 @@ subscriptions model =
 -- VIEW
 
 
-songInfoView : SongInfo -> DifmInfo -> List (Html Msg)
-songInfoView song difm =
-    if song.cover /= "" then
+songInfoView : SongInfo -> List (Html Msg)
+songInfoView song =
+    if String.startsWith "http" song.cover then
         [ div [ class "cover" ] [ img [ id "coverImg", src song.cover ] [] ]
         , div [ class "container" ]
             [ div [ class "title" ] [ text song.title ]
@@ -298,16 +289,13 @@ songInfoView song difm =
             ]
         ]
 
-    else if difm.channel /= "" then
-        [ div [ class "cover" ] [ text ("((" ++ difm.channel ++ "))") ]
+    else
+        [ div [ class "cover" ] [ text ("((" ++ song.cover ++ "))") ]
         , div [ class "container" ]
-            [ div [ class "title" ] [ text difm.title ]
-            , div [ class "artist" ] [ text difm.artist ]
+            [ div [ class "title" ] [ text song.title ]
+            , div [ class "artist" ] [ text song.artist ]
             ]
         ]
-
-    else
-        []
 
 
 keepersSkippersView : Model -> List (Html Msg)
@@ -337,7 +325,7 @@ view model =
             (Animation.render model.currentSongStyle
                 ++ [ class "main" ]
             )
-            (songInfoView model.currentSong model.difmSong)
+            (songInfoView model.currentSong)
         , h1 [] (keepersSkippersView model)
         , node "marquee"
             (Animation.render model.marqueeStyle
@@ -351,9 +339,9 @@ view model =
 -- JSON decode
 
 
-difmMessageDecoder : D.Decoder DifmInfo
+difmMessageDecoder : D.Decoder SongInfo
 difmMessageDecoder =
-    D.map3 DifmInfo
+    D.map3 SongInfo
         (D.field "channel_key" D.string)
         (D.at [ "track", "display_title" ] D.string)
         (D.at [ "track", "display_artist" ] D.string)

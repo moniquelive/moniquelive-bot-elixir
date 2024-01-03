@@ -7,13 +7,19 @@ defmodule Chatbot.Commands.Player do
   ----------------------------------------------------------------------------
   """
   def current_song() do
-    curr = Spotify.Monitor.current_song()
+    curr_spotify = Spotify.Monitor.current_song()
 
-    if curr && curr.is_playing do
-      Spotify.Monitor.broadcast_song_info()
-      nil
-    else
-      "sem música no momento..."
+    cond do
+      curr_spotify && curr_spotify.is_playing ->
+        Spotify.Monitor.broadcast_song_info()
+        nil
+
+      Difm.is_playing() ->
+        Difm.broadcast_song_info()
+        nil
+
+      true ->
+        "sem música no momento..."
     end
   end
 

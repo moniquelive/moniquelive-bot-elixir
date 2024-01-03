@@ -3,7 +3,8 @@ defmodule Chatbot.Bot do
 
   use TMI
 
-  @bot_id "moniquelivebot"
+  # @bot_id "661856691"
+  # @moniquelive_id "4930146"
   @channel_name "moniquelive"
   @enqueue_song_reward_id "bf07c491-1ffb-4eb7-a7d8-5c9f2fe51818"
   @on_load :init
@@ -112,6 +113,7 @@ defmodule Chatbot.Bot do
     Logger.info("[subscribe] Subscribing...")
     Phoenix.PubSub.unsubscribe(WebApp.PubSub, "spotify:music_changed")
     Phoenix.PubSub.subscribe(WebApp.PubSub, "spotify:music_changed")
+    Commands.marquee("", "!marq")
   end
 
   def handle_unrecognized(_msg),

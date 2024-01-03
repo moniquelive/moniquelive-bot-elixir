@@ -50,8 +50,7 @@ defmodule WebApp.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:chatbot, in_umbrella: true}
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
     ]
   end
 

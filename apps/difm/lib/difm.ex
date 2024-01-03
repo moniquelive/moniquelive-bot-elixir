@@ -36,14 +36,19 @@ defmodule Difm do
   def start_link(_state) do
     GenServer.start_link(
       __MODULE__,
-      %{channel: "vocaltrance", current_song: %{}, timer: nil},
+      %{channel: "vocaltrance", current_song: %{}, timer: nil, notify: true},
       name: __MODULE__
     )
   end
 
   def get_channel_names(), do: @channel_names
-  def set_channel(name), do: GenServer.cast(__MODULE__, {:set_channel, name})
   def get_current_song(), do: GenServer.call(__MODULE__, :current_song)
+  def get_song_end(), do: GenServer.call(__MODULE__, :current_song_end)
+  def is_playing(), do: GenServer.call(__MODULE__, :is_playing)
+
+  def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
+  def set_channel(name), do: GenServer.cast(__MODULE__, {:set_channel, name})
+  def stop(), do: GenServer.cast(__MODULE__, :stop)
 
   # Server
 
@@ -60,11 +65,44 @@ defmodule Difm do
   end
 
   @impl true
+  def handle_call(:is_playing, _from, state) do
+    {:reply, state.notify, state}
+  end
+
+  def handle_call(:current_song_end, _from, state) do
+    {:ok, start_time, _tz} = DateTime.from_iso8601(state.current_song.track.start_time)
+
+    fmt =
+      start_time
+      |> DateTime.add(8 + round(state.current_song.track.duration))
+      |> DateTime.diff(DateTime.utc_now())
+      |> Chatbot.Utils.format_duration()
+
+    {:reply, fmt, state}
+  end
+
+  @impl true
   def handle_cast({:set_channel, name}, state) do
     send(self(), :refresh_timer)
 
-    new_state = %{state | channel: name}
+    new_state = %{state | channel: name, notify: true}
     {:noreply, new_state}
+  end
+
+  def handle_cast(:stop, state) do
+    new_state = %{state | notify: false}
+
+    {:noreply, new_state}
+  end
+
+  def handle_cast(:broadcast_song_info, state) do
+    Phoenix.PubSub.broadcast(
+      WebApp.PubSub,
+      "difm:current_song",
+      {:difm, state.current_song}
+    )
+
+    {:noreply, state}
   end
 
   @impl true
@@ -77,10 +115,10 @@ defmodule Difm do
           |> Enum.find(&(&1[:channel_key] == state.channel))
 
         {:ok, start_time, _tz} = DateTime.from_iso8601(current_song.track.start_time)
-        end_time = start_time |> DateTime.add(8 + round(current_song.track.duration))
 
         diff =
-          end_time
+          start_time
+          |> DateTime.add(8 + round(current_song.track.duration))
           |> DateTime.diff(DateTime.utc_now())
           |> abs
 
@@ -91,8 +129,8 @@ defmodule Difm do
 
         timer = Process.send_after(self(), :refresh_timer, diff * 1_000)
 
-        if diff > 10,
-          do: Phoenix.PubSub.broadcast(WebApp.PubSub, "difm:current_song", {:difm, current_song})
+        if state.notify && diff > 10,
+          do: broadcast_song_info()
 
         new_state = %{state | current_song: current_song, timer: timer}
         {:noreply, new_state}

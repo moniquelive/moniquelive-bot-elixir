@@ -29,7 +29,7 @@ defmodule Spotify.Monitor do
   def broadcast_keepers_and_skippers(),
     do: GenServer.cast(__MODULE__, :broadcast_keepers_and_skippers)
 
-  def format_payload(song) do
+  defp format_payload(song) do
     artist = hd(song.artists)["name"]
     title = song.name
     song_url = hd(song.album["images"])["url"]
@@ -56,6 +56,7 @@ defmodule Spotify.Monitor do
   def handle_continue(:setup_timers, state) do
     :timer.send_interval(50 * 60_000, :refresh_token_timer)
     :timer.send_interval(2_000, :monitor_spotify_timer)
+    broadcast_keepers_and_skippers()
     {:noreply, state}
   end
 
@@ -125,7 +126,12 @@ defmodule Spotify.Monitor do
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:music_changed", state.curr.item)
+    Phoenix.PubSub.broadcast(
+      WebApp.PubSub,
+      "spotify:music_changed",
+      {:spotify, format_payload(state.curr.item)}
+    )
+
     handle_cast(:broadcast_keepers_and_skippers, state)
   end
 

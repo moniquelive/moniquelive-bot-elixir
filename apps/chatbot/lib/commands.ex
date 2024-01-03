@@ -294,6 +294,10 @@ defmodule Chatbot.Commands do
       [_difm] ->
         "Todos os canais: #{all_channels |> Enum.join(", ")}"
 
+      [_difm, "stop"] ->
+        Difm.stop()
+        "Pausado!"
+
       [_difm, channel] ->
         if channel in all_channels do
           Difm.set_channel(channel)
