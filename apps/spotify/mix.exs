@@ -28,7 +28,7 @@ defmodule Spotify.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.7.0"},
-      {:spotify_ex, "~> 2.3.0"}
+      {:spotify_ex, "~> 2.3"}
     ]
   end
 

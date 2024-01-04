@@ -7,10 +7,6 @@ config :web_app, WebAppWeb.Endpoint,
   secret_key_base: "XrY9jin9CUq0MAsY6/t4ATMrLrFb0w3Nqr4noUjXD7XnBL/OH8TWPQV86gAcQmkv",
   server: false
 
-# In test we don't send emails.
-config :web_app, WebApp.Mailer,
-  adapter: Swoosh.Adapters.Test
-
 # Print only warnings and errors during test
 config :logger, level: :warning
 

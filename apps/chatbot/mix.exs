@@ -35,7 +35,7 @@ defmodule Chatbot.MixProject do
   defp deps do
     [
       {:tzdata, "~> 1.1"},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.2"},
       {:file_system, "~> 0.2.10"},
       {:scrapped_twitch_api,
