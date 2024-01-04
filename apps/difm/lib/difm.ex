@@ -76,7 +76,7 @@ defmodule Difm do
       start_time
       |> DateTime.add(8 + round(state.current_song.track.duration))
       |> DateTime.diff(DateTime.utc_now())
-      |> Chatbot.Utils.format_duration()
+      |> Utils.format_duration()
 
     {:reply, fmt, state}
   end

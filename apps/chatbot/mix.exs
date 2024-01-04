@@ -43,7 +43,8 @@ defmodule Chatbot.MixProject do
       # {:tmi, "~> 0.6"},
       {:tmi, github: "tuomohopia/tmi", branch: "otp-26-support"},
       {:spotify, in_umbrella: true},
-      {:difm, in_umbrella: true}
+      {:difm, in_umbrella: true},
+      {:utils, in_umbrella: true}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
       # {:sibling_app_in_umbrella, in_umbrella: true}

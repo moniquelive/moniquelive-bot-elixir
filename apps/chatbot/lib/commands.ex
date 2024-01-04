@@ -3,7 +3,7 @@ defmodule Chatbot.Commands do
 
   @moniquelive_id "4930146"
 
-  alias Chatbot.{Config, State, Utils}
+  alias Chatbot.{Config, State}
 
   def action_for_command(cmd),
     do:

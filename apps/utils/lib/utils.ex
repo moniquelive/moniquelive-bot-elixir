@@ -1,4 +1,4 @@
-defmodule Chatbot.Utils do
+defmodule Utils do
   @moduledoc false
 
   @doc """

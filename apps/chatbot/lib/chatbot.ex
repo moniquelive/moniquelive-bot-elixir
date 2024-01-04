@@ -12,8 +12,7 @@ defmodule Chatbot.Bot do
   alias Chatbot.{
     Commands,
     Config,
-    State,
-    Utils
+    State
   }
 
   def init() do
