@@ -21,46 +21,62 @@ defmodule WebAppWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: WebAppWeb
+      use Phoenix.Controller,
+        formats: [:html],
+        layouts: [html: WebAppWeb.Layouts]
 
       import Plug.Conn
       import WebAppWeb.Gettext
-      alias WebAppWeb.Router.Helpers, as: Routes
+
+      unquote(verified_routes())
     end
   end
 
-  def view do
+  def html do
     quote do
-      use Phoenix.View,
-        root: "lib/web_app_web/templates",
-        namespace: WebAppWeb
+      use Phoenix.Component
 
       # Import convenience functions from controllers
       import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
+        only: [get_csrf_token: 0, view_module: 1, view_template: 1]
 
-      # Include shared imports and aliases for views
-      unquote(view_helpers())
+      # Include general helpers for rendering HTML
+      unquote(html_helpers())
+    end
+  end
+
+  defp html_helpers do
+    quote do
+      # HTML escaping functionality
+      import Phoenix.HTML
+      # Core UI components and translation
+      # import WebAppWeb.CoreComponents
+      # import WebAppWeb.WebAppWebComponents
+      import WebAppWeb.Gettext
+
+      # Shortcut for generating JS commands
+      alias Phoenix.LiveView.JS
+
+      # Routes generation with the ~p sigil
+      unquote(verified_routes())
+    end
+  end
+
+  def verified_routes do
+    quote do
+      use Phoenix.VerifiedRoutes,
+        endpoint: WebAppWeb.Endpoint,
+        router: WebAppWeb.Router,
+        statics: WebAppWeb.static_paths()
     end
   end
 
   def live_view do
     quote do
       use Phoenix.LiveView,
-        layout: {WebAppWeb.LayoutView, "live.html"}
+        layout: {WebAppWeb.Layouts, :app}
 
-      unquote(view_helpers())
-    end
-  end
-
-  def layer_view do
-    quote do
-      use Phoenix.View,
-        root: "lib/web_app_web/templates",
-        namespace: WebAppWeb,
-        layout: {WebAppWeb.LayoutView, "layer.html"}
-
-      # unquote(view_helpers())
+      unquote(html_helpers())
     end
   end
 
@@ -68,21 +84,13 @@ defmodule WebAppWeb do
     quote do
       use Phoenix.LiveComponent
 
-      unquote(view_helpers())
-    end
-  end
-
-  def component do
-    quote do
-      use Phoenix.Component
-
-      unquote(view_helpers())
+      unquote(html_helpers())
     end
   end
 
   def router do
     quote do
-      use Phoenix.Router
+      use Phoenix.Router, helpers: false
 
       import Plug.Conn
       import Phoenix.Controller
@@ -93,25 +101,6 @@ defmodule WebAppWeb do
   def channel do
     quote do
       use Phoenix.Channel, log_join: :info, log_handle_in: false
-      import WebAppWeb.Gettext
-    end
-  end
-
-  defp view_helpers do
-    quote do
-      # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
-
-      # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
-      import Phoenix.LiveView.Helpers
-      import Phoenix.Component
-
-      # Import basic rendering functionality (render, render_layout, etc)
-      import Phoenix.View
-
-      import WebAppWeb.ErrorHelpers
-      import WebAppWeb.Gettext
-      alias WebAppWeb.Router.Helpers, as: Routes
     end
   end
 
