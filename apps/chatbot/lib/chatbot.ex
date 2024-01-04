@@ -24,7 +24,7 @@ defmodule Chatbot.Bot do
   @impl TMI.Handler
   def handle_join(channel) do
     Logger.debug("*** [#{__MODULE__}] [#{channel}] you joined")
-    TwitchApi.Chat.UpdateUserChatColor.call(%{user_id: @bot_id}, "seagreen")
+    # TwitchApi.Chat.UpdateUserChatColor.call(%{user_id: @bot_id}, %{color: "sea_green"})
     say(channel, "/color seagreen")
     say(channel, "/me Tô na área!")
     # say(channel, "/slow 1")
@@ -41,6 +41,8 @@ defmodule Chatbot.Bot do
         State.performed_command(cmd)
       else
         say(chat, "/color FireBrick")
+
+        # TwitchApi.Chat.UpdateUserChatColor.call(%{user_id: @moniquelive_id}, %{color: "hot_pink"})
         say(chat, "@#{sender}, não conheço esse: #{command_line}")
       end
     end
