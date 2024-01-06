@@ -105,6 +105,17 @@ defmodule Difm do
     {:noreply, state}
   end
 
+  defp get_asset_url(current_song) do
+    case H.get!("https://api.audioaddict.com/v1/di/tracks/#{current_song.track.id}") do
+      %H.Response{status_code: 200, body: body} ->
+        asset_url = body |> Jason.decode!(keys: :atoms) |> Map.get(:asset_url)
+        "https:#{asset_url}"
+
+      _ ->
+        current_song.channel_key
+    end
+  end
+
   @impl true
   def handle_info(:refresh_timer, state) do
     case H.get!("https://api.audioaddict.com/v1/di/currently_playing") do
@@ -113,6 +124,9 @@ defmodule Difm do
           body
           |> Jason.decode!(keys: :atoms)
           |> Enum.find(&(&1[:channel_key] == state.channel))
+
+        asset_url = get_asset_url(current_song)
+        current_song = put_in(current_song[:track][:album_art], asset_url)
 
         {:ok, start_time, _tz} = DateTime.from_iso8601(current_song.track.start_time)
 

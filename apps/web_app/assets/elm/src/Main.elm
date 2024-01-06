@@ -342,7 +342,7 @@ view model =
 difmMessageDecoder : D.Decoder SongInfo
 difmMessageDecoder =
     D.map3 SongInfo
-        (D.field "channel_key" D.string)
+        (D.at [ "track", "album_art" ] D.string)
         (D.at [ "track", "display_title" ] D.string)
         (D.at [ "track", "display_artist" ] D.string)
 
