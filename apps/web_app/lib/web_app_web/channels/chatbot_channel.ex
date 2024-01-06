@@ -30,8 +30,8 @@ defmodule WebAppWeb.ChatbotChannel do
     {:noreply, socket}
   end
 
-  def handle_info({:marquee, marquee_sentence}, socket) do
-    push(socket, "marquee_updated", %{text: marquee_sentence})
+  def handle_info({:marquee, text}, socket) do
+    push(socket, "marquee_updated", %{text: text})
     {:noreply, socket}
   end
 

@@ -45,6 +45,7 @@ defmodule WebApp.MixProject do
       {:plug_cowboy, "~> 2.6"},
       {:floki, ">= 0.35.2", only: :test},
       {:esbuild, "~> 0.8.1", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
@@ -63,8 +64,10 @@ defmodule WebApp.MixProject do
     [
       # https://hexdocs.pm/phoenix/asset_management.html#esbuild-plugins
       setup: ["deps.get", "ecto.setup", "cmd --cd assets npm install"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"],
-      test: "test --no-start"
+      test: "test --no-start",
+      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.build": ["tailwind default", "esbuild default"],
+      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
     ]
   end
 end
