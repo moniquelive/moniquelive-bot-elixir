@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap" rel="stylesheet" />
+    <.live_title suffix=" MoniqueLive Bot">
+      <%= assigns[:page_title] || "Widget" %>
+    </.live_title>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
+    <style>
+      .palette-1 { color: #ECD078; }
+      .palette-2 { color: #D95B43; }
+      .palette-3 { color: #C02942; }
+      .palette-4 { color: #542437; }
+      .palette-5 { color: #53777A; }
+
+      * {
+          margin: 0;
+          padding: 0
+      }
+
+      body {
+          font-family: 'Syne Mono', monospace;
+          height: 100vh;
+          overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <%= @inner_content %>
+  </body>
+</html>

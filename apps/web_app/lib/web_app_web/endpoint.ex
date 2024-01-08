@@ -7,7 +7,8 @@ defmodule WebAppWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_web_app_key",
-    signing_salt: "moozMCxr"
+    signing_salt: "moozMCxr",
+    same_site: "Lax"
   ]
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]

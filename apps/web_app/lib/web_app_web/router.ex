@@ -18,6 +18,7 @@ defmodule WebAppWeb.Router do
     pipe_through :browser
 
     get "/layer", LayerController, :index
+    live "/widget/music", Live.MusicLive, :music
   end
 
   # Other scopes may use custom stacks.

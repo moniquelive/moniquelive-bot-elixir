@@ -51,8 +51,7 @@ config :web_app, WebAppWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/web_app_web/(live|views)/.*(ex)$",
-      ~r"lib/web_app_web/templates/.*(eex)$"
+      ~r"lib/web_app_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]
 
