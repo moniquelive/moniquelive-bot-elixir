@@ -39,8 +39,11 @@ defmodule Spotify.Monitor do
   # Server
 
   @impl GenServer
-  def init(state),
-    do: {:ok, state, {:continue, :refresh_tokens}}
+  def init(state) do
+    Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
+
+    {:ok, state, {:continue, :refresh_tokens}}
+  end
 
   @impl GenServer
   def handle_continue(:refresh_tokens, state),
@@ -177,5 +180,10 @@ defmodule Spotify.Monitor do
       end
 
     {:noreply, new_state}
+  end
+
+  def handle_info(:music_live_mounted, state) do
+    if state.curr && state.curr.is_playing, do: broadcast_song_info()
+    {:noreply, state}
   end
 end

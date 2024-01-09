@@ -3,7 +3,7 @@ defmodule WebAppWeb.Live.MusicLive do
 
   import WebAppWeb.WebAppComponents
 
-  use WebAppWeb, :live_view
+  use WebAppWeb, :live_widget
 
   @impl true
   def render(assigns) do
@@ -16,29 +16,24 @@ defmodule WebAppWeb.Live.MusicLive do
   def mount(_params, _session, socket) do
     Phoenix.PubSub.subscribe(WebApp.PubSub, "spotify:music_changed")
     Phoenix.PubSub.subscribe(WebApp.PubSub, "difm:current_song")
-
-    temperature = 70
+    Phoenix.PubSub.broadcast(WebApp.PubSub, "music_live:mounted", :music_live_mounted)
 
     {:ok,
      socket
-     |> assign(:layout, {WebAppWeb.Layouts, "widgets"})
-     |> assign(:temperature, temperature)
-     |> assign(:content, "Meu Conteudo")
      |> assign(:title, "Loading...")
      |> assign(:artist, "Loading...")
      |> assign(:cover, "Loading...")}
   end
 
   @impl true
-  def handle_event("inc_temperature", _params, socket) do
-    {:noreply, update(socket, :temperature, &(&1 + 1))}
-  end
-
-  @impl true
   def handle_info({:spotify, payload}, socket) do
-    IO.puts(payload)
-    # push(socket, "spotify_music_changed", payload)
-    {:noreply, socket}
+    new_socket =
+      socket
+      |> assign(:title, payload.title)
+      |> assign(:artist, payload.artist)
+      |> assign(:cover, payload.imgUrl)
+
+    {:noreply, new_socket}
   end
 
   def handle_info({:difm, payload}, socket) do
@@ -47,10 +42,6 @@ defmodule WebAppWeb.Live.MusicLive do
       |> assign(:title, payload.track.display_title)
       |> assign(:artist, payload.track.display_artist)
       |> assign(:cover, payload.track.album_art)
-      |> assign(
-        :content,
-        "{{ #{payload.track.display_title} // #{payload.track.display_artist} }}"
-      )
 
     {:noreply, new_socket}
   end

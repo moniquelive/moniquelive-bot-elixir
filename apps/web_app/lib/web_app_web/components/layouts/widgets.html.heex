@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap" rel="stylesheet" />
     <.live_title suffix=" MoniqueLive Bot">
       <%= assigns[:page_title] || "Widget" %>
     </.live_title>
@@ -19,15 +18,18 @@
       .palette-4 { color: #542437; }
       .palette-5 { color: #53777A; }
 
-      * {
-          margin: 0;
-          padding: 0
+      @font-face {
+        font-family: 'Monaspace Radon';
+        src: url(https://cdn.jsdelivr.net/gh/githubnext/monaspace@v1.000/fonts/webfonts/MonaspaceRadon-Regular.woff) format(woff2);
       }
 
-      body {
-          font-family: 'Syne Mono', monospace;
-          height: 100vh;
-          overflow: hidden;
+      * {
+        margin: 0;
+        padding: 0
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        font-family: 'Monaspace Radon', monospace;
       }
     </style>
   </head>

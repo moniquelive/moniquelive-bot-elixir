@@ -55,6 +55,7 @@ defmodule Difm do
   @impl true
   def init(state) do
     send(self(), :refresh_timer)
+    Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
 
     {:ok, state}
   end
@@ -152,5 +153,10 @@ defmodule Difm do
       _ ->
         {:noreply, state}
     end
+  end
+
+  def handle_info(:music_live_mounted, state) do
+    if state.notify, do: broadcast_song_info()
+    {:noreply, state}
   end
 end
