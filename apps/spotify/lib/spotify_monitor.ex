@@ -1,4 +1,4 @@
-defmodule Spotify.Monitor do
+defmodule SpotifyMonitor do
   @moduledoc false
 
   use GenServer
@@ -23,18 +23,13 @@ defmodule Spotify.Monitor do
   def song_info(song_id), do: GenServer.call(__MODULE__, {:song_info, song_id})
   def skip_song(username), do: GenServer.call(__MODULE__, {:skip_song, username})
   def keep_song(username), do: GenServer.call(__MODULE__, {:keep_song, username})
+  def get_creds(), do: GenServer.call(__MODULE__, :get_creds)
+
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
   def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
   def broadcast_keepers_and_skippers(),
     do: GenServer.cast(__MODULE__, :broadcast_keepers_and_skippers)
-
-  defp format_payload(song) do
-    artist = hd(song.artists)["name"]
-    title = song.name
-    song_url = hd(song.album["images"])["url"]
-    %{imgUrl: song_url, title: title, artist: artist}
-  end
 
   # Server
 
@@ -42,30 +37,24 @@ defmodule Spotify.Monitor do
   def init(state) do
     Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
 
-    {:ok, state, {:continue, :refresh_tokens}}
-  end
+    send(self(), :refresh_token_timer)
+    send(self(), :monitor_spotify_timer)
 
-  @impl GenServer
-  def handle_continue(:refresh_tokens, state),
-    do:
-      handle_info(:refresh_token_timer, state)
-      |> Tuple.append({:continue, :monitor_spotify})
-
-  def handle_continue(:monitor_spotify, state),
-    do:
-      handle_info(:monitor_spotify_timer, state)
-      |> Tuple.append({:continue, :setup_timers})
-
-  def handle_continue(:setup_timers, state) do
     :timer.send_interval(50 * 60_000, :refresh_token_timer)
     :timer.send_interval(2_000, :monitor_spotify_timer)
+
     broadcast_keepers_and_skippers()
-    {:noreply, state}
+    {:ok, state}
   end
 
   @impl GenServer
-  def handle_call(:current_song, _from, state),
-    do: {:reply, state.curr, state}
+  def handle_call(:get_creds, _from, state) do
+    {:reply, state.creds, state}
+  end
+
+  def handle_call(:current_song, _from, state) do
+    {:reply, state.curr, state}
+  end
 
   def handle_call({:song_info, song_id}, _from, state) do
     case Spotify.Track.get_track(state.creds, song_id) do
@@ -122,6 +111,13 @@ defmodule Spotify.Monitor do
     {:reply, response, %{state | keep_set: keep_set}}
   end
 
+  defp format_payload(song),
+    do: %{
+      imgUrl: hd(song.album["images"])["url"],
+      title: song.name,
+      artist: hd(song.artists)["name"]
+    }
+
   @impl GenServer
   def handle_cast({:enqueue, song_id}, state) do
     Spotify.Player.enqueue(state.creds, "spotify:track:#{song_id}")
@@ -129,12 +125,8 @@ defmodule Spotify.Monitor do
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    Phoenix.PubSub.broadcast(
-      WebApp.PubSub,
-      "spotify:music_changed",
-      {:spotify, format_payload(state.curr.item)}
-    )
-
+    payload = format_payload(state.curr.item)
+    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:music_changed", {:spotify, payload})
     handle_cast(:broadcast_keepers_and_skippers, state)
   end
 
@@ -151,12 +143,18 @@ defmodule Spotify.Monitor do
   @impl GenServer
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
-      case Spotify.Player.get_current_playback(state.creds) do
+      case Spotify.Player.get_currently_playing(state.creds) do
+        # Not playing
+        :ok ->
+          %{state | curr: nil, skip_set: MapSet.new(), keep_set: MapSet.new()}
+
+        # Track changed
         {:ok, curr}
         when curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id) ->
           broadcast_song_info()
           %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
 
+        # Track playing
         _ ->
           state
       end
@@ -175,7 +173,7 @@ defmodule Spotify.Monitor do
         end
       rescue
         _ ->
-          :timer.send_after(15_000, :refresh_token_timer)
+          Process.send_after(self(), 15_000, :refresh_token_timer)
           state
       end
 
