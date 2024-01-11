@@ -86,8 +86,12 @@ defmodule Difm do
   def handle_cast({:set_channel, name}, state) do
     send(self(), :refresh_timer)
 
-    new_state = %{state | channel: name, notify: true}
-    {:noreply, new_state}
+    if name in @channel_names do
+      new_state = %{state | channel: name, notify: true}
+      {:noreply, new_state}
+    else
+      {:noreply, state}
+    end
   end
 
   def handle_cast(:stop, state) do
@@ -97,12 +101,7 @@ defmodule Difm do
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    Phoenix.PubSub.broadcast(
-      WebApp.PubSub,
-      "difm:current_song",
-      {:difm, state.current_song}
-    )
-
+    Phoenix.PubSub.broadcast(WebApp.PubSub, "difm:current_song", {:difm, state.current_song})
     {:noreply, state}
   end
 
@@ -139,13 +138,11 @@ defmodule Difm do
 
         Logger.info("sleeping for #{diff} seconds...")
 
-        if state.timer,
-          do: Process.cancel_timer(state.timer)
+        if state.timer, do: Process.cancel_timer(state.timer)
 
         timer = Process.send_after(self(), :refresh_timer, diff * 1_000)
 
-        if state.notify && diff > 10,
-          do: broadcast_song_info()
+        if state.notify && diff > 10, do: broadcast_song_info()
 
         new_state = %{state | current_song: current_song, timer: timer}
         {:noreply, new_state}
