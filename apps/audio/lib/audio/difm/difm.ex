@@ -1,4 +1,4 @@
-defmodule Difm do
+defmodule Audio.Difm do
   @moduledoc false
 
   require Logger

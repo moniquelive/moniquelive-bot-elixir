@@ -1,9 +1,9 @@
-defmodule Difm.MixProject do
+defmodule Audio.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :difm,
+      app: :audio,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -19,7 +19,7 @@ defmodule Difm.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Difm.Application, []}
+      mod: {Audio.Application, []}
     ]
   end
 
@@ -29,6 +29,7 @@ defmodule Difm.MixProject do
       {:phoenix, "~> 1.7.0"},
       {:jason, "~> 1.4"},
       {:httpoison, "~> 1.0"},
+      {:spotify_ex, "~> 2.3"},
       {:utils, in_umbrella: true}
     ]
   end

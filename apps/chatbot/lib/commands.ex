@@ -288,19 +288,19 @@ defmodule Chatbot.Commands do
   ----------------------------------------------------------------------------
   """
   def difm("moniquelive", command) do
-    all_channels = Difm.get_channel_names()
+    all_channels = Audio.Difm.get_channel_names()
 
     case String.split(command) do
       [_difm] ->
         "Todos os canais: #{all_channels |> Enum.join(", ")}"
 
       [_difm, "stop"] ->
-        Difm.stop()
+        Audio.Difm.stop()
         "Pausado!"
 
       [_difm, channel] ->
         if channel in all_channels do
-          Difm.set_channel(channel)
+          Audio.Difm.set_channel(channel)
           "Definindo canal: #{channel}..."
         else
           "Esse canal `#{channel}` não temos..."

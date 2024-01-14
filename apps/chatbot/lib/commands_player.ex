@@ -7,15 +7,15 @@ defmodule Chatbot.Commands.Player do
   ----------------------------------------------------------------------------
   """
   def current_song() do
-    curr_spotify = SpotifyMonitor.current_song()
+    curr_spotify = Audio.Spotify.current_song()
 
     cond do
       curr_spotify && curr_spotify.is_playing ->
-        SpotifyMonitor.broadcast_song_info()
+        Audio.Spotify.broadcast_song_info()
         nil
 
-      Difm.is_playing() ->
-        Difm.broadcast_song_info()
+      Audio.Difm.is_playing() ->
+        Audio.Difm.broadcast_song_info()
         nil
 
       true ->
@@ -29,7 +29,7 @@ defmodule Chatbot.Commands.Player do
   ----------------------------------------------------------------------------
   """
   def skip_song(sender),
-    do: SpotifyMonitor.skip_song(sender)
+    do: Audio.Spotify.skip_song(sender)
 
   @doc """
   ----------------------------------------------------------------------------
@@ -37,5 +37,5 @@ defmodule Chatbot.Commands.Player do
   ----------------------------------------------------------------------------
   """
   def keep_song(sender),
-    do: SpotifyMonitor.keep_song(sender)
+    do: Audio.Spotify.keep_song(sender)
 end

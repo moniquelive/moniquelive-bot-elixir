@@ -1,4 +1,4 @@
-defmodule SpotifyMonitor do
+defmodule Audio.Spotify do
   @moduledoc false
 
   use GenServer

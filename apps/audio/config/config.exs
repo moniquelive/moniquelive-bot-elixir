@@ -22,6 +22,6 @@ config :spotify_ex,
     |> File.read!(),
   refresh_token: refresh_token
 
-config :spotify, :children, [{SpotifyMonitor, refresh_token}]
+config :audio, :children, [{Audio.Spotify, refresh_token}]
 
 import_config "#{config_env()}.exs"
