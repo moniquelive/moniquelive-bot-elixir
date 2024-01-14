@@ -68,9 +68,8 @@ init _ =
                         | topic = "chatbot:events"
                         , events =
                             [ "marquee_updated"
-                            , "spotify_music_changed"
+                            , "music_changed"
                             , "keepers_skippers_changed"
-                            , "difm_current_song"
                             ]
                     }
                 |> Phoenix.join "chatbot:events"
@@ -165,27 +164,7 @@ processPhoenixMsg model subMsg =
                     in
                     ( { model | marqueeMessage = marqueePayload.text, marqueeStyle = newMarqueeStyle }, cmd )
 
-                "difm_current_song" ->
-                    let
-                        difmPayload =
-                            case D.decodeValue difmMessageDecoder payload of
-                                Ok musicInfo ->
-                                    musicInfo
-
-                                Err err ->
-                                    SongInfo (D.errorToString err) "" ""
-
-                        newCurrentSongStyle =
-                            Animation.interrupt
-                                [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
-                                , Animation.wait (Time.millisToPosix <| 8 * 1000)
-                                , Animation.to [ Animation.translate (percent 115) (percent 0) ]
-                                ]
-                                model.currentSongStyle
-                    in
-                    ( { newModel | currentSong = difmPayload, currentSongStyle = newCurrentSongStyle }, cmd )
-
-                "spotify_music_changed" ->
+                "music_changed" ->
                     let
                         songPayload =
                             case D.decodeValue songInfoDecoder payload of
@@ -339,14 +318,6 @@ view model =
 -- JSON decode
 
 
-difmMessageDecoder : D.Decoder SongInfo
-difmMessageDecoder =
-    D.map3 SongInfo
-        (D.at [ "track", "album_art" ] D.string)
-        (D.at [ "track", "display_title" ] D.string)
-        (D.at [ "track", "display_artist" ] D.string)
-
-
 marqueeMessageDecoder : D.Decoder MarqueeMessage
 marqueeMessageDecoder =
     D.map MarqueeMessage
@@ -356,7 +327,7 @@ marqueeMessageDecoder =
 songInfoDecoder : D.Decoder SongInfo
 songInfoDecoder =
     D.map3 SongInfo
-        (D.field "imgUrl" D.string)
+        (D.field "album_cover_url" D.string)
         (D.field "title" D.string)
         (D.field "artist" D.string)
 

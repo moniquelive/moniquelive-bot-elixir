@@ -134,26 +134,27 @@ defmodule Audio.Spotify do
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
       case Spotify.Player.get_currently_playing(state.creds) do
-        # Not playing
-        :ok ->
+        :ok
+        when state.curr != nil ->
+          # Not playing
           Audio.spotify_changed(nil)
           %{state | curr: nil, skip_set: MapSet.new(), keep_set: MapSet.new()}
 
-        # Paused
         {:ok, curr}
         when state.curr != nil and not curr.is_playing ->
+          # Paused
           Audio.spotify_changed(nil)
           %{state | curr: nil}
 
-        # Unpaused
         {:ok, curr}
         when curr.is_playing and (is_nil(state.curr) or not state.curr.is_playing) ->
+          # Unpaused
           broadcast_song_info()
           %{state | curr: curr}
 
-        # Changed
         {:ok, curr}
         when curr.is_playing and (is_nil(state.curr) or curr.item.id != state.curr.item.id) ->
+          # Changed
           broadcast_song_info()
           %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
 

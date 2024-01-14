@@ -6,8 +6,8 @@ defmodule Audio.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {Audio.Difm, {}},
-      {Audio, {}}
+      {Audio, {}},
+      {Audio.Difm, {}}
     ]
 
     extra_children = Application.fetch_env!(:audio, :children)

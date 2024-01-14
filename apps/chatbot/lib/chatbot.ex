@@ -112,8 +112,8 @@ defmodule Chatbot.Bot do
 
   def handle_unrecognized(:subscribe) do
     Logger.info("[subscribe] Subscribing...")
-    Phoenix.PubSub.unsubscribe(WebApp.PubSub, "spotify:music_changed")
-    Phoenix.PubSub.subscribe(WebApp.PubSub, "spotify:music_changed")
+    Phoenix.PubSub.unsubscribe(WebApp.PubSub, "audio:music_changed")
+    Phoenix.PubSub.subscribe(WebApp.PubSub, "audio:music_changed")
     Commands.marquee("", "!marq")
   end
 
