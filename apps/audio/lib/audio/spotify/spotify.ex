@@ -26,17 +26,15 @@ defmodule Audio.Spotify do
   def get_creds(), do: GenServer.call(__MODULE__, :get_creds)
 
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
-  def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
+  defp broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
-  def broadcast_keepers_and_skippers(),
+  defp broadcast_keepers_and_skippers(),
     do: GenServer.cast(__MODULE__, :broadcast_keepers_and_skippers)
 
   # Server
 
   @impl GenServer
   def init(state) do
-    Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
-
     send(self(), :refresh_token_timer)
     send(self(), :monitor_spotify_timer)
 
@@ -111,13 +109,6 @@ defmodule Audio.Spotify do
     {:reply, response, %{state | keep_set: keep_set}}
   end
 
-  defp format_payload(song),
-    do: %{
-      imgUrl: hd(song.album["images"])["url"],
-      title: song.name,
-      artist: hd(song.artists)["name"]
-    }
-
   @impl GenServer
   def handle_cast({:enqueue, song_id}, state) do
     Spotify.Player.enqueue(state.creds, "spotify:track:#{song_id}")
@@ -125,8 +116,7 @@ defmodule Audio.Spotify do
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    payload = format_payload(state.curr.item)
-    Phoenix.PubSub.broadcast(WebApp.PubSub, "spotify:music_changed", {:spotify, payload})
+    Audio.spotify_changed(state.curr)
     handle_cast(:broadcast_keepers_and_skippers, state)
   end
 
@@ -146,15 +136,27 @@ defmodule Audio.Spotify do
       case Spotify.Player.get_currently_playing(state.creds) do
         # Not playing
         :ok ->
+          Audio.spotify_changed(nil)
           %{state | curr: nil, skip_set: MapSet.new(), keep_set: MapSet.new()}
 
-        # Track changed
+        # Paused
         {:ok, curr}
-        when curr.is_playing and (state.curr == nil or curr.item.id != state.curr.item.id) ->
+        when state.curr != nil and not curr.is_playing ->
+          Audio.spotify_changed(nil)
+          %{state | curr: nil}
+
+        # Unpaused
+        {:ok, curr}
+        when curr.is_playing and (is_nil(state.curr) or not state.curr.is_playing) ->
+          broadcast_song_info()
+          %{state | curr: curr}
+
+        # Changed
+        {:ok, curr}
+        when curr.is_playing and (is_nil(state.curr) or curr.item.id != state.curr.item.id) ->
           broadcast_song_info()
           %{state | curr: curr, skip_set: MapSet.new(), keep_set: MapSet.new()}
 
-        # Track playing
         _ ->
           state
       end
@@ -178,10 +180,5 @@ defmodule Audio.Spotify do
       end
 
     {:noreply, new_state}
-  end
-
-  def handle_info(:music_live_mounted, state) do
-    if state.curr && state.curr.is_playing, do: broadcast_song_info()
-    {:noreply, state}
   end
 end

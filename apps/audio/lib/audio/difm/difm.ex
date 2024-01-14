@@ -36,7 +36,7 @@ defmodule Audio.Difm do
   def start_link(_state) do
     GenServer.start_link(
       __MODULE__,
-      %{channel: "vocaltrance", current_song: %{}, timer: nil, notify: true},
+      %{channel: "vocaltrance", current_song: %{}, timer: nil},
       name: __MODULE__
     )
   end
@@ -44,30 +44,20 @@ defmodule Audio.Difm do
   def get_channel_names(), do: @channel_names
   def get_current_song(), do: GenServer.call(__MODULE__, :current_song)
   def get_song_end(), do: GenServer.call(__MODULE__, :current_song_end)
-  def is_playing(), do: GenServer.call(__MODULE__, :is_playing)
 
-  def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
   def set_channel(name), do: GenServer.cast(__MODULE__, {:set_channel, name})
-  def stop(), do: GenServer.cast(__MODULE__, :stop)
 
   # Server
 
   @impl true
   def init(state) do
     send(self(), :refresh_timer)
-    Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
-
     {:ok, state}
   end
 
   @impl true
   def handle_call(:current_song, _from, state) do
     {:reply, state.current_song, state}
-  end
-
-  @impl true
-  def handle_call(:is_playing, _from, state) do
-    {:reply, state.notify, state}
   end
 
   def handle_call(:current_song_end, _from, state) do
@@ -87,22 +77,10 @@ defmodule Audio.Difm do
     send(self(), :refresh_timer)
 
     if name in @channel_names do
-      new_state = %{state | channel: name, notify: true}
-      {:noreply, new_state}
+      {:noreply, %{state | channel: name}}
     else
       {:noreply, state}
     end
-  end
-
-  def handle_cast(:stop, state) do
-    new_state = %{state | notify: false}
-
-    {:noreply, new_state}
-  end
-
-  def handle_cast(:broadcast_song_info, state) do
-    Phoenix.PubSub.broadcast(WebApp.PubSub, "difm:current_song", {:difm, state.current_song})
-    {:noreply, state}
   end
 
   defp get_asset_url(current_song) do
@@ -120,14 +98,17 @@ defmodule Audio.Difm do
   def handle_info(:refresh_timer, state) do
     case H.get!("https://api.audioaddict.com/v1/di/currently_playing") do
       %H.Response{status_code: 200, body: body} ->
+        # get song info
         current_song =
           body
           |> Jason.decode!(keys: :atoms)
           |> Enum.find(&(&1[:channel_key] == state.channel))
 
+        # get album cover
         asset_url = get_asset_url(current_song)
         current_song = put_in(current_song[:track][:album_art], asset_url)
 
+        # get song duration
         {:ok, start_time, _tz} = DateTime.from_iso8601(current_song.track.start_time)
 
         diff =
@@ -142,7 +123,7 @@ defmodule Audio.Difm do
 
         timer = Process.send_after(self(), :refresh_timer, diff * 1_000)
 
-        if state.notify && diff > 10, do: broadcast_song_info()
+        if diff > 10, do: Audio.difm_changed(current_song)
 
         new_state = %{state | current_song: current_song, timer: timer}
         {:noreply, new_state}
@@ -150,10 +131,5 @@ defmodule Audio.Difm do
       _ ->
         {:noreply, state}
     end
-  end
-
-  def handle_info(:music_live_mounted, state) do
-    if state.notify, do: broadcast_song_info()
-    {:noreply, state}
   end
 end
