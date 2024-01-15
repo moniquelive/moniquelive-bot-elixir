@@ -33,7 +33,7 @@ defmodule Audio.Difm do
 
   # Client
 
-  def start_link(_state) do
+  def start_link(_opts) do
     GenServer.start_link(
       __MODULE__,
       %{channel: "vocaltrance", current_song: %{}, timer: nil},
@@ -41,10 +41,10 @@ defmodule Audio.Difm do
     )
   end
 
-  def get_channel_names(), do: @channel_names
   def get_current_song(), do: GenServer.call(__MODULE__, :current_song)
   def get_song_end(), do: GenServer.call(__MODULE__, :current_song_end)
 
+  def get_channel_names(), do: @channel_names
   def set_channel(name), do: GenServer.cast(__MODULE__, {:set_channel, name})
 
   # Server

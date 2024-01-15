@@ -5,25 +5,24 @@ defmodule Audio.Spotify do
 
   # Client
 
-  def start_link(rt),
-    do:
-      GenServer.start_link(
-        __MODULE__,
-        %{
-          refresh_token: rt,
-          curr: nil,
-          creds: nil,
-          skip_set: MapSet.new(),
-          keep_set: MapSet.new()
-        },
-        name: __MODULE__
-      )
+  def start_link(rt) do
+    GenServer.start_link(
+      __MODULE__,
+      %{
+        refresh_token: rt,
+        curr: nil,
+        creds: nil,
+        skip_set: MapSet.new(),
+        keep_set: MapSet.new()
+      },
+      name: __MODULE__
+    )
+  end
 
   def current_song(), do: GenServer.call(__MODULE__, :current_song)
   def song_info(song_id), do: GenServer.call(__MODULE__, {:song_info, song_id})
   def skip_song(username), do: GenServer.call(__MODULE__, {:skip_song, username})
   def keep_song(username), do: GenServer.call(__MODULE__, {:keep_song, username})
-  def get_creds(), do: GenServer.call(__MODULE__, :get_creds)
 
   def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
   defp broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
@@ -46,10 +45,6 @@ defmodule Audio.Spotify do
   end
 
   @impl GenServer
-  def handle_call(:get_creds, _from, state) do
-    {:reply, state.creds, state}
-  end
-
   def handle_call(:current_song, _from, state) do
     {:reply, state.curr, state}
   end
