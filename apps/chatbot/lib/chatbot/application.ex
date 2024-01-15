@@ -12,14 +12,25 @@ defmodule Chatbot.Application do
 
   @impl Application
   def start(_type, _args) do
-    children = [
-      {State, name: Chatbot.State},
-      {Config, Path.expand("../..", __DIR__)}
-    ]
-
-    extra_children = Application.fetch_env!(:chatbot, :extra_children)
+    children = [State, {Config, Path.expand("../..", __DIR__)}]
+    extra_children = Application.fetch_env!(:chatbot, :environment) |> children()
 
     opts = [strategy: :one_for_one, name: Chatbot.Supervisor]
     Supervisor.start_link(children ++ extra_children, opts)
+  end
+
+  defp children(:test), do: []
+
+  defp children(_) do
+    opts = [
+      bot: Chatbot.Bot,
+      user: "moniquelive_bot",
+      pass: System.get_env("TWITCH_TMI_OAUTH"),
+      channels: ["moniquelive"],
+      mod_channels: ["moniquelive"],
+      debug: false
+    ]
+
+    [{TMI.Supervisor, opts}]
   end
 end

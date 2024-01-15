@@ -9,7 +9,9 @@ defmodule Chatbot.State do
 
   # Client
 
-  def start_link(opts \\ []), do: GenServer.start_link(__MODULE__, [], opts)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, [], Keyword.merge([name: __MODULE__], opts))
+  end
 
   def command_count(name \\ @name), do: GenServer.call(name, :command_count)
   def urls_for(name \\ @name, user), do: GenServer.call(name, {:urls_for, user})

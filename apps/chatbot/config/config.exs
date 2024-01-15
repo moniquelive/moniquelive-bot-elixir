@@ -1,15 +1,6 @@
 import Config
 
-bot_config = [
-  bot: Chatbot.Bot,
-  user: "moniquelive_bot",
-  pass: System.get_env("TWITCH_TMI_OAUTH"),
-  channels: ["moniquelive"],
-  mod_channels: ["moniquelive"],
-  debug: false
-]
-
-config :chatbot, :extra_children, [{TMI.Supervisor, bot_config}]
+config :chatbot, :environment, config_env()
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
