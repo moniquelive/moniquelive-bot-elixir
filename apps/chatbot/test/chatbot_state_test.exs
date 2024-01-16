@@ -2,6 +2,7 @@ defmodule Chatbot.StateTest do
   @moduledoc false
 
   use ExUnit.Case, async: true
+
   alias Chatbot.State
 
   @name __MODULE__
@@ -39,7 +40,7 @@ defmodule Chatbot.StateTest do
     end
 
     test "user enters and leaves the chatroom" do
-      State.user_joined(@name, "fulano")
+      State.user_joined(@name, "@fulano")
       State.user_left(@name, "beltrano")
       State.user_left(@name, "fulano")
       assert [] = State.roster(@name)

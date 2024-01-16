@@ -1,123 +1,99 @@
 defmodule Chatbot.State do
   @moduledoc false
 
-  use GenServer
+  use Agent
 
   alias Chatbot.State.User
 
   @name __MODULE__
 
-  # Client
+  def start_link(opts),
+    do:
+      with(
+        opts <- Keyword.put_new(opts, :name, __MODULE__),
+        do: Agent.start_link(fn -> %{users_info: %{}, commands_info: %{}} end, opts)
+      )
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, [], Keyword.merge([name: __MODULE__], opts))
-  end
+  def command_count(name \\ @name), do: Agent.get(name, & &1.commands_info)
+  def roster(name \\ @name), do: Agent.get(name, &Map.keys(&1.users_info))
+  def online_at(name \\ @name, user), do: Agent.get(name, &get_user(&1, user, nil)).online_at
 
-  def command_count(name \\ @name), do: GenServer.call(name, :command_count)
-  def urls_for(name \\ @name, user), do: GenServer.call(name, {:urls_for, user})
-  def roster(name \\ @name), do: GenServer.call(name, :roster)
-  def online_at(name \\ @name, user), do: GenServer.call(name, {:online_at, user})
+  def process_sentence(name \\ @name, sentence, user),
+    do:
+      with(
+        user <- normalize(user),
+        do:
+          Regex.scan(~r{https?://\S*}, sentence)
+          |> List.flatten()
+          |> Enum.each(&user_typed_url(name, user, &1))
+      )
 
+  # ---
+  def urls_for(name \\ @name, _)
+
+  def urls_for(name, ""),
+    do:
+      Agent.get(
+        name,
+        &for(
+          {user, %{urls: urls}} <- &1.users_info,
+          do: %{user: user, urls: MapSet.to_list(urls)}
+        )
+      )
+
+  def urls_for(name, user),
+    do:
+      with(
+        user <- normalize(user),
+        urls <- Agent.get(name, &get_user(&1, user).urls),
+        do: [%{user: user, urls: MapSet.to_list(urls)}]
+      )
+
+  # ---
   def user_joined(name \\ @name, users)
-  def user_joined(name, users) when is_list(users), do: GenServer.cast(name, {:add_users, users})
-  def user_joined(name, user) when is_binary(user), do: GenServer.cast(name, {:add_user, user})
-  def user_left(name \\ @name, user), do: GenServer.cast(name, {:del_user, user})
-  def performed_command(name \\ @name, command), do: GenServer.cast(name, {:command, command})
+  def user_joined(name, users) when is_list(users), do: users |> Enum.each(&user_joined(name, &1))
+
+  def user_joined(name, user) when is_binary(user),
+    do:
+      with(
+        user <- normalize(user),
+        do: Agent.update(name, &put_in(&1[:users_info][user], get_user(&1, user)))
+      )
+
+  # ---
+
+  def user_left(name \\ @name, user),
+    do:
+      with(
+        user <- normalize(user),
+        do: Agent.update(name, &(pop_in(&1, [:users_info, user]) |> elem(1)))
+      )
+
+  def performed_command(name \\ @name, command),
+    do:
+      Agent.update(
+        name,
+        &put_in(&1.commands_info, Map.update(&1.commands_info, command, 1, fn n -> n + 1 end))
+      )
 
   def user_typed_url(name \\ @name, user, url),
-    do: GenServer.cast(name, {:add_user_url, user, url})
+    do:
+      with(
+        user <- normalize(user),
+        do:
+          Agent.update(
+            name,
+            &put_in(&1.users_info[user], get_user(&1, user) |> User.add_url(url))
+          )
+      )
 
-  def process_sentence(name \\ @name, sentence, user) do
-    user = String.downcase(user)
-
-    Regex.scan(~r{https?://\S*}, sentence)
-    |> List.flatten()
-    |> Enum.each(&user_typed_url(name, user, &1))
+  defp normalize(user) do
+    case String.downcase(user) do
+      "@" <> suffix -> suffix
+      username -> username
+    end
   end
 
-  # Server
-
-  @impl true
-  def init(_) do
-    {:ok, %{users_info: %{}, commands_info: %{}}}
-  end
-
-  @impl true
-  def handle_cast({:add_users, users}, state) do
-    new_state =
-      Enum.reduce(users, state, fn user, temp_s ->
-        {:noreply, new_s} = handle_cast({:add_user, user}, temp_s)
-        new_s
-      end)
-
-    {:noreply, new_state}
-  end
-
-  def handle_cast({:add_user, "@" <> user}, state),
-    do: handle_cast({:add_user, user}, state)
-
-  def handle_cast({:add_user, user}, state) do
-    user = String.downcase(user)
-    user_info = Map.get(state.users_info, user, %User{online_at: DateTime.utc_now()})
-    {:noreply, %{state | users_info: Map.put(state.users_info, user, user_info)}}
-  end
-
-  def handle_cast({:del_user, user}, state) do
-    user = String.downcase(user)
-    {:noreply, %{state | users_info: Map.delete(state.users_info, user)}}
-  end
-
-  def handle_cast({:add_user_url, user, url}, state) do
-    user = String.downcase(user)
-
-    user_info =
-      Map.get(state.users_info, user, %User{online_at: DateTime.utc_now()})
-      |> User.add_url(url)
-
-    {:noreply, %{state | users_info: Map.put(state.users_info, user, user_info)}}
-  end
-
-  def handle_cast({:command, command}, state) do
-    commands_info = Map.update(state.commands_info, command, 1, &(&1 + 1))
-    {:noreply, %{state | commands_info: commands_info}}
-  end
-
-  @impl true
-  def handle_call(:roster, _from, state) do
-    {:reply, Map.keys(state.users_info), state}
-  end
-
-  def handle_call({:online_at, "@" <> user}, from, state),
-    do: handle_call({:online_at, user}, from, state)
-
-  def handle_call({:online_at, user}, _from, state) do
-    user = String.downcase(user)
-    online_at = Map.get(state.users_info, user, %User{online_at: nil}).online_at
-    {:reply, online_at, state}
-  end
-
-  def handle_call(:command_count, _from, state) do
-    {:reply, state.commands_info, state}
-  end
-
-  def handle_call({:urls_for, ""}, _from, state) do
-    urls =
-      for {name, %{urls: urls}} <- state.users_info,
-          do: %{user: name, urls: MapSet.to_list(urls)}
-
-    {:reply, urls, state}
-  end
-
-  def handle_call({:urls_for, "@" <> user}, from, state),
-    do: handle_call({:urls_for, user}, from, state)
-
-  def handle_call({:urls_for, user}, _from, state) do
-    user = String.downcase(user)
-
-    urls =
-      Map.get(state.users_info, user, %User{online_at: nil}).urls
-      |> MapSet.to_list()
-
-    {:reply, [%{user: user, urls: urls}], state}
-  end
+  defp get_user(state, user, dt \\ DateTime.utc_now()),
+    do: Map.get(state.users_info, user, %User{online_at: dt})
 end
