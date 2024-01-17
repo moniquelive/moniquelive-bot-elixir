@@ -20,6 +20,9 @@ defmodule Audio do
   def broadcast_song_info(),
     do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
+  def current_song_info(),
+    do: GenServer.call(__MODULE__, :current_song_info)
+
   @impl true
   def init(state) do
     Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
@@ -81,6 +84,23 @@ defmodule Audio do
     end
 
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_call(:current_song_info, _from, state) do
+    message =
+      cond do
+        spotify_is_playing(state) ->
+          "#{state.spotify_payload.title} - #{state.spotify_payload.artist}"
+
+        !spotify_is_playing(state) && state.difm_payload ->
+          "#{state.difm_payload.title} - #{state.difm_payload.artist}"
+
+        true ->
+          "Sem música no momento..."
+      end
+
+    {:reply, message, state}
   end
 
   @impl true

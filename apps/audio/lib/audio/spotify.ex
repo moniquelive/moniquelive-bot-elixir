@@ -73,28 +73,28 @@ defmodule Audio.Spotify do
     # IO.puts(:stopped)
     KS.reset()
     Audio.spotify_changed(nil)
-    %{state | curr: nil}
+    put_in(state.curr, nil)
   end
 
   defp pause(state) do
     # IO.puts(:paused)
     Audio.spotify_changed(nil)
-    %{state | curr: nil}
+    put_in(state.curr, nil)
   end
 
   defp unpause(state, curr) do
     # IO.puts(:unpaused)
     KS.broadcast()
-    Audio.spotify_changed(state.curr)
-    %{state | curr: curr}
+    Audio.spotify_changed(curr)
+    put_in(state.curr, curr)
   end
 
   defp change(state, curr) do
     # IO.puts(:changed)
     KS.reset()
     KS.broadcast()
-    Audio.spotify_changed(state.curr)
-    %{state | curr: curr}
+    Audio.spotify_changed(curr)
+    put_in(state.curr, curr)
   end
 
   defguard stopped(state) when state.curr != nil

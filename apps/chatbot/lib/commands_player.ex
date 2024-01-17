@@ -8,7 +8,7 @@ defmodule Chatbot.Commands.Player do
   """
   def current_song() do
     Audio.broadcast_song_info()
-    ""
+    Audio.current_song_info()
   end
 
   @doc """
