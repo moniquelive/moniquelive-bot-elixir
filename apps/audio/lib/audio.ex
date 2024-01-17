@@ -11,9 +11,14 @@ defmodule Audio do
     )
   end
 
-  def difm_changed(payload), do: GenServer.cast(__MODULE__, {:difm_changed, payload})
-  def spotify_changed(payload), do: GenServer.cast(__MODULE__, {:spotify_changed, payload})
-  def broadcast_song_info(), do: GenServer.cast(__MODULE__, :broadcast_song_info)
+  def difm_changed(payload),
+    do: GenServer.cast(__MODULE__, {:difm_changed, payload})
+
+  def spotify_changed(payload),
+    do: GenServer.cast(__MODULE__, {:spotify_changed, payload})
+
+  def broadcast_song_info(),
+    do: GenServer.cast(__MODULE__, :broadcast_song_info)
 
   @impl true
   def init(state) do

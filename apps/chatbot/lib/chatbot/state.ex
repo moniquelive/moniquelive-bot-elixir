@@ -3,7 +3,7 @@ defmodule Chatbot.State do
 
   use Agent
 
-  alias Chatbot.State.User
+  alias Chatbot.User
 
   @name __MODULE__
 
@@ -14,9 +14,14 @@ defmodule Chatbot.State do
         do: Agent.start_link(fn -> %{users_info: %{}, commands_info: %{}} end, opts)
       )
 
-  def command_count(name \\ @name), do: Agent.get(name, & &1.commands_info)
-  def roster(name \\ @name), do: Agent.get(name, &Map.keys(&1.users_info))
-  def online_at(name \\ @name, user), do: Agent.get(name, &get_user(&1, user, nil)).online_at
+  def command_count(name \\ @name),
+    do: Agent.get(name, & &1.commands_info)
+
+  def roster(name \\ @name),
+    do: Agent.get(name, &Map.keys(&1.users_info))
+
+  def online_at(name \\ @name, user),
+    do: Agent.get(name, &get_user(&1, user, nil)).online_at
 
   def process_sentence(name \\ @name, sentence, user),
     do:
@@ -51,7 +56,9 @@ defmodule Chatbot.State do
 
   # ---
   def user_joined(name \\ @name, users)
-  def user_joined(name, users) when is_list(users), do: users |> Enum.each(&user_joined(name, &1))
+
+  def user_joined(name, users) when is_list(users),
+    do: users |> Enum.each(&user_joined(name, &1))
 
   def user_joined(name, user) when is_binary(user),
     do:

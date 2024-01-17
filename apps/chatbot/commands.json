@@ -491,7 +491,7 @@
     {
       "help": "Set the current di.fm channel",
       "ajuda": "Define o canal atual da di.fm",
-      "actions": ["!ch", "!chan", "!channel", "!di", "!difm", "!di.fm"],
+      "actions": ["!difm", "!ch", "!chan", "!channel", "!di", "!di.fm"],
       "responses": [
         "/color YellowGreen",
         "/me #{Commands.difm(sender, command)}"
