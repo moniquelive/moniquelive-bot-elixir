@@ -1,6 +1,7 @@
 defmodule Chatbot.Commands do
   @moduledoc false
 
+  @bot_id "661856691"
   @moniquelive_id "4930146"
 
   alias Chatbot.{Config, State}
@@ -243,7 +244,7 @@ defmodule Chatbot.Commands do
     sender = String.downcase(sender)
 
     [info] =
-      TwitchApi.Channels.GetChannelInformation.call(%{broadcaster_id: @moniquelive_id})
+      TwitchApi.Channels.GetChannelInformation.call(%{broadcaster_id: @bot_id})
       |> elem(1)
       |> Map.get(:body)
       |> Jason.decode!()

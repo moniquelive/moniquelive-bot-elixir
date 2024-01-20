@@ -5,7 +5,7 @@ defmodule Chatbot.Bot do
 
   # @bot_id "661856691"
   # @moniquelive_id "4930146"
-  @channel_name "moniquelive"
+  # @channel_name "moniquelive"
   @enqueue_song_reward_id "bf07c491-1ffb-4eb7-a7d8-5c9f2fe51818"
   @on_load :init
 
@@ -16,7 +16,7 @@ defmodule Chatbot.Bot do
   }
 
   def init() do
-    Process.send_after(__MODULE__, :subscribe, 10_000)
+    :timer.send_after(10_000, :subscribe)
     :ok
   end
 
@@ -49,30 +49,43 @@ defmodule Chatbot.Bot do
 
   def handle_message(sentence, user, chat, tag) do
     if tag["custom-reward-id"] == @enqueue_song_reward_id do
-      song_id =
-        sentence
-        |> String.split("/")
-        |> List.last()
-        |> String.split("?")
-        |> hd()
+      if Audio.whos_playing() == :spotify do
+        song_id =
+          sentence
+          |> String.split("/")
+          |> List.last()
+          |> String.split("?")
+          |> hd()
 
-      case Audio.Spotify.song_info(song_id) do
-        {:ok, song_info} ->
-          artist = hd(song_info.artists)["name"]
-          title = song_info.name
+        case Audio.Spotify.song_info(song_id) do
+          {:ok, song_info} ->
+            artist = hd(song_info.artists)["name"]
+            title = song_info.name
 
-          dur =
-            song_info.duration_ms
-            |> div(1000)
-            |> Utils.format_duration()
+            dur =
+              song_info.duration_ms
+              |> div(1000)
+              |> Utils.format_duration()
 
-          say(chat, "/color GoldenRod")
-          say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
-          Audio.Spotify.enqueue(song_id)
+            say(chat, "/color GoldenRod")
+            say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
+            Audio.Spotify.enqueue(song_id)
 
-        {:error, reason} ->
-          say(chat, "/color Red")
-          say(chat, "Não consegui enfileirar: #{song_id} (#{reason})")
+          {:error, reason} ->
+            say(chat, "/color Red")
+            say(chat, "Não consegui enfileirar: #{song_id} (#{reason})")
+        end
+      else
+        # TODO: assinar o evento channel.channel_points_custom_reward_redemption.add
+        # https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchannel_points_custom_reward_redemptionadd
+        # IO.inspect(sentence)
+        # TwitchApi.ChannelPoints.UpdateRedemptionStatus.call(
+        #   tag["id"],
+        #   @bot_id,
+        #   @enqueue_song_reward_id,
+        #   Jason.encode!(%{status: "CANCELED"}),
+        #   %{user_id: @bot_id}
+        # ) |> IO.inspect
       end
     else
       State.process_sentence(sentence, user)
@@ -80,10 +93,12 @@ defmodule Chatbot.Bot do
   end
 
   @impl TMI.Handler
-  def handle_join("#moniquelive", user), do: State.user_joined(user)
+  def handle_join("#moniquelive", user),
+    do: State.user_joined(user)
 
   @impl TMI.Handler
-  def handle_part("#moniquelive", user), do: State.user_left(user)
+  def handle_part("#moniquelive", user),
+    do: State.user_left(user)
 
   @impl TMI.Handler
   def handle_unrecognized({:names_list, _channel, users}),
@@ -93,22 +108,22 @@ defmodule Chatbot.Bot do
       |> State.user_joined()
 
   @impl TMI.Handler
-  def handle_unrecognized(%Spotify.Track{} = curr) do
-    artist = hd(curr.artists)["name"]
-    title = curr.name
+  # def handle_unrecognized(%Spotify.Track{} = curr) do
+  #   artist = hd(curr.artists)["name"]
+  #   title = curr.name
 
-    song_url =
-      curr.href
-      |> String.replace("https://api.spotify.com/v1/tracks/", "https://song.link/s/")
+  #   song_url =
+  #     curr.href
+  #     |> String.replace("https://api.spotify.com/v1/tracks/", "https://song.link/s/")
 
-    dur =
-      curr.duration_ms
-      |> div(1000)
-      |> Utils.format_duration()
+  #   dur =
+  #     curr.duration_ms
+  #     |> div(1000)
+  #     |> Utils.format_duration()
 
-    say(@channel_name, "/color Chocolate")
-    say(@channel_name, "/me #{artist} - #{title} - #{song_url} (#{dur})")
-  end
+  #   say(@channel_name, "/color Chocolate")
+  #   say(@channel_name, "/me #{artist} - #{title} - #{song_url} (#{dur})")
+  # end
 
   def handle_unrecognized(:subscribe) do
     Logger.info("[subscribe] Subscribing...")
@@ -121,13 +136,17 @@ defmodule Chatbot.Bot do
     # do: IO.puts("*** #{inspect(msg)}")
     do: nil
 
-  def handle_unrecognized(_msg, _tags),
-    # do: Logger.debug("*** unrecog/2: #{inspect(msg)} *** #{inspect(tags)}")
-    do: nil
+  # def handle_unrecognized(_msg, _tags),
+  #   # do: Logger.debug("*** unrecog/2: #{inspect(msg)} *** #{inspect(tags)}")
+  #   do: nil
 
   # @impl TMI.Handler
   # def handle_action(msg, sender, chat),
   #   do: Logger.debug(inspect({"action/3", msg, sender, chat}))
+
+  # @impl TMI.Handler
+  # def handle_action(msg, sender, chat, tags),
+  #   do: Logger.debug(inspect({"action/4", msg, sender, chat, tags}))
 
   # --- PRIVATE ---------------------------------------------------------------
 

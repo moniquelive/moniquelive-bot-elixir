@@ -23,6 +23,9 @@ defmodule Audio do
   def current_song_info(),
     do: GenServer.call(__MODULE__, :current_song_info)
 
+  def whos_playing(),
+    do: GenServer.call(__MODULE__, :whos_playing)
+
   @impl true
   def init(state) do
     Phoenix.PubSub.subscribe(WebApp.PubSub, "music_live:mounted")
@@ -101,6 +104,11 @@ defmodule Audio do
       end
 
     {:reply, message, state}
+  end
+
+  def handle_call(:whos_playing, _from, state) do
+    who = if spotify_is_playing(state), do: :spotify, else: :difm
+    {:reply, who, state}
   end
 
   @impl true
