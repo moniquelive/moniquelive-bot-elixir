@@ -18,11 +18,7 @@ defmodule Chatbot.Config do
     {:ok, watcher_pid} = FileSystem.start_link(dirs: [dir])
     FileSystem.subscribe(watcher_pid)
 
-    {:ok,
-     %{
-       watcher_pid: watcher_pid,
-       config: Path.join(dir, @config_filename) |> parse()
-     }}
+    {:ok, %{watcher_pid: watcher_pid, config: Path.join(dir, @config_filename) |> parse()}}
   end
 
   @impl GenServer
@@ -48,9 +44,5 @@ defmodule Chatbot.Config do
       ),
       do: {:noreply, state}
 
-  defp parse(path),
-    do:
-      path
-      |> File.read!()
-      |> Jason.decode!()
+  defp parse(path), do: path |> File.read!() |> Jason.decode!()
 end

@@ -26,7 +26,7 @@ defmodule WebAppWeb do
         layouts: [html: WebAppWeb.Layouts]
 
       import Plug.Conn
-      import WebAppWeb.Gettext
+      use Gettext, backend: WebAppWeb.Gettext
 
       unquote(verified_routes())
     end
@@ -52,7 +52,7 @@ defmodule WebAppWeb do
       # Core UI components and translation
       # import WebAppWeb.CoreComponents
       # import WebAppWeb.WebAppWebComponents
-      import WebAppWeb.Gettext
+      use Gettext, backend: WebAppWeb.Gettext
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

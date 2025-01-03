@@ -110,24 +110,41 @@ defmodule Audio.Spotify do
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
       case Spotify.Player.get_currently_playing(state.creds) do
-        :ok when stopped(state) -> stop(state)
-        {:ok, curr} when paused(state, curr) -> pause(state)
-        {:ok, curr} when unpaused(state, curr) -> unpause(state, curr)
-        {:ok, curr} when changed(state, curr) -> change(state, curr)
-        _ -> state
+        :ok when stopped(state) ->
+          stop(state)
+
+        {:ok, curr} when paused(state, curr) ->
+          pause(state)
+
+        {:ok, curr} when unpaused(state, curr) ->
+          unpause(state, curr)
+
+        {:ok, curr} when changed(state, curr) ->
+          change(state, curr)
+
+        _ ->
+          # IO.puts(inspect(default))
+          # IO.puts(inspect(state.creds))
+          state
       end
 
     {:noreply, new_state}
   end
 
   def handle_info(:refresh_token_timer, state) do
+    # IO.puts(inspect(state.refresh_token))
     new_state =
       try do
         case Spotify.Authentication.refresh(%Spotify.Credentials{
                refresh_token: state.refresh_token
              }) do
           {:ok, creds} ->
+            # IO.puts(inspect(creds))
             %{state | creds: creds}
+
+          _ ->
+            # IO.puts(inspect(default))
+            state
         end
       rescue
         _ ->

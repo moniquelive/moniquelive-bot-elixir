@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Animation exposing (percent)
 import Animation.Spring.Presets exposing (wobbly)
@@ -9,6 +9,9 @@ import Json.Decode as D
 import Phoenix exposing (PhoenixMsg, joinConfig)
 import Ports.Phoenix as Ports
 import Time
+
+
+port playMP3 : String -> Cmd msg
 
 
 
@@ -31,6 +34,10 @@ main =
 
 type alias MarqueeMessage =
     { text : String }
+
+
+type alias MP3 =
+    { mp3 : String }
 
 
 type alias SongInfo =
@@ -70,6 +77,7 @@ init _ =
                             [ "marquee_updated"
                             , "music_changed"
                             , "keepers_skippers_changed"
+                            , "play_tts"
                             ]
                     }
                 |> Phoenix.join "chatbot:events"
@@ -94,7 +102,6 @@ init _ =
 
 type Msg
     = PhoenixMsg Phoenix.Msg
-    | Recv String
     | Animate Animation.Msg
 
 
@@ -127,9 +134,6 @@ update msg model =
         PhoenixMsg subMsg ->
             processPhoenixMsg model subMsg
 
-        _ ->
-            ( model, Cmd.none )
-
 
 processPhoenixMsg : Model -> Phoenix.Msg -> ( Model, Cmd Msg )
 processPhoenixMsg model subMsg =
@@ -141,6 +145,18 @@ processPhoenixMsg model subMsg =
     case phoenixMsg of
         Phoenix.ChannelEvent _ event payload ->
             case event of
+                "play_tts" ->
+                    let
+                        ttsPayload =
+                            case D.decodeValue ttsMessageDecoder payload of
+                                Ok mp3 ->
+                                    mp3
+
+                                Err _ ->
+                                    MP3 ""
+                    in
+                    ( model, playMP3 ttsPayload.mp3 )
+
                 "marquee_updated" ->
                     let
                         marqueePayload =
@@ -316,6 +332,12 @@ view model =
 
 
 -- JSON decode
+
+
+ttsMessageDecoder : D.Decoder MP3
+ttsMessageDecoder =
+    D.map MP3
+        (D.field "mp3" D.string)
 
 
 marqueeMessageDecoder : D.Decoder MarqueeMessage

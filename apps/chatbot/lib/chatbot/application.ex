@@ -28,6 +28,7 @@ defmodule Chatbot.Application do
       pass: System.get_env("TWITCH_TMI_OAUTH"),
       channels: ["moniquelive"],
       mod_channels: ["moniquelive"],
+      capabilities: [~c"membership", ~c"tags", ~c"commands"],
       debug: false
     ]
 

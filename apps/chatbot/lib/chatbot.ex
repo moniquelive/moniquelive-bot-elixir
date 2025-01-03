@@ -3,10 +3,13 @@ defmodule Chatbot.Bot do
 
   use TMI
 
+  alias HTTPoison, as: H
+
   # @bot_id "661856691"
   # @moniquelive_id "4930146"
   # @channel_name "moniquelive"
   @enqueue_song_reward_id "bf07c491-1ffb-4eb7-a7d8-5c9f2fe51818"
+  @tts_reward_id "e706421e-01f7-48fd-a4c6-4393d1ba4ec8"
   @on_load :init
 
   alias Chatbot.{
@@ -47,50 +50,77 @@ defmodule Chatbot.Bot do
     end
   end
 
-  def handle_message(sentence, user, chat, tag) do
-    if tag["custom-reward-id"] == @enqueue_song_reward_id do
-      if Audio.whos_playing() == :spotify do
-        song_id =
-          sentence
-          |> String.split("/")
-          |> List.last()
-          |> String.split("?")
-          |> hd()
+  def handle_message(sentence, _user, _chat, %{"custom-reward-id" => @tts_reward_id}) do
+    Task.start(fn ->
+      {:ok, api_key} = Application.fetch_env(:chatbot, :eleven_labs_api_key)
+      body = ~s[{"text":"#{sentence}","model_id":"eleven_turbo_v2_5","language_code":"pt"}]
+      headers = [{"xi-api-key", api_key}, {"content-type", "application/json"}]
+      options = [max_body_length: 25 * 1024 * 1024]
+      # https://api.elevenlabs.io/v1/voices
+      voice_id = "CwhRBWXzGAHq8TQ4Fs17"
 
-        case Audio.Spotify.song_info(song_id) do
-          {:ok, song_info} ->
-            artist = hd(song_info.artists)["name"]
-            title = song_info.name
+      case H.post(
+             "https://api.elevenlabs.io/v1/text-to-speech/#{voice_id}?output_format=mp3_44100_128",
+             body,
+             headers,
+             options
+           ) do
+        {:ok, %H.Response{body: body}} ->
+          Phoenix.PubSub.broadcast(
+            WebApp.PubSub,
+            "rewards:play_tts",
+            {:play_tts, %{mp3: Base.encode64(body)}}
+          )
 
-            dur =
-              song_info.duration_ms
-              |> div(1000)
-              |> Utils.format_duration()
+        {:error, errror} ->
+          Logger.error("Error playing TTS: #{inspect(errror)}")
+      end
+    end)
+  end
 
-            say(chat, "/color GoldenRod")
-            say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
-            Audio.Spotify.enqueue(song_id)
+  def handle_message(sentence, user, chat, %{"custom-reward-id" => @enqueue_song_reward_id}) do
+    if Audio.whos_playing() == :spotify do
+      song_id =
+        sentence
+        |> String.split("/")
+        |> List.last()
+        |> String.split("?")
+        |> hd()
 
-          {:error, reason} ->
-            say(chat, "/color Red")
-            say(chat, "Não consegui enfileirar: #{song_id} (#{reason})")
-        end
-      else
-        # TODO: assinar o evento channel.channel_points_custom_reward_redemption.add
-        # https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchannel_points_custom_reward_redemptionadd
-        # IO.inspect(sentence)
-        # TwitchApi.ChannelPoints.UpdateRedemptionStatus.call(
-        #   tag["id"],
-        #   @bot_id,
-        #   @enqueue_song_reward_id,
-        #   Jason.encode!(%{status: "CANCELED"}),
-        #   %{user_id: @bot_id}
-        # ) |> IO.inspect
+      case Audio.Spotify.song_info(song_id) do
+        {:ok, song_info} ->
+          artist = hd(song_info.artists)["name"]
+          title = song_info.name
+
+          dur =
+            song_info.duration_ms
+            |> div(1000)
+            |> Utils.format_duration()
+
+          say(chat, "/color GoldenRod")
+          say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
+          Audio.Spotify.enqueue(song_id)
+
+        {:error, reason} ->
+          say(chat, "/color Red")
+          say(chat, "Não consegui enfileirar: #{song_id} (#{reason})")
       end
     else
-      State.process_sentence(sentence, user)
+      # TODO: assinar o evento channel.channel_points_custom_reward_redemption.add
+      # https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/#channelchannel_points_custom_reward_redemptionadd
+      # IO.inspect(sentence)
+      # TwitchApi.ChannelPoints.UpdateRedemptionStatus.call(
+      #   tag["id"],
+      #   @bot_id,
+      #   @enqueue_song_reward_id,
+      #   Jason.encode!(%{status: "CANCELED"}),
+      #   %{user_id: @bot_id}
+      # ) |> IO.inspect
     end
   end
+
+  def handle_message(sentence, user, _chat, _tag),
+    do: State.process_sentence(sentence, user)
 
   @impl TMI.Handler
   def handle_join("#moniquelive", user),

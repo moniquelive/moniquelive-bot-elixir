@@ -20,6 +20,11 @@ defmodule WebAppWeb.ChatbotChannel do
   # end
 
   @impl true
+  def handle_info({:play_tts, payload}, socket) do
+    push(socket, "play_tts", payload)
+    {:noreply, socket}
+  end
+
   def handle_info({:audio, payload}, socket) do
     push(socket, "music_changed", payload)
     {:noreply, socket}
@@ -39,7 +44,8 @@ defmodule WebAppWeb.ChatbotChannel do
     [
       "audio:music_changed",
       "spotify:keepers_and_skippers_changed",
-      "layer:marquee_updated"
+      "layer:marquee_updated",
+      "rewards:play_tts"
     ]
     |> Enum.each(fn evt ->
       Phoenix.PubSub.unsubscribe(WebApp.PubSub, evt)
