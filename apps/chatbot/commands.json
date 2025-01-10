@@ -96,16 +96,17 @@
       "actions": ["!social", "!links", "!s"],
       "responses": [
         "/color yellowgreen",
-        "/me 📑: https://monique.dev",
+        "/me 🥏️: https://discord.gg/m5U66SyyyK",
+        "/me 💌: https://t.me/joinchat/nq7dy4jqN01kNmVh",
+        "/me 🦋️: https://bsky.app/monique.live",
+        "/me 🐦: https://x.com/moniquelive",
         "/me 💻: https://github.com/moniquelive",
-        "/me 👷: https://linkedin.com/in/moniquelive",
-        "/me 🐦: https://twitter.com/moniquelive",
+        "/me 📑: https://monique.dev",
+        "/me 📖: https://dev.to/moniquelive",
         "/me 📸: https://www.instagram.com/moniquelive.dev",
         "/me 📺: https://www.youtube.com/moniquelive",
         "/me 🤝: https://stackoverflow.com/users/9793/cyber-oliveira",
-        "/me 📖: https://dev.to/moniquelive",
-        "/me 💌: https://t.me/joinchat/nq7dy4jqN01kNmVh",
-        "/me 🥏️: https://discord.gg/m5U66SyyyK"
+        "/me 👷: https://linkedin.com/in/moniquelive"
       ]
     },
     {
