@@ -8,6 +8,7 @@ if (rootNode !== null) {
   ElmPhoenixWebSocket.init(app.ports, Socket, Presence);
   app.ports.playMP3.subscribe(function(payload) {
     const audio = new Audio("data:audio/mp3;base64," + payload);
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(() => audio.play());
+    // navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(() => audio.play());
+    audio.play();
   });
 }
