@@ -57,7 +57,7 @@ defmodule Chatbot.Bot do
       headers = [{"xi-api-key", api_key}, {"content-type", "application/json"}]
       options = [max_body_length: 25 * 1024 * 1024]
       # https://api.elevenlabs.io/v1/voices
-      voice_id = "CwhRBWXzGAHq8TQ4Fs17"
+      voice_id = "XB0fDUnXU5powFXDhCwa"
 
       case H.post(
              "https://api.elevenlabs.io/v1/text-to-speech/#{voice_id}?output_format=mp3_44100_128",
