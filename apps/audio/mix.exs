@@ -26,8 +26,7 @@ defmodule Audio.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix, "~> 1.7.0"},
-      {:jason, "~> 1.4"},
+      {:phoenix, "~> 1.7.21"},
       {:httpoison, "~> 1.0"},
       {:spotify_ex, "~> 2.3"},
       {:utils, in_umbrella: true}
