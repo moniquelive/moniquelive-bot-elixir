@@ -67,7 +67,7 @@ defmodule Audio.Difm do
       start_time
       |> DateTime.add(8 + round(state.current_song.track.duration))
       |> DateTime.diff(DateTime.utc_now())
-      |> Utils.format_duration()
+      |> DurationFormatter.format_duration()
 
     {:reply, fmt, state}
   end

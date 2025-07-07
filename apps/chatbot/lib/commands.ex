@@ -170,7 +170,7 @@ defmodule Chatbot.Commands do
   end
 
   defp time_ago(dt),
-    do: DateTime.diff(DateTime.utc_now(), dt, :second) |> Utils.format_duration()
+    do: DateTime.diff(DateTime.utc_now(), dt, :second) |> DurationFormatter.format_duration()
 
   @doc """
   ----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ defmodule Chatbot.Commands do
       {:ok, since, 0} ->
         period =
           DateTime.diff(DateTime.utc_now(), since, :second)
-          |> Utils.format_duration()
+          |> DurationFormatter.format_duration()
 
         "#{info["from_name"]} segue a #{info["to_name"]} há #{period}"
 

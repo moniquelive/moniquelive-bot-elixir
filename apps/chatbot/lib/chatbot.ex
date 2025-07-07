@@ -95,7 +95,7 @@ defmodule Chatbot.Bot do
           dur =
             song_info.duration_ms
             |> div(1000)
-            |> Utils.format_duration()
+            |> DurationFormatter.format_duration()
 
           say(chat, "/color GoldenRod")
           say(chat, "Enfileirando #{title} by #{artist} (#{dur}) - @#{user}")
@@ -149,7 +149,7 @@ defmodule Chatbot.Bot do
   #   dur =
   #     curr.duration_ms
   #     |> div(1000)
-  #     |> Utils.format_duration()
+  #     |> DurationFormatter.format_duration()
 
   #   say(@channel_name, "/color Chocolate")
   #   say(@channel_name, "/me #{artist} - #{title} - #{song_url} (#{dur})")
