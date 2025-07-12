@@ -1,6 +1,8 @@
 defmodule Audio.Spotify do
   @moduledoc false
 
+  @name __MODULE__
+
   use GenServer
 
   alias Audio.KeepersAndSkippers, as: KS
@@ -8,19 +10,16 @@ defmodule Audio.Spotify do
   # Client
 
   def start_link(rt) do
-    GenServer.start_link(
-      __MODULE__,
-      %{refresh_token: rt, curr: nil, creds: nil},
-      name: __MODULE__
-    )
+    args = %{refresh_token: rt, curr: nil, creds: nil}
+    GenServer.start_link(@name, args, name: @name)
   end
 
-  def current_song(), do: GenServer.call(__MODULE__, :current_song)
-  def song_info(song_id), do: GenServer.call(__MODULE__, {:song_info, song_id})
-  def skip_song(username), do: GenServer.call(__MODULE__, {:skip_song, username})
-  def keep_song(username), do: GenServer.call(__MODULE__, {:keep_song, username})
+  def current_song(), do: GenServer.call(@name, :current_song)
+  def song_info(song_id), do: GenServer.call(@name, {:song_info, song_id})
+  def skip_song(username), do: GenServer.call(@name, {:skip_song, username})
+  def keep_song(username), do: GenServer.call(@name, {:keep_song, username})
 
-  def enqueue(song_id), do: GenServer.cast(__MODULE__, {:enqueue, song_id})
+  def enqueue(song_id), do: GenServer.cast(@name, {:enqueue, song_id})
 
   # Server
 
@@ -43,11 +42,8 @@ defmodule Audio.Spotify do
 
   def handle_call({:song_info, song_id}, _from, state) do
     case Spotify.Track.get_track(state.creds, song_id) do
-      {:ok, %{"error" => %{"message" => message}}} ->
-        {:reply, {:error, message}, state}
-
-      {:ok, info} ->
-        {:reply, {:ok, info}, state}
+      {:ok, %{"error" => %{"message" => message}}} -> {:reply, {:error, message}, state}
+      {:ok, info} -> {:reply, {:ok, info}, state}
     end
   end
 
@@ -110,23 +106,15 @@ defmodule Audio.Spotify do
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
       case Spotify.Player.get_currently_playing(state.creds) do
-        :ok when stopped(state) ->
-          stop(state)
-
-        {:ok, curr} when paused(state, curr) ->
-          pause(state)
-
-        {:ok, curr} when unpaused(state, curr) ->
-          unpause(state, curr)
-
-        {:ok, curr} when changed(state, curr) ->
-          change(state, curr)
-
-        _ ->
-          # IO.puts(inspect(default))
-          # IO.puts(inspect(state.creds))
-          state
+        :ok when stopped(state) -> stop(state)
+        {:ok, curr} when paused(state, curr) -> pause(state)
+        {:ok, curr} when unpaused(state, curr) -> unpause(state, curr)
+        {:ok, curr} when changed(state, curr) -> change(state, curr)
+        _ -> state
       end
+
+    # IO.puts(inspect(default))
+    # IO.puts(inspect(state.creds))
 
     {:noreply, new_state}
   end
@@ -138,14 +126,12 @@ defmodule Audio.Spotify do
         case Spotify.Authentication.refresh(%Spotify.Credentials{
                refresh_token: state.refresh_token
              }) do
-          {:ok, creds} ->
-            # IO.puts(inspect(creds))
-            %{state | creds: creds}
-
-          _ ->
-            # IO.puts(inspect(default))
-            state
+          {:ok, creds} -> %{state | creds: creds}
+          _ -> state
         end
+
+        # IO.puts(inspect(creds))
+        # IO.puts(inspect(default))
       rescue
         _ ->
           Process.send_after(self(), 15_000, :refresh_token_timer)

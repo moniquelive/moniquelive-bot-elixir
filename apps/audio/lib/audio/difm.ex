@@ -1,9 +1,9 @@
 defmodule Audio.Difm do
   @moduledoc false
 
-  require Logger
+  @name __MODULE__
 
-  alias HTTPoison, as: H
+  require Logger
 
   use GenServer
 
@@ -34,18 +34,15 @@ defmodule Audio.Difm do
   # Client
 
   def start_link(_opts) do
-    GenServer.start_link(
-      __MODULE__,
-      %{channel: "vocaltrance", current_song: %{}, timer: nil},
-      name: __MODULE__
-    )
+    args = %{channel: "vocaltrance", current_song: %{}, timer: nil}
+    GenServer.start_link(@name, args, name: @name)
   end
 
-  def get_current_song(), do: GenServer.call(__MODULE__, :current_song)
-  def get_song_end(), do: GenServer.call(__MODULE__, :current_song_end)
+  def get_current_song(), do: GenServer.call(@name, :current_song)
+  def get_song_end(), do: GenServer.call(@name, :current_song_end)
 
   def get_channel_names(), do: @channel_names
-  def set_channel(name), do: GenServer.cast(__MODULE__, {:set_channel, name})
+  def set_channel(name), do: GenServer.cast(@name, {:set_channel, name})
 
   # Server
 
@@ -56,9 +53,8 @@ defmodule Audio.Difm do
   end
 
   @impl true
-  def handle_call(:current_song, _from, state) do
-    {:reply, state.current_song, state}
-  end
+  def handle_call(:current_song, _from, state),
+    do: {:reply, state.current_song, state}
 
   def handle_call(:current_song_end, _from, state) do
     {:ok, start_time, _tz} = DateTime.from_iso8601(state.current_song.track.start_time)
@@ -76,44 +72,33 @@ defmodule Audio.Difm do
   def handle_cast({:set_channel, name}, state) do
     send(self(), :refresh_timer)
 
-    if name in @channel_names do
-      {:noreply, %{state | channel: name}}
-    else
-      {:noreply, state}
-    end
+    {:noreply, if(name in @channel_names, do: %{state | channel: name}, else: state)}
   end
 
   defp get_asset_url(current_song) do
-    case H.get!("https://api.audioaddict.com/v1/di/tracks/#{current_song.track.id}") do
-      %H.Response{status_code: 200, body: body} ->
-        asset_url = body |> Jason.decode!(keys: :atoms) |> Map.get(:asset_url)
-        "https:#{asset_url}"
-
-      _ ->
-        current_song.channel_key
+    case Req.get!("https://api.audioaddict.com/v1/di/tracks/#{current_song["track"]["id"]}") do
+      %Req.Response{status: 200, body: body} -> "https:" <> body["asset_url"]
+      _ -> current_song["channel_key"]
     end
   end
 
   @impl true
   def handle_info(:refresh_timer, state) do
-    case H.get!("https://api.audioaddict.com/v1/di/currently_playing") do
-      %H.Response{status_code: 200, body: body} ->
+    case Req.get!("https://api.audioaddict.com/v1/di/currently_playing") do
+      %Req.Response{status: 200, body: body} ->
         # get song info
-        current_song =
-          body
-          |> Jason.decode!(keys: :atoms)
-          |> Enum.find(&(&1[:channel_key] == state.channel))
+        current_song = Enum.find(body, &(&1["channel_key"] == state.channel))
 
         # get album cover
         asset_url = get_asset_url(current_song)
-        current_song = put_in(current_song[:track][:album_art], asset_url)
+        current_song = put_in(current_song["track"]["album_art"], asset_url)
 
         # get song duration
-        {:ok, start_time, _tz} = DateTime.from_iso8601(current_song.track.start_time)
+        {:ok, start_time, _tz} = DateTime.from_iso8601(current_song["track"]["start_time"])
 
         diff =
           start_time
-          |> DateTime.add(8 + round(current_song.track.duration))
+          |> DateTime.add(8 + round(current_song["track"]["duration"]))
           |> DateTime.diff(DateTime.utc_now())
           |> abs
 

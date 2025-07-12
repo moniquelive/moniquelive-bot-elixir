@@ -1,15 +1,17 @@
 defmodule Chatbot.Config do
   @moduledoc false
 
+  @name __MODULE__
+
   use GenServer
 
   @config_filename "commands.json"
 
   # Client
 
-  def start_link(state), do: GenServer.start_link(__MODULE__, state, name: __MODULE__)
-  def ignored(), do: GenServer.call(__MODULE__, :ignored)
-  def commands(), do: GenServer.call(__MODULE__, :commands)
+  def start_link(args), do: GenServer.start_link(@name, args, name: @name)
+  def ignored(), do: GenServer.call(@name, :ignored)
+  def commands(), do: GenServer.call(@name, :commands)
 
   # Server
 

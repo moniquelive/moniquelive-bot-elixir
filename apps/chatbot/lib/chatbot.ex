@@ -3,8 +3,6 @@ defmodule Chatbot.Bot do
 
   use TMI
 
-  alias HTTPoison, as: H
-
   # @bot_id "661856691"
   # @moniquelive_id "4930146"
   # @channel_name "moniquelive"
@@ -53,19 +51,17 @@ defmodule Chatbot.Bot do
   def handle_message(sentence, _user, _chat, %{"custom-reward-id" => @tts_reward_id}) do
     Task.start(fn ->
       {:ok, api_key} = Application.fetch_env(:chatbot, :eleven_labs_api_key)
-      body = ~s[{"text":"#{sentence}","model_id":"eleven_turbo_v2_5","language_code":"pt"}]
-      headers = [{"xi-api-key", api_key}, {"content-type", "application/json"}]
-      options = [max_body_length: 25 * 1024 * 1024]
+      body = %{text: "#{sentence}", model_id: "eleven_turbo_v2_5", language_code: "pt"}
+      headers = [{"xi-api-key", api_key}]
       # https://api.elevenlabs.io/v1/voices
       voice_id = "XB0fDUnXU5powFXDhCwa"
 
-      case H.post(
+      case Req.post(
              "https://api.elevenlabs.io/v1/text-to-speech/#{voice_id}?output_format=mp3_44100_128",
-             body,
-             headers,
-             options
+             json: body,
+             headers: headers
            ) do
-        {:ok, %H.Response{body: body}} ->
+        {:ok, %Req.Response{body: body}} ->
           Phoenix.PubSub.broadcast(
             WebApp.PubSub,
             "rewards:play_tts",

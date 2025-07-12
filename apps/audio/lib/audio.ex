@@ -1,30 +1,20 @@
 defmodule Audio do
   @moduledoc false
 
+  @name __MODULE__
+
   use GenServer
 
   def start_link(_opts) do
-    GenServer.start_link(
-      __MODULE__,
-      %{difm_payload: nil, spotify_payload: nil},
-      name: __MODULE__
-    )
+    args = %{difm_payload: nil, spotify_payload: nil}
+    GenServer.start_link(@name, args, name: @name)
   end
 
-  def difm_changed(payload),
-    do: GenServer.cast(__MODULE__, {:difm_changed, payload})
-
-  def spotify_changed(payload),
-    do: GenServer.cast(__MODULE__, {:spotify_changed, payload})
-
-  def broadcast_song_info(),
-    do: GenServer.cast(__MODULE__, :broadcast_song_info)
-
-  def current_song_info(),
-    do: GenServer.call(__MODULE__, :current_song_info)
-
-  def whos_playing(),
-    do: GenServer.call(__MODULE__, :whos_playing)
+  def difm_changed(payload), do: GenServer.cast(@name, {:difm_changed, payload})
+  def spotify_changed(payload), do: GenServer.cast(@name, {:spotify_changed, payload})
+  def broadcast_song_info(), do: GenServer.cast(@name, :broadcast_song_info)
+  def current_song_info(), do: GenServer.call(@name, :current_song_info)
+  def whos_playing(), do: GenServer.call(@name, :whos_playing)
 
   @impl true
   def init(state) do
@@ -58,34 +48,23 @@ defmodule Audio do
     if !spotify_is_playing(state), do: broadcast_song_info()
 
     payload = %{
-      title: payload.track.display_title,
-      artist: payload.track.display_artist,
-      album_cover_url: payload.track.album_art
+      title: payload["track"]["display_title"],
+      artist: payload["track"]["display_artist"],
+      album_cover_url: payload["track"]["album_art"]
     }
 
     {:noreply, %{state | difm_payload: payload}}
   end
 
   def handle_cast(:broadcast_song_info, state) do
-    cond do
-      spotify_is_playing(state) ->
-        Phoenix.PubSub.broadcast(
-          WebApp.PubSub,
-          "audio:music_changed",
-          {:audio, state.spotify_payload}
-        )
+    payload =
+      cond do
+        spotify_is_playing(state) -> {:audio, state.spotify_payload}
+        state.difm_payload -> {:audio, state.difm_payload}
+        true -> nil
+      end
 
-      !spotify_is_playing(state) && state.difm_payload ->
-        Phoenix.PubSub.broadcast(
-          WebApp.PubSub,
-          "audio:music_changed",
-          {:audio, state.difm_payload}
-        )
-
-      true ->
-        nil
-    end
-
+    if payload, do: Phoenix.PubSub.broadcast(WebApp.PubSub, "audio:music_changed", payload)
     {:noreply, state}
   end
 
@@ -96,7 +75,7 @@ defmodule Audio do
         spotify_is_playing(state) ->
           "#{state.spotify_payload.title} - #{state.spotify_payload.artist}"
 
-        !spotify_is_playing(state) && state.difm_payload ->
+        state.difm_payload ->
           "#{state.difm_payload.title} - #{state.difm_payload.artist}"
 
         true ->

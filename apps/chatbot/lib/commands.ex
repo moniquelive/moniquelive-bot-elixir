@@ -65,11 +65,8 @@ defmodule Chatbot.Commands do
   defp help_helper(command, help_action) do
     action =
       case String.split(command) do
-        [_help, subject | _] ->
-          action_for_command(subject) || action_for_command("!" <> subject)
-
-        [_help] ->
-          nil
+        [_help, subject | _] -> action_for_command(subject) || action_for_command("!" <> subject)
+        [_help] -> nil
       end || help_action
 
     ["!" <> help_action_label | _] = help_action["actions"]
@@ -154,23 +151,21 @@ defmodule Chatbot.Commands do
 
       [_uptime, friend | _] ->
         case State.online_at(friend) do
-          nil ->
-            "#{friend} não tem horário de entrada... :("
-
-          dt ->
-            "#{friend} entrou #{format_date(dt)} (há #{time_ago(dt)})"
+          nil -> "#{friend} não tem horário de entrada... :("
+          dt -> "#{friend} entrou #{format_date(dt)} (há #{time_ago(dt)})"
         end
     end
   end
 
-  defp format_date(dt) do
-    dt
-    |> DateTime.shift_zone!("America/Sao_Paulo")
-    |> Calendar.strftime("dia %x as %X", preferred_date: "%d/%m/%Y")
-  end
+  defp format_date(dt),
+    do:
+      DateTime.shift_zone!(dt, "America/Sao_Paulo")
+      |> Calendar.strftime("dia %x as %X", preferred_date: "%d/%m/%Y")
 
   defp time_ago(dt),
-    do: DateTime.diff(DateTime.utc_now(), dt, :second) |> DurationFormatter.format_duration()
+    do:
+      DateTime.diff(DateTime.utc_now(), dt, :second)
+      |> DurationFormatter.format_duration()
 
   @doc """
   ----------------------------------------------------------------------------
@@ -186,22 +181,16 @@ defmodule Chatbot.Commands do
 
       [_followage, login | _] ->
         case get_twitch_user_info(login) do
-          [follower_info] ->
-            format_follower_info(follower_info)
-
-          _ ->
-            "não encontrei o usuário #{login}..."
+          [follower_info] -> format_follower_info(follower_info)
+          _ -> "não encontrei o usuário #{login}..."
         end
     end
   end
 
   defp format_follower_info(info) do
     case get_user_followage_moniquelive(info["id"]) do
-      [followage_info] ->
-        format_followed_at(followage_info)
-
-      _ ->
-        "#{info["display_name"]} não segue a moniquelive..."
+      [followage_info] -> format_followed_at(followage_info)
+      _ -> "#{info["display_name"]} não segue a moniquelive..."
     end
   end
 

@@ -27,8 +27,8 @@ defmodule Audio.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.7.21"},
-      {:httpoison, "~> 1.0"},
       {:spotify_ex, "~> 2.3"},
+      {:req, "~> 0.5.0"},
       {:utils, in_umbrella: true}
     ]
   end
