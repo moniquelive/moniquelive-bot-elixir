@@ -1,37 +1,32 @@
 defmodule Chatbot.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
 
-  alias Chatbot.{
-    Config,
-    State
-  }
-
-  @impl Application
+  @impl true
   def start(_type, _args) do
-    children = [State, {Config, Path.expand("../..", __DIR__)}]
-    extra_children = Application.fetch_env!(:chatbot, :environment) |> children()
+    env = Application.fetch_env!(:chatbot, :environment)
 
-    opts = [strategy: :one_for_one, name: Chatbot.Supervisor]
-    Supervisor.start_link(children ++ extra_children, opts)
+    children =
+      [
+        Chatbot.State,
+        {Chatbot.Config, Path.expand("../..", __DIR__)}
+      ] ++ extra(env)
+
+    Supervisor.start_link(children, strategy: :one_for_one, name: Chatbot.Supervisor)
   end
 
-  defp children(:test), do: []
+  defp extra(:test), do: []
 
-  defp children(_) do
-    opts = [
-      bot: Chatbot.Bot,
-      user: "moniquelive_bot",
-      pass: System.get_env("TWITCH_TMI_OAUTH"),
-      channels: ["moniquelive"],
-      mod_channels: ["moniquelive"],
-      capabilities: [~c"membership", ~c"tags", ~c"commands"],
-      debug: false
+  defp extra(_),
+    do: [
+      {TMI.Supervisor,
+       bot: Chatbot.Bot,
+       user: "moniquelive_bot",
+       pass: System.get_env("TWITCH_TMI_OAUTH"),
+       channels: ["moniquelive"],
+       mod_channels: ["moniquelive"],
+       capabilities: [~c"membership", ~c"tags", ~c"commands"],
+       debug: false}
     ]
-
-    [{TMI.Supervisor, opts}]
-  end
 end

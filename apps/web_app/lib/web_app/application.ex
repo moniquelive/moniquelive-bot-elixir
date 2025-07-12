@@ -11,8 +11,7 @@ defmodule WebApp.Application do
       WebAppWeb.Endpoint
     ]
 
-    opts = [strategy: :one_for_one, name: WebApp.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children, strategy: :one_for_one, name: WebApp.Supervisor)
   end
 
   # Tell Phoenix to update the endpoint configuration

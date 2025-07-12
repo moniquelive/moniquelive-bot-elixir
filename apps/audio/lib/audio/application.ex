@@ -5,13 +5,18 @@ defmodule Audio.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [Audio, Audio.KeepersAndSkippers, Audio.Difm]
-    extra_children = Application.fetch_env!(:audio, :environment) |> children()
+    env = Application.fetch_env!(:audio, :environment)
 
-    opts = [strategy: :one_for_one, name: Audio.Supervisor]
-    Supervisor.start_link(children ++ extra_children, opts)
+    children =
+      [
+        Audio,
+        Audio.KeepersAndSkippers,
+        Audio.Difm
+      ] ++ extra(env)
+
+    Supervisor.start_link(children, strategy: :one_for_one, name: Audio.Supervisor)
   end
 
-  defp children(:test), do: []
-  defp children(_), do: [{Audio.Spotify, Application.fetch_env!(:spotify_ex, :refresh_token)}]
+  defp extra(:test), do: []
+  defp extra(_), do: [{Audio.Spotify, Application.fetch_env!(:spotify_ex, :refresh_token)}]
 end
