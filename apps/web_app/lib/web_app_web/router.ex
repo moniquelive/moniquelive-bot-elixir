@@ -19,6 +19,7 @@ defmodule WebAppWeb.Router do
 
     get "/layer", LayerController, :index
     live "/widget/music", Live.MusicLive, :music
+    live "/widget/marquee", Live.MarqueeLive, :marquee
   end
 
   # Other scopes may use custom stacks.
