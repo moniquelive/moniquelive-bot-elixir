@@ -31,17 +31,16 @@ defmodule Audio do
     {:noreply, %{state | spotify_payload: nil}}
   end
 
-  def handle_cast({:spotify_changed, payload}, state) do
+  def handle_cast({:spotify_changed, %{item: item, is_playing: is_playing}}, state) do
     broadcast_song_info()
-
-    payload = %{
-      title: payload.item.name,
-      artist: hd(payload.item.artists)["name"],
-      album_cover_url: hd(payload.item.album["images"])["url"],
-      is_playing: payload.is_playing
+    new_payload = %{
+      title: item.name,
+      artist: hd(item.artists)["name"],
+      album_cover_url: hd(item.album["images"])["url"],
+      is_playing: is_playing
     }
 
-    {:noreply, %{state | spotify_payload: payload}}
+    {:noreply, %{state | spotify_payload: new_payload}}
   end
 
   def handle_cast({:difm_changed, payload}, state) do

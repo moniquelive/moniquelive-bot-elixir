@@ -2,6 +2,7 @@ defmodule Audio.Difm do
   @moduledoc false
 
   @name __MODULE__
+  @audio_addict_api Req.new(base_url: "https://api.audioaddict.com")
 
   require Logger
 
@@ -29,6 +30,28 @@ defmodule Audio.Difm do
     techhouse techno trance trap tribalhouse
     umfradio undergroundtechno
     vocalchillout vocalhouse vocallounge vocaltrance
+    00scountry 00sdance 00srnb 00srock 60srock 70srock 80saltnnewwave 80sdance 80srock 90scountry 90sdance 90srnb 90srock
+    altrock ambient americansongbook
+    baroque bebop bluesrock bossanova
+    cafedeparis chillntropicalhouse chillout christian classical classicalperiod classicalpianotrios classicmotown classicrap classicrock clubbollywood coffeejazz country cubanlounge
+    dancehits datempolounge davekoz discoparty downtempolounge dreamscapes
+    easylistening edmfest epicmusic eurodance
+    guitar
+    hardrock hit00s hit60s hit70s hit90s
+    indiedance indierock
+    jazzclassics jpop
+    kpop
+    latinpophits lounge lovemusic
+    meditation mellowjazz mellowsmoothjazz metal modernblues modernrock mozart
+    nature newage
+    oldies oldschoolfunknsoul
+    pianojazz poprock
+    reggaeton relaxation relaxingambientpiano romantic romantica romanticalatina rootsreggae
+    salsa sleeprelaxation slowjams smoothbeats smoothbossanova smoothjazz smoothjazz247 smoothlounge softrock solopiano soundtracks
+    the80s tophits
+    uptemposmoothjazz urbanjamz urbanpophits
+    vocalchillout vocallounge vocalnewage vocalsmoothjazz
+    world
     )
 
   # Client
@@ -39,7 +62,7 @@ defmodule Audio.Difm do
   end
 
   def get_current_song(), do: GenServer.call(@name, :current_song)
-  def get_song_end(), do: GenServer.call(@name, :current_song_end)
+  # def get_song_end(), do: GenServer.call(@name, :current_song_end)
 
   def get_channel_names(), do: @channel_names
   def set_channel(name), do: GenServer.cast(@name, {:set_channel, name})
@@ -56,65 +79,68 @@ defmodule Audio.Difm do
   def handle_call(:current_song, _from, state),
     do: {:reply, state.current_song, state}
 
-  def handle_call(:current_song_end, _from, state) do
-    {:ok, start_time, _tz} = DateTime.from_iso8601(state.current_song.track.start_time)
-
-    fmt =
-      start_time
-      |> DateTime.add(8 + round(state.current_song.track.duration))
-      |> DateTime.diff(DateTime.utc_now())
-      |> DurationFormatter.format_duration()
-
-    {:reply, fmt, state}
-  end
+  # def handle_call(:current_song_end, _from, state) do
+  #   {:ok, start_time, _tz} = DateTime.from_iso8601(state.current_song.track.start_time)
+  #
+  #   fmt =
+  #     start_time
+  #     |> DateTime.add(8 + round(state.current_song.track.duration))
+  #     |> DateTime.diff(DateTime.utc_now())
+  #     |> DurationFormatter.format_duration()
+  #
+  #   {:reply, fmt, state}
+  # end
 
   @impl true
   def handle_cast({:set_channel, name}, state) do
     send(self(), :refresh_timer)
+    new_state = if(name in @channel_names, do: %{state | channel: name}, else: state)
+    Logger.info("changing to #{inspect(new_state)}")
 
-    {:noreply, if(name in @channel_names, do: %{state | channel: name}, else: state)}
+    {:noreply, new_state}
   end
 
-  defp get_asset_url(current_song) do
-    case Req.get!("https://api.audioaddict.com/v1/di/tracks/#{current_song["track"]["id"]}") do
+  defp get_asset_url(id) do
+    case Req.get!(@audio_addict_api, url: "/v1/di/tracks/#{id}") do
       %Req.Response{status: 200, body: body} -> "https:" <> body["asset_url"]
-      _ -> current_song["channel_key"]
+      _ -> nil
     end
   end
 
   @impl true
   def handle_info(:refresh_timer, state) do
-    case Req.get!("https://api.audioaddict.com/v1/di/currently_playing") do
-      %Req.Response{status: 200, body: body} ->
-        # get song info
-        current_song = Enum.find(body, &(&1["channel_key"] == state.channel))
+    with %Req.Response{status: 200, body: body1} <-
+           Req.get!(@audio_addict_api, url: "/v1/di/currently_playing"),
+         %Req.Response{status: 200, body: body2} <-
+           Req.get!(@audio_addict_api, url: "/v1/radiotunes/currently_playing") do
+      # get song info
+      current_song = (body1 ++ body2) |> Enum.find(&(&1["channel_key"] == state.channel))
+      Logger.debug("current song: #{inspect(current_song)}")
 
-        # get album cover
-        asset_url = get_asset_url(current_song)
-        current_song = put_in(current_song["track"]["album_art"], asset_url)
+      # get album cover
+      asset_url = get_asset_url(current_song["track"]["id"]) || current_song["channel_key"]
+      current_song = put_in(current_song["track"]["album_art"], asset_url)
 
-        # get song duration
-        {:ok, start_time, _tz} = DateTime.from_iso8601(current_song["track"]["start_time"])
+      # get song duration
+      {:ok, start_time, _tz} = DateTime.from_iso8601(current_song["track"]["start_time"])
 
-        diff =
-          start_time
-          |> DateTime.add(8 + round(current_song["track"]["duration"]))
-          |> DateTime.diff(DateTime.utc_now())
-          |> abs
+      diff =
+        start_time
+        |> DateTime.add(round(9 + current_song["track"]["duration"]))
+        |> DateTime.diff(DateTime.utc_now())
+        |> abs
 
-        Logger.info("sleeping for #{diff} seconds...")
+      Logger.info("sleeping for #{diff} seconds...")
 
-        if state.timer, do: Process.cancel_timer(state.timer)
+      if state.timer, do: :timer.cancel(state.timer)
+      timer = :timer.send_after(diff * 1_000, :refresh_timer)
 
-        timer = Process.send_after(self(), :refresh_timer, diff * 1_000)
+      if diff > 10, do: Audio.difm_changed(current_song)
 
-        if diff > 10, do: Audio.difm_changed(current_song)
-
-        new_state = %{state | current_song: current_song, timer: timer}
-        {:noreply, new_state}
-
-      _ ->
-        {:noreply, state}
+      new_state = %{state | current_song: current_song, timer: timer}
+      {:noreply, new_state}
+    else
+      _ -> {:noreply, state}
     end
   end
 end
