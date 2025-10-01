@@ -11,7 +11,7 @@ defmodule Audio.Application do
       [
         Audio,
         Audio.KeepersAndSkippers,
-        Audio.Difm
+        %{id: Audio.Difm, start: {Audio.Difm, :start_link, []}}
       ] ++ extra(env)
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Audio.Supervisor)
