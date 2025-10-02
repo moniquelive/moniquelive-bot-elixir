@@ -36,7 +36,7 @@ defmodule Chatbot.MixProject do
     [
       {:tzdata, "~> 1.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:file_system, "~> 0.2.10"},
+      {:file_system, "~> 1.0", only: [:dev, :test]},
       {:req, "~> 0.5.0"},
       {:scrapped_twitch_api,
        git: "https://github.com/moniquelive/scrapped_twitch_api.git", branch: "main"},
