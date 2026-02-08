@@ -7,7 +7,7 @@
     <meta name="csrf-token" content={get_csrf_token()} />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <.live_title suffix=" MoniqueLive Bot">
-      <%= assigns[:page_title] || "Widget" %>
+      {assigns[:page_title] || "Widget"}
     </.live_title>
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
@@ -34,6 +34,6 @@
     </style>
   </head>
   <body>
-    <%= @inner_content %>
+    {@inner_content}
   </body>
 </html>

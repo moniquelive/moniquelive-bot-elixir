@@ -33,6 +33,7 @@ defmodule Audio do
 
   def handle_cast({:spotify_changed, %{item: item, is_playing: is_playing}}, state) do
     broadcast_song_info()
+
     new_payload = %{
       title: item.name,
       artist: hd(item.artists)["name"],

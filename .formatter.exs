@@ -5,5 +5,10 @@
   import_deps: [:phoenix],
   subdirectories: ["priv/*/migrations"],
   plugins: [Phoenix.LiveView.HTMLFormatter],
-  inputs: ["*.{heex,ex,exs}", "{config,lib,test,apps}/**/*.{heex,ex,exs}", "priv/*/seeds.exs"]
+  inputs: [
+    "*.{heex,ex,exs}",
+    "{config,lib,test}/**/*.{heex,ex,exs}",
+    "apps/*/{config,lib,test,priv}/**/*.{heex,ex,exs}",
+    "priv/*/seeds.exs"
+  ]
 ]
