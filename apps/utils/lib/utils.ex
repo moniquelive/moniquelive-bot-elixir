@@ -11,6 +11,9 @@ defmodule Utils do
   iex> word_wrap("", 10)
   [""]
 
+  iex> word_wrap("   ", 10)
+  [""]
+
   iex> word_wrap("abc", 10)
   ["abc"]
 
@@ -22,6 +25,9 @@ defmodule Utils do
 
   iex> word_wrap("a bcdefghijkl", 10)
   ["a", "bcdefghijkl"]
+
+  iex> word_wrap("abc   def", 0)
+  ["abc def"]
 
   iex> word_wrap("moniquelive compartilhou: https://tour.golang.org/welcome/1 https://en.wikipedia.org/wiki/Test-driven_development https://hack.ainfosec.com/ https://github.com/moniquelive/iniciante - streamholics compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando https://twitch.tv/pachicodes https://twitch.tv/adielseffrin https://twitch.tv/LadyDriveer https://twitch.tv/adielseffrin - acaverna compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando https://twitch.tv/pachicodes https://twitch.tv/adielseffrin https://twitch.tv/adielseffrin - vivendoouexistindo compartilhou: https://discord.com/invite/cD7VJJZTnA - debora_666 compartilhou: https://mma.prnewswire.com/media/1438929/first_Logo.jpg?p=publish", 500)
   [ "moniquelive compartilhou: https://tour.golang.org/welcome/1 https://en.wikipedia.org/wiki/Test-driven_development https://hack.ainfosec.com/ https://github.com/moniquelive/iniciante - streamholics compartilhou: https://twitch.tv/alorenato https://twitch.tv/xtecna https://twitch.tv/adielseffrin https://twitch.tv/jpbrab0 https://twitch.tv/xtecna https://twitch.tv/kastr0walker https://twitch.tv/morgannadev https://twitch.tv/jpbrab0 https://twitch.tv/profbrunolopes https://twitch.tv/clauzinhando",
@@ -36,8 +42,16 @@ defmodule Utils do
     do: [""]
 
   def word_wrap(string, width) when is_binary(string) and is_integer(width) do
-    [word | rest] = String.split(string, ~r/\s+/, trim: true)
-    lines_assemble(rest, width, String.length(word), word, [])
+    case String.split(string, ~r/\s+/, trim: true) do
+      [] ->
+        [""]
+
+      words when width <= 0 ->
+        [Enum.join(words, " ")]
+
+      [word | rest] ->
+        lines_assemble(rest, width, String.length(word), word, [])
+    end
   end
 
   defp lines_assemble([], _, _, line, acc),

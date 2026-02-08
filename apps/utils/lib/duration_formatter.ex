@@ -27,6 +27,9 @@ defmodule DurationFormatter do
   iex> format_duration(1)
   "1 segundo"
 
+  iex> format_duration(-5)
+  "0 segundos"
+
   iex> format_duration(10)
   "10 segundos"
 
@@ -53,8 +56,8 @@ defmodule DurationFormatter do
 
   ----------------------------------------------------------------------------
   """
-  @spec format_duration(non_neg_integer()) :: String.t()
-  def format_duration(0), do: zero_case()
+  @spec format_duration(integer()) :: String.t()
+  def format_duration(duration) when duration <= 0, do: zero_case()
 
   def format_duration(duration) do
     parts = duration |> build_parts([]) |> Enum.reverse()
@@ -72,7 +75,7 @@ defmodule DurationFormatter do
     end
   end
 
-  # Garante que 0 vira "0 segundos"
+  # Garante que 0 e negativos viram "0 segundos"
   defp zero_case, do: "0 segundos"
 
   # Recursão que vai quebrando duration em unidades

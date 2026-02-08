@@ -1,21 +1,31 @@
 # Utils
 
-**TODO: Add description**
+Small shared helpers used across the umbrella apps.
 
-## Installation
+## Usage
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `utils` to your list of dependencies in `mix.exs`:
+### Word wrapping
+
+`Utils.word_wrap/2` splits text into lines based on a max width. Whitespace is
+normalized, and non-positive widths return a single line.
 
 ```elixir
-def deps do
-  [
-    {:utils, "~> 0.1.0"}
-  ]
-end
+Utils.word_wrap("abc def ghi", 7)
+# => ["abc def", "ghi"]
+
+Utils.word_wrap("abc   def", 0)
+# => ["abc def"]
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/utils>.
+### Duration formatting
 
+`DurationFormatter.format_duration/1` turns seconds into a human-readable
+string in Portuguese. Negative values clamp to zero.
+
+```elixir
+DurationFormatter.format_duration(630)
+# => "10 minutos e 30 segundos"
+
+DurationFormatter.format_duration(-5)
+# => "0 segundos"
+```
