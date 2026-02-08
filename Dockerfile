@@ -52,6 +52,6 @@ ENV PORT=4000 \
 
 WORKDIR /app
 COPY --from=builder app/_build/prod/rel/default .
-COPY --from=builder app/apps/chatbot/commands.json apps/chatbot/commands.json
+COPY --from=builder app/apps/chatbot/priv/commands.json apps/chatbot/priv/commands.json
 
 CMD ["bin/default", "start"]

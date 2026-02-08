@@ -10,13 +10,17 @@ defmodule Audio.Application do
     children =
       [
         Audio,
-        Audio.KeepersAndSkippers,
-        %{id: Audio.Difm, start: {Audio.Difm, :start_link, []}}
+        Audio.KeepersAndSkippers
       ] ++ extra(env)
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Audio.Supervisor)
   end
 
   defp extra(:test), do: []
-  defp extra(_), do: [{Audio.Spotify, Application.fetch_env!(:spotify_ex, :refresh_token)}]
+
+  defp extra(_),
+    do: [
+      %{id: Audio.Difm, start: {Audio.Difm, :start_link, []}},
+      {Audio.Spotify, Application.fetch_env!(:spotify_ex, :refresh_token)}
+    ]
 end

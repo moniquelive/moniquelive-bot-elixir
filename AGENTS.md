@@ -9,7 +9,7 @@ Apps talk via Phoenix PubSub and share a small utilities library.
 - **apps/web_app**: Phoenix LiveView overlay, channels, widgets, Elm front-end.
 - **apps/utils**: Shared helpers (word wrap, duration formatting).
 - **config/**: Umbrella config; per-app config in apps/*/config.
-- **apps/chatbot/commands.json**: Bot commands and responses (hot-reloaded).
+- **apps/chatbot/priv/commands.json**: Bot commands and responses (hot-reloaded).
 - **apps/web_app/assets/elm**: Elm source; compiled JS goes to assets/js/index.js.
 
 ## Setup / Build / Run
@@ -115,7 +115,7 @@ Apps talk via Phoenix PubSub and share a small utilities library.
 - Component helpers live in `apps/web_app/lib/web_app_web/components`.
 
 ## Chatbot Command Config
-- Commands are defined in `apps/chatbot/commands.json`.
+- Commands are defined in `apps/chatbot/priv/commands.json`.
 - `actions` lists command aliases; `responses` are sent to chat.
 - `responses` and `logs` are evaluated as Elixir with `command` and `sender` bindings.
 - Keep JSON valid; `Chatbot.Config` hot-reloads on file change via FileSystem.

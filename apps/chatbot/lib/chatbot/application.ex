@@ -10,7 +10,7 @@ defmodule Chatbot.Application do
     children =
       [
         Chatbot.State,
-        {Chatbot.Config, Path.expand("../..", __DIR__)}
+        {Chatbot.Config, Path.expand("../../priv", __DIR__)}
       ] ++ extra(env)
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Chatbot.Supervisor)

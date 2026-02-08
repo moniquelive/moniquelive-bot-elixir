@@ -55,7 +55,6 @@ defmodule Audio.Difm do
     )
 
   # --------------------------------------------------------------- Client ---
-
   def start_link() do
     args = %{channel: "vocaltrance", current_song: %{}}
     :gen_statem.start_link({:local, @name}, @name, args, [])
