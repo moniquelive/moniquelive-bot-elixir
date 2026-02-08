@@ -9,8 +9,8 @@ defmodule Chatbot.Application do
 
     children =
       [
-        Chatbot.State,
-        {Chatbot.Config, Path.expand("../../priv", __DIR__)}
+        {Task.Supervisor, name: Chatbot.TaskSupervisor},
+        Chatbot.State
       ] ++ extra(env)
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Chatbot.Supervisor)
@@ -20,6 +20,7 @@ defmodule Chatbot.Application do
 
   defp extra(_),
     do: [
+      {Chatbot.Config, Path.expand("../../priv", __DIR__)},
       {TMI.Supervisor,
        bot: Chatbot.Bot,
        user: "moniquelive_bot",

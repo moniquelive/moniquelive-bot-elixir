@@ -4,11 +4,19 @@ defmodule Chatbot.Commands do
   @bot_id "661856691"
   @moniquelive_id "4930146"
 
-  alias Chatbot.{Config, State}
+  @twitch_client Application.compile_env(
+                   :chatbot,
+                   :twitch_api_client,
+                   Chatbot.TwitchApiClient.Scrapped
+                 )
+
+  alias Chatbot.State
+
+  @commands_config Application.compile_env(:chatbot, :commands_config, Chatbot.Config)
 
   def action_for_command(cmd),
     do:
-      Config.commands()
+      @commands_config.commands()
       |> Enum.find(&(cmd in &1["actions"]))
 
   @doc """
@@ -19,7 +27,7 @@ defmodule Chatbot.Commands do
   def commands() do
     c = State.command_count()
 
-    Config.commands()
+    @commands_config.commands()
     |> Enum.map_join(" ", &(&1["actions"] |> format_action_counter(c)))
   end
 
@@ -93,9 +101,17 @@ defmodule Chatbot.Commands do
     sender = String.downcase(sender)
 
     case String.split(command) do
-      [_hug] -> hug(sender, "!hug " <> Enum.random(State.roster()))
-      [_hug, ^sender | _] -> "♥ #{sender} se auto-abraça 02Pat"
-      [_hug, friend | _] -> "♥ #{sender} abraça #{friend} 02Pat"
+      [_hug] ->
+        case random_roster_member() do
+          nil -> "♥ sem ninguém no chat pra abraçar agora"
+          friend -> hug(sender, "!hug " <> friend)
+        end
+
+      [_hug, ^sender | _] ->
+        "♥ #{sender} se auto-abraça 02Pat"
+
+      [_hug, friend | _] ->
+        "♥ #{sender} abraça #{friend} 02Pat"
     end
   end
 
@@ -107,15 +123,20 @@ defmodule Chatbot.Commands do
   def ban(command) do
     case String.split(command) do
       [_ban] ->
-        ban("!ban " <> Enum.random(State.roster()))
+        case random_roster_member() do
+          nil -> "sem ninguém pra banir agora"
+          friend -> ban("!ban " <> friend)
+        end
 
       [ban, friend | _] ->
-        action = action_for_command(ban)
+        case action_for_command(ban) do
+          nil ->
+            "não conheço esse comando"
 
-        Enum.random(action["extras"])
-        |> (&~s("#{&1}")).()
-        |> Code.eval_string([target: friend], __ENV__)
-        |> elem(0)
+          action ->
+            Enum.random(action["extras"])
+            |> Chatbot.Template.render(%{target: friend})
+        end
     end
   end
 
@@ -208,21 +229,19 @@ defmodule Chatbot.Commands do
     end
   end
 
-  defp get_twitch_user_info(login),
-    do:
-      TwitchApi.Users.GetUsers.call(%{login: login})
-      |> elem(1)
-      |> Map.get(:body)
-      |> Jason.decode!()
-      |> Map.get("data")
+  defp get_twitch_user_info(login) do
+    case @twitch_client.get_users(login) do
+      {:ok, data} -> data
+      {:error, _} -> []
+    end
+  end
 
-  defp get_user_followage_moniquelive(follower_id),
-    do:
-      TwitchApi.Users.GetUsersFollows.call(%{from_id: follower_id, to_id: @moniquelive_id})
-      |> elem(1)
-      |> Map.get(:body)
-      |> Jason.decode!()
-      |> Map.get("data")
+  defp get_user_followage_moniquelive(follower_id) do
+    case @twitch_client.get_user_follows(follower_id, @moniquelive_id) do
+      {:ok, data} -> data
+      {:error, _} -> []
+    end
+  end
 
   @doc """
   ----------------------------------------------------------------------------
@@ -232,43 +251,51 @@ defmodule Chatbot.Commands do
   def marquee(sender, command) do
     sender = String.downcase(sender)
 
-    [info] =
-      TwitchApi.Channels.GetChannelInformation.call(%{broadcaster_id: @bot_id})
-      |> elem(1)
-      |> Map.get(:body)
-      |> Jason.decode!()
-      |> Map.get("data")
+    case @twitch_client.get_channel_information(@bot_id) do
+      {:ok, info} ->
+        status = ~s(Marquee > #{info["title"]})
 
-    status = ~s(Marquee > #{info["title"]})
+        case String.split(command) do
+          [_marquee] ->
+            Phoenix.PubSub.broadcast(
+              WebApp.PubSub,
+              "layer:marquee_updated",
+              {:marquee, info["title"]}
+            )
 
-    case String.split(command) do
-      [_marquee] ->
-        Phoenix.PubSub.broadcast(
-          WebApp.PubSub,
-          "layer:marquee_updated",
-          {:marquee, info["title"]}
-        )
+            status
 
-        status
+          [_marquee | sentence] ->
+            if sender != "moniquelive" do
+              status
+            else
+              sentence = Enum.join(sentence, " ")
 
-      [_marquee | sentence] ->
-        if sender != "moniquelive" do
-          status
-        else
-          sentence = Enum.join(sentence, " ")
+              case @twitch_client.modify_channel_information(
+                     info["broadcaster_id"],
+                     info["broadcaster_id"],
+                     sentence
+                   ) do
+                :ok ->
+                  Phoenix.PubSub.broadcast(
+                    WebApp.PubSub,
+                    "layer:marquee_updated",
+                    {:marquee, sentence}
+                  )
 
-          TwitchApi.Channels.ModifyChannelInformation.call(
-            %{broadcaster_id: info["broadcaster_id"]},
-            %{user_id: info["broadcaster_id"]},
-            %{"title" => sentence} |> Jason.encode!()
-          )
+                  "Atualizando marquee: #{sentence}"
 
-          Phoenix.PubSub.broadcast(WebApp.PubSub, "layer:marquee_updated", {:marquee, sentence})
-          "Atualizando marquee: #{sentence}"
+                {:error, _} ->
+                  "não consegui atualizar a marquee agora"
+              end
+            end
+
+          _ ->
+            status
         end
 
-      _ ->
-        status
+      {:error, _} ->
+        "não consegui buscar a marquee agora"
     end
   end
 
@@ -296,5 +323,12 @@ defmodule Chatbot.Commands do
 
   def difm(_sender, _command) do
     "Foi mal, esse comando é só pra Mo..."
+  end
+
+  defp random_roster_member do
+    case State.roster() do
+      [] -> nil
+      roster -> Enum.random(roster)
+    end
   end
 end

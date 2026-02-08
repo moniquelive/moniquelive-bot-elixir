@@ -13,7 +13,7 @@ defmodule Chatbot.State do
   end
 
   def command_count(name \\ @name), do: Agent.get(name, & &1.commands_info)
-  def roster(name \\ @name), do: Agent.get(name, &Map.keys(&1.users_info))
+  def roster(name \\ @name), do: Agent.get(name, &(Map.keys(&1.users_info) |> Enum.sort()))
   def online_at(name \\ @name, user), do: Agent.get(name, &get_user(&1, user, nil)).online_at
 
   def process_sentence(name \\ @name, sentence, user),
@@ -29,16 +29,19 @@ defmodule Chatbot.State do
     do:
       Agent.get(
         name,
-        &for(
-          {user, %{urls: urls}} <- &1.users_info,
-          do: %{user: user, urls: MapSet.to_list(urls)}
-        )
+        fn state ->
+          state.users_info
+          |> Enum.map(fn {user, %{urls: urls}} ->
+            %{user: user, urls: urls |> MapSet.to_list() |> Enum.sort()}
+          end)
+          |> Enum.sort_by(& &1.user)
+        end
       )
 
   def urls_for(name, user) do
     user = normalize(user)
     urls = Agent.get(name, &get_user(&1, user).urls)
-    [%{user: user, urls: MapSet.to_list(urls)}]
+    [%{user: user, urls: urls |> MapSet.to_list() |> Enum.sort()}]
   end
 
   # ---

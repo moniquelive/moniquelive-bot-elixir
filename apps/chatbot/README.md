@@ -1,24 +1,31 @@
 # Chatbot
 
-Bot que mocka a API da Twitch:
-- https://dev.twitch.tv/docs/cli/mock-api-command
+Twitch chat bot with command handling, TTS, and PubSub events.
 
-**TODO: Add description**
+## Responsibilities
 
-## Installation
+- Connect to Twitch chat (TMI) and respond to commands.
+- Load `commands.json` and hot-reload in dev/test.
+- Trigger TTS via ElevenLabs and publish audio to the overlay.
+- Broadcast bot events via Phoenix PubSub.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `chatbot` to your list of dependencies in `mix.exs`:
+## Configuration
 
-```elixir
-def deps do
-  [
-    {:chatbot, "~> 0.1.0"}
-  ]
-end
-```
+Required env vars:
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/chatbot>.
+- `TWITCH_TMI_OAUTH` (TMI auth token)
+- `ELEVEN_LABS_API_KEY` (for TTS)
 
+Command config:
+
+- `apps/chatbot/priv/commands.json` defines commands, responses, and logs.
+- Hot reload is enabled in dev/test and disabled in prod.
+
+## Running locally
+
+From repo root:
+
+- `mix -C apps/chatbot deps.get`
+- `mix -C apps/chatbot iex -S mix`
+
+The bot process is started by the application supervisor.
