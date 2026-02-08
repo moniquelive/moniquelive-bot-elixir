@@ -3,6 +3,8 @@ defmodule Audio.KeepersAndSkippers do
 
   @name __MODULE__
 
+  @spotify_client Application.compile_env(:audio, :spotify_client, Audio.Spotify.Client.SpotifyEx)
+
   use Agent
 
   alias Audio.KeepersAndSkippers, as: KS
@@ -48,7 +50,7 @@ defmodule Audio.KeepersAndSkippers do
       keep_list = keep_set |> Enum.join(",")
       skip_list = skip_set |> Enum.join(",")
 
-      Spotify.Player.skip_to_next(creds)
+      @spotify_client.skip_to_next(creds)
       "PULANDO!!!! 💃 (#{skip_list}) X (#{keep_list})"
     else
       "Aaaaa parciais: (vaza: #{skip_votes} X fica: #{keep_votes})"

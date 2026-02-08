@@ -3,6 +3,8 @@ defmodule Audio.Spotify do
 
   @name __MODULE__
 
+  @spotify_client Application.compile_env(:audio, :spotify_client, Audio.Spotify.Client.SpotifyEx)
+
   use GenServer
 
   alias Audio.KeepersAndSkippers, as: KS
@@ -41,7 +43,7 @@ defmodule Audio.Spotify do
   end
 
   def handle_call({:song_info, song_id}, _from, state) do
-    case Spotify.Track.get_track(state.creds, song_id) do
+    case @spotify_client.get_track(state.creds, song_id) do
       {:ok, %{"error" => %{"message" => message}}} -> {:reply, {:error, message}, state}
       {:ok, info} -> {:reply, {:ok, info}, state}
     end
@@ -61,7 +63,7 @@ defmodule Audio.Spotify do
 
   @impl GenServer
   def handle_cast({:enqueue, song_id}, state) do
-    Spotify.Player.enqueue(state.creds, "spotify:track:#{song_id}")
+    @spotify_client.enqueue(state.creds, "spotify:track:#{song_id}")
     {:noreply, state}
   end
 
@@ -105,7 +107,7 @@ defmodule Audio.Spotify do
   @impl GenServer
   def handle_info(:monitor_spotify_timer, state) do
     new_state =
-      case Spotify.Player.get_currently_playing(state.creds) do
+      case @spotify_client.get_currently_playing(state.creds) do
         :ok when stopped(state) -> stop(state)
         {:ok, curr} when paused(state, curr) -> pause(state)
         {:ok, curr} when unpaused(state, curr) -> unpause(state, curr)
@@ -123,7 +125,7 @@ defmodule Audio.Spotify do
     # IO.puts(inspect(state.refresh_token))
     new_state =
       try do
-        case Spotify.Authentication.refresh(%Spotify.Credentials{
+        case @spotify_client.refresh(%Spotify.Credentials{
                refresh_token: state.refresh_token
              }) do
           {:ok, creds} -> %{state | creds: creds}

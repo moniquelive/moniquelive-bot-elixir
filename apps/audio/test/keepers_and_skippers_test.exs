@@ -1,11 +1,17 @@
 defmodule Audio.KeepersAndSkippersTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   @name __MODULE__
 
   alias Audio.KeepersAndSkippers, as: KS
 
+  setup_all do
+    ensure_pubsub_started()
+    :ok
+  end
+
   setup do
+    Audio.Spotify.Client.Test.reset()
     start_supervised!({Audio.KeepersAndSkippers, name: @name})
     :ok
   end
@@ -53,6 +59,26 @@ defmodule Audio.KeepersAndSkippersTest do
       creds = %Spotify.Credentials{}
       1..5 |> Enum.map(&Kernel.to_string/1) |> Enum.each(&KS.skip(&1, @name))
       assert KS.skip_response(creds, @name) == "PULANDO!!!! 💃 (1,2,3,4,5) X ()"
+      assert [{:skip_to_next, ^creds} | _] = Audio.Spotify.Client.Test.calls()
+    end
+  end
+
+  test "broadcast publishes keepers and skippers" do
+    Phoenix.PubSub.subscribe(WebApp.PubSub, "spotify:keepers_and_skippers_changed")
+
+    KS.keep("keeper", @name)
+    KS.skip("skipper", @name)
+    KS.broadcast(@name)
+
+    assert_receive %{keepers: keepers, skippers: skippers}
+    assert MapSet.new(keepers) == MapSet.new(["keeper"])
+    assert MapSet.new(skippers) == MapSet.new(["skipper"])
+  end
+
+  defp ensure_pubsub_started do
+    case Process.whereis(WebApp.PubSub) do
+      nil -> start_supervised!({Phoenix.PubSub, name: WebApp.PubSub})
+      _pid -> :ok
     end
   end
 end

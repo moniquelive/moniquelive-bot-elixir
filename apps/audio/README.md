@@ -1,21 +1,20 @@
 # Audio
 
-**TODO: Add description**
+Spotify + DI.FM integration for the stream bot.
 
-## Installation
+## Responsibilities
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `audio` to your list of dependencies in `mix.exs`:
+- Poll DI.FM (AudioAddict) and broadcast song changes.
+- Track Spotify playback and publish current track information.
+- Maintain keep/skip votes and publish updates.
 
-```elixir
-def deps do
-  [
-    {:audio, "~> 0.1.0"}
-  ]
-end
-```
+## PubSub events
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/audio>.
+- `audio:music_changed` → `{:audio, %{title, artist, album_cover_url, is_playing?}}`
+- `spotify:keepers_and_skippers_changed` → `%{keepers: [String], skippers: [String]}`
 
+## Runtime notes
+
+- Spotify refresh token is read from config via `spotify_ex` (see `apps/audio/config/config.exs`).
+- DI.FM channel list lives in `apps/audio/priv/difm_channels.txt`.
+- DI.FM refresh interval is computed from track duration and start time.

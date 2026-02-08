@@ -21,5 +21,7 @@ config :spotify_ex,
     |> String.trim()
 
 config :audio, :environment, config_env()
+config :audio, :http_client, Audio.HttpClient.Req
+config :audio, :spotify_client, Audio.Spotify.Client.SpotifyEx
 
 import_config "#{config_env()}.exs"
