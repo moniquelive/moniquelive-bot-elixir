@@ -14,8 +14,10 @@ defmodule WebAppWeb.Live.MusicLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    Phoenix.PubSub.subscribe(WebApp.PubSub, "audio:music_changed")
-    Phoenix.PubSub.broadcast(WebApp.PubSub, "music_live:mounted", :music_live_mounted)
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(WebApp.PubSub, "audio:music_changed")
+      Phoenix.PubSub.broadcast(WebApp.PubSub, "music_live:mounted", :music_live_mounted)
+    end
 
     {:ok,
      socket
@@ -26,12 +28,16 @@ defmodule WebAppWeb.Live.MusicLive do
 
   @impl true
   def handle_info({:audio, payload}, socket) do
-    new_socket =
-      socket
-      |> assign(:title, payload.title)
-      |> assign(:artist, payload.artist)
-      |> assign(:cover, payload.album_cover_url)
+    title =
+      Map.get(payload, :title) || Map.get(payload, "title") || socket.assigns.title
 
-    {:noreply, new_socket}
+    artist =
+      Map.get(payload, :artist) || Map.get(payload, "artist") || socket.assigns.artist
+
+    cover =
+      Map.get(payload, :album_cover_url) || Map.get(payload, "album_cover_url") ||
+        socket.assigns.cover
+
+    {:noreply, assign(socket, title: title, artist: artist, cover: cover)}
   end
 end

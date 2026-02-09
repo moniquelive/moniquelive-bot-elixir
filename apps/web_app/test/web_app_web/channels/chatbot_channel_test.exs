@@ -26,4 +26,28 @@ defmodule WebAppWeb.ChatbotChannelTest do
     broadcast_from!(socket, "anything", %{data: "matches"})
     assert_push "anything", %{data: "matches"}
   end
+
+  test "audio events push music updates", %{socket: socket} do
+    send(
+      socket.channel_pid,
+      {:audio, %{title: "Song", artist: "Artist", album_cover_url: "cover"}}
+    )
+
+    assert_push "music_changed", %{title: "Song", artist: "Artist", album_cover_url: "cover"}
+  end
+
+  test "marquee events push updates", %{socket: socket} do
+    send(socket.channel_pid, {:marquee, "hello"})
+    assert_push "marquee_updated", %{text: "hello"}
+  end
+
+  test "tts events push audio payload", %{socket: socket} do
+    send(socket.channel_pid, {:play_tts, %{mp3: "data"}})
+    assert_push "play_tts", %{mp3: "data"}
+  end
+
+  test "keepers and skippers events push updates", %{socket: socket} do
+    send(socket.channel_pid, %{keepers: ["a"], skippers: ["b"]})
+    assert_push "keepers_skippers_changed", %{keepers: ["a"], skippers: ["b"]}
+  end
 end

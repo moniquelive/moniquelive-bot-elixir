@@ -14,8 +14,10 @@ defmodule WebAppWeb.Live.MarqueeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    Phoenix.PubSub.subscribe(WebApp.PubSub, "layer:marquee_updated")
-    Phoenix.PubSub.broadcast(WebApp.PubSub, "marquee_live:mounted", :marquee_live_mounted)
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(WebApp.PubSub, "layer:marquee_updated")
+      Phoenix.PubSub.broadcast(WebApp.PubSub, "marquee_live:mounted", :marquee_live_mounted)
+    end
 
     {:ok,
      socket
@@ -24,10 +26,7 @@ defmodule WebAppWeb.Live.MarqueeLive do
 
   @impl true
   def handle_info({:marquee, message}, socket) do
-    new_socket =
-      socket
-      |> assign(:message, message)
-
-    {:noreply, new_socket}
+    message = if is_binary(message), do: message, else: socket.assigns.message
+    {:noreply, assign(socket, message: message)}
   end
 end

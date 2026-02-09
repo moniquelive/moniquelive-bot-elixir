@@ -45,6 +45,7 @@ defmodule WebApp.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:plug_cowboy, "~> 2.7"},
       {:floki, ">= 0.35.2", only: :test},
+      {:lazy_html, ">= 0.1.0", only: :test},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 1.0"},

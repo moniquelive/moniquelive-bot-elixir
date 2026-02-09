@@ -1,18 +1,25 @@
 # WebApp
 
-To start your Phoenix server:
+Phoenix LiveView overlay + Elm front-end for widgets.
 
-  * Install dependencies with `mix deps.get`
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Routes
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+- `/layer` (Elm overlay)
+- `/widget/music` (LiveView music widget)
+- `/widget/marquee` (LiveView marquee widget)
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Run locally
 
-## Learn more
+From repo root:
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+- `mix -C apps/web_app assets.setup`
+- `mix -C apps/web_app phx.server`
+
+Elm (dev):
+
+- `node apps/web_app/assets/elm/build.js --watch`
+
+## Notes
+
+- Elm source lives in `apps/web_app/assets/elm/src`.
+- Compiled Elm output goes to `apps/web_app/assets/js/index.js`.

@@ -18,9 +18,22 @@ defmodule Chatbot.Application do
 
   defp extra(:test), do: []
 
-  defp extra(_),
+  defp extra(:dev),
     do: [
       {Chatbot.Config, Path.expand("../../priv", __DIR__)},
+      {TMI.Supervisor,
+       bot: Chatbot.Bot,
+       user: "moniquelive_bot",
+       pass: System.get_env("TWITCH_TMI_OAUTH"),
+       channels: ["moniquelive"],
+       mod_channels: ["moniquelive"],
+       capabilities: [~c"membership", ~c"tags", ~c"commands"],
+       debug: false}
+    ]
+
+  defp extra(_),
+    do: [
+      {Chatbot.Config, Application.app_dir(:chatbot, "priv")},
       {TMI.Supervisor,
        bot: Chatbot.Bot,
        user: "moniquelive_bot",

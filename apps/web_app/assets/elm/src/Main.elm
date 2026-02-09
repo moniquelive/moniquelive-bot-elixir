@@ -146,105 +146,106 @@ processPhoenixMsg model subMsg =
         Phoenix.ChannelEvent _ event payload ->
             case event of
                 "play_tts" ->
-                    let
-                        ttsPayload =
-                            case D.decodeValue ttsMessageDecoder payload of
-                                Ok mp3 ->
-                                    mp3
+                    case D.decodeValue ttsMessageDecoder payload of
+                        Ok ttsPayload ->
+                            if String.isEmpty ttsPayload.mp3 then
+                                ( newModel, cmd )
 
-                                Err _ ->
-                                    MP3 ""
-                    in
-                    ( model, playMP3 ttsPayload.mp3 )
+                            else
+                                ( newModel, Cmd.batch [ cmd, playMP3 ttsPayload.mp3 ] )
+
+                        Err _ ->
+                            ( newModel, cmd )
 
                 "marquee_updated" ->
-                    let
-                        marqueePayload =
-                            case D.decodeValue marqueeMessageDecoder payload of
-                                Ok newText ->
-                                    newText
+                    case D.decodeValue marqueeMessageDecoder payload of
+                        Ok marqueePayload ->
+                            let
+                                newMarqueeStyle =
+                                    Animation.interrupt
+                                        [ Animation.loop
+                                            [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
+                                            , Animation.wait (Time.millisToPosix <| 60 * 1000)
+                                            , Animation.to [ Animation.translate (percent 0) (percent 125) ]
+                                            , Animation.wait (Time.millisToPosix <| 30 * 1000)
+                                            ]
+                                        ]
+                                        model.marqueeStyle
+                            in
+                            ( { newModel | marqueeMessage = marqueePayload.text, marqueeStyle = newMarqueeStyle }, cmd )
 
-                                Err err ->
-                                    MarqueeMessage (D.errorToString err)
-
-                        newMarqueeStyle =
-                            Animation.interrupt
-                                [ Animation.loop
-                                    [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
-                                    , Animation.wait (Time.millisToPosix <| 60 * 1000)
-                                    , Animation.to [ Animation.translate (percent 0) (percent 125) ]
-                                    , Animation.wait (Time.millisToPosix <| 30 * 1000)
-                                    ]
-                                ]
-                                model.marqueeStyle
-                    in
-                    ( { model | marqueeMessage = marqueePayload.text, marqueeStyle = newMarqueeStyle }, cmd )
+                        Err _ ->
+                            ( newModel, cmd )
 
                 "music_changed" ->
-                    let
-                        songPayload =
-                            case D.decodeValue songInfoDecoder payload of
-                                Ok musicInfo ->
-                                    musicInfo
+                    case D.decodeValue songInfoDecoder payload of
+                        Ok musicInfo ->
+                            let
+                                cover =
+                                    if String.isEmpty musicInfo.cover then
+                                        newModel.currentSong.cover
 
-                                Err err ->
-                                    SongInfo (D.errorToString err) "" "erro"
+                                    else
+                                        musicInfo.cover
 
-                        newCurrentSongStyle =
-                            Animation.interrupt
-                                [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
-                                , Animation.wait (Time.millisToPosix <| 8 * 1000)
-                                , Animation.to [ Animation.translate (percent 115) (percent 0) ]
-                                ]
-                                model.currentSongStyle
-                    in
-                    ( { newModel | currentSong = songPayload, currentSongStyle = newCurrentSongStyle }, cmd )
+                                updatedSong =
+                                    { musicInfo | cover = cover }
+
+                                newCurrentSongStyle =
+                                    Animation.interrupt
+                                        [ Animation.to [ Animation.translate (percent 0) (percent 0) ]
+                                        , Animation.wait (Time.millisToPosix <| 8 * 1000)
+                                        , Animation.to [ Animation.translate (percent 115) (percent 0) ]
+                                        ]
+                                        model.currentSongStyle
+                            in
+                            ( { newModel | currentSong = updatedSong, currentSongStyle = newCurrentSongStyle }, cmd )
+
+                        Err _ ->
+                            ( newModel, cmd )
 
                 "keepers_skippers_changed" ->
-                    let
-                        newKeepersSkippers =
-                            case D.decodeValue keepersSkippersDecoder payload of
-                                Ok keepersSkippers ->
-                                    keepersSkippers
+                    case D.decodeValue keepersSkippersDecoder payload of
+                        Ok keepersSkippers ->
+                            let
+                                keepersChanged =
+                                    List.length model.keepersSkippers.keepers /= List.length keepersSkippers.keepers
 
-                                Err _ ->
-                                    KeepersSkippers [] []
+                                skippersChanged =
+                                    List.length model.keepersSkippers.skippers /= List.length keepersSkippers.skippers
 
-                        keepersChanged =
-                            List.length model.keepersSkippers.keepers /= List.length newKeepersSkippers.keepers
+                                newKeepersStyle =
+                                    if keepersChanged then
+                                        Animation.interrupt
+                                            [ Animation.set [ Animation.scale 10 ]
+                                            , Animation.to [ Animation.scale 1 ]
+                                            ]
+                                            model.keepersStyle
 
-                        skippersChanged =
-                            List.length model.keepersSkippers.skippers /= List.length newKeepersSkippers.skippers
+                                    else
+                                        model.keepersStyle
 
-                        newKeepersStyle =
-                            if keepersChanged then
-                                Animation.interrupt
-                                    [ Animation.set [ Animation.scale 10 ]
-                                    , Animation.to [ Animation.scale 1 ]
-                                    ]
-                                    model.keepersStyle
+                                newSkippersStyle =
+                                    if skippersChanged then
+                                        Animation.interrupt
+                                            [ Animation.set [ Animation.scale 10 ]
+                                            , Animation.to [ Animation.scale 1 ]
+                                            ]
+                                            model.skippersStyle
 
-                            else
-                                model.keepersStyle
+                                    else
+                                        model.skippersStyle
+                            in
+                            ( { newModel
+                                | keepersSkippers = keepersSkippers
+                                , keepersStyle = newKeepersStyle
+                                , skippersStyle = newSkippersStyle
+                              }
+                            , cmd
+                            )
 
-                        newSkippersStyle =
-                            if skippersChanged then
-                                Animation.interrupt
-                                    [ Animation.set [ Animation.scale 10 ]
-                                    , Animation.to [ Animation.scale 1 ]
-                                    ]
-                                    model.skippersStyle
-
-                            else
-                                model.skippersStyle
-                    in
-                    ( { newModel
-                        | keepersSkippers = newKeepersSkippers
-                        , keepersStyle = newKeepersStyle
-                        , skippersStyle = newSkippersStyle
-                      }
-                    , cmd
-                    )
+                        Err _ ->
+                            ( newModel, cmd )
 
                 _ ->
                     ( newModel, cmd )
@@ -322,11 +323,9 @@ view model =
             )
             (songInfoView model.currentSong)
         , h1 [] (keepersSkippersView model)
-        , node "marquee"
-            (Animation.render model.marqueeStyle
-                ++ [ style "z-index" "-9999", attribute "scrolldelay" "60" ]
-            )
-            [ text model.marqueeMessage ]
+        , div (Animation.render model.marqueeStyle ++ [ class "marquee" ])
+            [ span [ class "marquee__text" ] [ text model.marqueeMessage ]
+            ]
         ]
 
 
@@ -349,7 +348,11 @@ marqueeMessageDecoder =
 songInfoDecoder : D.Decoder SongInfo
 songInfoDecoder =
     D.map3 SongInfo
-        (D.field "album_cover_url" D.string)
+        (D.oneOf
+            [ D.field "album_cover_url" D.string
+            , D.succeed ""
+            ]
+        )
         (D.field "title" D.string)
         (D.field "artist" D.string)
 
