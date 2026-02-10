@@ -251,52 +251,56 @@ defmodule Chatbot.Commands do
   def marquee(sender, command) do
     sender = String.downcase(sender)
 
-    case @twitch_client.get_channel_information(@bot_id) do
-      {:ok, info} ->
-        status = ~s(Marquee > #{info["title"]})
+    with {:ok, info} <- @twitch_client.get_channel_information(@bot_id) do
+      handle_marquee_command(sender, command, info)
+    else
+      {:error, _} -> "não consegui buscar a marquee agora"
+    end
+  end
 
-        case String.split(command) do
-          [_marquee] ->
-            Phoenix.PubSub.broadcast(
-              WebApp.PubSub,
-              "layer:marquee_updated",
-              {:marquee, info["title"]}
-            )
+  defp handle_marquee_command(sender, command, info) do
+    status = ~s(Marquee > #{info["title"]})
 
-            status
+    case String.split(command) do
+      [_marquee] ->
+        broadcast_marquee(info["title"])
+        status
 
-          [_marquee | sentence] ->
-            if sender != "moniquelive" do
-              status
-            else
-              sentence = Enum.join(sentence, " ")
+      [_marquee | sentence] ->
+        update_marquee_title(sender, sentence, info, status)
 
-              case @twitch_client.modify_channel_information(
-                     info["broadcaster_id"],
-                     info["broadcaster_id"],
-                     sentence
-                   ) do
-                :ok ->
-                  Phoenix.PubSub.broadcast(
-                    WebApp.PubSub,
-                    "layer:marquee_updated",
-                    {:marquee, sentence}
-                  )
+      _ ->
+        status
+    end
+  end
 
-                  "Atualizando marquee: #{sentence}"
+  defp update_marquee_title("moniquelive", sentence_parts, info, _status) do
+    sentence = Enum.join(sentence_parts, " ")
 
-                {:error, _} ->
-                  "não consegui atualizar a marquee agora"
-              end
-            end
-
-          _ ->
-            status
-        end
+    case @twitch_client.modify_channel_information(
+           info["broadcaster_id"],
+           info["broadcaster_id"],
+           sentence
+         ) do
+      :ok ->
+        broadcast_marquee(sentence)
+        "Atualizando marquee: #{sentence}"
 
       {:error, _} ->
-        "não consegui buscar a marquee agora"
+        "não consegui atualizar a marquee agora"
     end
+  end
+
+  defp update_marquee_title(_sender, _sentence, _info, status) do
+    status
+  end
+
+  defp broadcast_marquee(text) do
+    Phoenix.PubSub.broadcast(
+      WebApp.PubSub,
+      "layer:marquee_updated",
+      {:marquee, text}
+    )
   end
 
   @doc """

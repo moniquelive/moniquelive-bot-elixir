@@ -5,11 +5,11 @@ defmodule Chatbot.BotTest do
 
   setup do
     original_key = Application.get_env(:chatbot, :eleven_labs_api_key)
-    Chatbot.ChatClient.Test.reset()
-    Chatbot.ChatClient.Test.set_owner(self())
-    Chatbot.HttpClient.Test.reset()
-    Chatbot.HttpClient.Test.set_owner(self())
-    Chatbot.Config.Test.reset()
+    Chatbot.ChatClient.Stub.reset()
+    Chatbot.ChatClient.Stub.set_owner(self())
+    Chatbot.HttpClient.Stub.reset()
+    Chatbot.HttpClient.Stub.set_owner(self())
+    Chatbot.Config.Stub.reset()
 
     ensure_started({Task.Supervisor, name: Chatbot.TaskSupervisor}, Chatbot.TaskSupervisor)
     ensure_started({Chatbot.State, name: Chatbot.State}, Chatbot.State)
@@ -26,7 +26,7 @@ defmodule Chatbot.BotTest do
       ]
     }
 
-    Chatbot.Config.Test.set_config(config)
+    Chatbot.Config.Stub.set_config(config)
 
     case Process.whereis(Chatbot.State) do
       nil ->
@@ -71,7 +71,7 @@ defmodule Chatbot.BotTest do
     Application.put_env(:chatbot, :eleven_labs_api_key, "key")
     Phoenix.PubSub.subscribe(WebApp.PubSub, "rewards:play_tts")
 
-    Chatbot.HttpClient.Test.put_response(
+    Chatbot.HttpClient.Stub.put_response(
       "https://api.elevenlabs.io/v1/text-to-speech/XB0fDUnXU5powFXDhCwa?output_format=mp3_44100_128",
       {:error, :timeout}
     )

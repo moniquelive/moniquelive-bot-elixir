@@ -1,4 +1,4 @@
-defmodule Chatbot.TwitchApiClient.Test do
+defmodule Chatbot.TwitchApiClient.Stub do
   @moduledoc false
 
   @behaviour Chatbot.TwitchApiClient

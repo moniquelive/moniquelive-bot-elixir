@@ -1,4 +1,4 @@
-defmodule Chatbot.Config.Test do
+defmodule Chatbot.Config.Stub do
   @moduledoc false
 
   @config_key {__MODULE__, :config}

@@ -1,4 +1,4 @@
-defmodule Chatbot.ChatClient.Test do
+defmodule Chatbot.ChatClient.Stub do
   @moduledoc false
 
   @behaviour Chatbot.ChatClient
